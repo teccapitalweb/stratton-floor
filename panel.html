@@ -942,15 +942,13 @@ button:focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 2px
 
   <div class="cp-info-banner">
     💡 <strong>Tip:</strong> Cada día tiene su <strong style="color:#FFD700;">propia comisión</strong>.
-    El sistema rolea automáticamente entre <strong style="color:#00E5FF;">$12–$19 (común)</strong> y
-    raramente <strong style="color:#FF8C42;">$20–$24</strong> (cap por semana).
-    <strong style="color:#FF2DD2;">Premium $25–$30</strong> solo 5× al mes y nunca en lunes.
-    Los <strong style="color:#B47CFF;">lunes</strong> siempre $12–$19.
-    También puedes <em>elegir el monto manualmente</em> al picar un día.
+    El sistema rolea automáticamente entre <strong style="color:#00E5FF;">$12 y $22 MXN</strong>.
+    Para comisiones más altas (premium), <strong style="color:#FF2DD2;">elige el monto manualmente</strong>
+    cuando la contadora lo determine — picas el día y eliges <em>"3 = ELEGIR el monto manualmente"</em>.
   </div>
 
   <div class="day-buttons-wrap">
-    <div class="day-buttons-title">💰 REVELAR COMISIÓN POR DÍA <span class="premium-badge" id="premiumBadge">★ 5/5 PREMIUM ESTE MES</span></div>
+    <div class="day-buttons-title">💰 REVELAR COMISIÓN POR DÍA <span class="premium-badge" id="premiumBadge">★ Comisiones manuales libres</span></div>
     <div class="day-buttons-row" id="dayButtonsRow"></div>
   </div>
 
@@ -1399,37 +1397,16 @@ const Sounds = {
    Comisión por día — lógica
    ============================================================ */
 function rolearComisionDia(day) {
-  const isMonday = day === 'monday';
-  // Lunes nunca arriba de 19
-  if (isMonday) {
-    return { amount: 12 + Math.floor(Math.random() * 8), premium: false };
-  }
-  const cap = state.commission.premiumUsedThisMonth >= PREMIUM_PER_MONTH;
-  const r = Math.random();
-  if (!cap && r < 0.16) {
-    // Premium: $25-$30
-    state.commission.premiumUsedThisMonth = (state.commission.premiumUsedThisMonth || 0) + 1;
-    return { amount: 25 + Math.floor(Math.random() * 6), premium: true };
-  }
-  if (r < 0.35) {
-    // Medio: $20-$24
-    return { amount: 20 + Math.floor(Math.random() * 5), premium: false };
-  }
-  // Común: $12-$19
-  return { amount: 12 + Math.floor(Math.random() * 8), premium: false };
+  // Rango aleatorio: $12 a $22 SIEMPRE.
+  // No hay premium automático; las comisiones altas las decide la contadora manualmente.
+  // Math.random() * 11 → 0-10, +12 → 12-22 (entero)
+  const amount = 12 + Math.floor(Math.random() * 11);
+  return { amount: amount, premium: false };
 }
 
 function setManualCommission(day, amount) {
   if (!state.commission.byDay[day]) state.commission.byDay[day] = {};
-  const wasPremium = !!state.commission.byDay[day].premium;
   const isPremiumNow = amount >= 25;
-
-  // Ajustar contador de premium del mes
-  if (!wasPremium && isPremiumNow) {
-    state.commission.premiumUsedThisMonth = (state.commission.premiumUsedThisMonth || 0) + 1;
-  } else if (wasPremium && !isPremiumNow) {
-    state.commission.premiumUsedThisMonth = Math.max(0, (state.commission.premiumUsedThisMonth || 0) - 1);
-  }
 
   state.commission.byDay[day] = {
     revealed: true,
@@ -1438,7 +1415,7 @@ function setManualCommission(day, amount) {
     ts: Date.now(),
     manual: true
   };
-  // Aplicar como comisión activa actual del Stratton Floor
+  // Aplicar como comisión activa del Stratton Floor
   state.comision = amount;
   state.ultimoCambioBono = new Date().toISOString();
   saveState();
@@ -1449,10 +1426,6 @@ function triggerCommissionReveal(day, reroll) {
   let result;
   const existing = state.commission.byDay[day];
   if (reroll || !existing || !existing.revealed) {
-    // Si había premium y rerolea, descontar el premium previo
-    if (existing && existing.premium) {
-      state.commission.premiumUsedThisMonth = Math.max(0, (state.commission.premiumUsedThisMonth || 0) - 1);
-    }
     result = rolearComisionDia(day);
   } else {
     result = { amount: existing.amount, premium: existing.premium };
@@ -1702,7 +1675,11 @@ function renderStats() {
     commissionColor = state.comision >= 25 ? '#FFD700' : '#00E5FF';
   }
 
-  const premiumLeft = Math.max(0, PREMIUM_PER_MONTH - (state.commission?.premiumUsedThisMonth || 0));
+  // Contar premiums esta semana (cualquier día con commission >= $25)
+  const premiumThisWeek = WEEK_DAYS.reduce((acc, d) => {
+    const ds = state.commission?.byDay?.[d];
+    return acc + (ds && ds.revealed && ds.amount >= 25 ? 1 : 0);
+  }, 0);
 
   document.getElementById('cpStats').innerHTML = `
     <div class="stat-card" style="--accent: #00E5FF; --accent-40: #00E5FF66;">
@@ -1722,8 +1699,8 @@ function renderStats() {
       <div class="value" style="color: ${commissionColor};">${commissionLabel}</div>
     </div>
     <div class="stat-card" style="--accent: #FF2DD2; --accent-40: #FF2DD266;">
-      <div class="label">★ PREMIUM RESTANTES (MES)</div>
-      <div class="value" style="color: #FF2DD2;">${premiumLeft}/${PREMIUM_PER_MONTH}</div>
+      <div class="label">★ PREMIUM ESTA SEMANA</div>
+      <div class="value" style="color: #FF2DD2;">${premiumThisWeek}</div>
     </div>
   `;
 }
@@ -1754,8 +1731,8 @@ function renderDayButtons() {
     `;
   }).join('');
 
-  const premiumLeft = Math.max(0, PREMIUM_PER_MONTH - (state.commission?.premiumUsedThisMonth || 0));
-  document.getElementById('premiumBadge').textContent = `★ ${premiumLeft}/${PREMIUM_PER_MONTH} PREMIUM ESTE MES`;
+  const badge = document.getElementById('premiumBadge');
+  if (badge) badge.textContent = '★ Comisiones manuales libres';
 
   host.querySelectorAll('.day-btn').forEach(btn => {
     btn.addEventListener('click', () => onDayButtonClick(btn.dataset.day));
@@ -1802,22 +1779,17 @@ function onDayButtonClick(day) {
 }
 
 function handleManualAmount(day) {
-  const isMonday = day === 'monday';
-  const range = isMonday ? '$12 a $19 (lunes nunca más alto)' : '$12 a $30 (premium = $25-$30)';
   const amountStr = prompt(
-    `Escribe el monto en MXN para ${DAY_LABELS_ES[day]}\n` +
-    `Rango sugerido: ${range}\n\nEjemplo: 17`
+    `Escribe el monto en MXN para ${DAY_LABELS_ES[day]}\n\n` +
+    `• Aleatorio normal: $12 a $22\n` +
+    `• Comisión PREMIUM: $25 o más (la decide la contadora)\n\n` +
+    `Ejemplo: 28`
   );
   if (amountStr == null) return;
   const amount = parseInt(amountStr.trim(), 10);
   if (isNaN(amount) || amount < 1 || amount > 99) {
     alert('Monto inválido. Debe ser un número entre 1 y 99.');
     return;
-  }
-  if (isMonday && amount > 19) {
-    if (!confirm(`⚠️ El lunes normalmente NO debería tener montos $20+.\n\n¿Aún así quieres establecer $${amount} para LUNES?`)) {
-      return;
-    }
   }
   const result = setManualCommission(day, amount);
   if (!result) return;

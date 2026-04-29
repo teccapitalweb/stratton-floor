@@ -328,9 +328,9 @@ input, select { font-family: inherit; }
 }
 .floor__title span { color: var(--color-magenta); }
 
-/* ===== Contador del equipo total ===== */
+/* ===== Contador del equipo total — OCULTO en la Arena, solo visible en panel admin ===== */
 .team-counter {
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: flex-end;
   text-align: right;
@@ -475,6 +475,8 @@ input, select { font-family: inherit; }
   color: var(--bar-color, var(--color-cyan));
 }
 .bar-col__amount {
+  /* Ocultos en la Arena - solo visibles en el panel admin */
+  display: none;
   font-family: var(--font-display); font-size: 18px;
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
@@ -2575,16 +2577,16 @@ function mejorRachaActual() {
 
 function renderKPIs() {
   // === VENDEDOR DEL DÍA: la consultora con más VENTAS (top del ranking por count) ===
+  // Sin mostrar el número de ventas — solo el nombre y un mensaje motivador
   const ranking = rankingVendedores();
   const lider = ranking.find(r => r.count > 0);
   if (lider) {
     document.getElementById('kpiTopWho').textContent     = lider.nombre;
-    document.getElementById('kpiTopVendido').textContent = `${lider.count} ${lider.count === 1 ? 'venta' : 'ventas'} cerradas`;
-    // Comisión sin monto -> ocultamos por ahora (sin monto no hay cálculo en pesos)
+    document.getElementById('kpiTopVendido').textContent = '🏆 LIDERA EL DÍA';
     document.getElementById('kpiTopCom').textContent = '';
   } else {
     document.getElementById('kpiTopWho').textContent     = '—';
-    document.getElementById('kpiTopVendido').textContent = '0 ventas cerradas';
+    document.getElementById('kpiTopVendido').textContent = 'Quien arranque primero, lidera';
     document.getElementById('kpiTopCom').textContent     = '';
   }
 
@@ -2593,11 +2595,11 @@ function renderKPIs() {
   const elStreak    = document.getElementById('kpiStreak');
   const elStreakWho = document.getElementById('kpiStreakWho');
   if (racha && racha.racha >= 2) {
-    elStreak.textContent    = `🔥 ${racha.racha}`;
-    elStreakWho.textContent = `${racha.vd.nombre} · ${racha.racha} ventas seguidas`;
+    elStreak.textContent    = `🔥`;
+    elStreakWho.textContent = `${racha.vd.nombre} · racha activa`;
   } else if (racha && racha.racha === 1) {
     elStreak.textContent    = '—';
-    elStreakWho.textContent = `${racha.vd.nombre} · necesita 2 seguidas para racha`;
+    elStreakWho.textContent = `${racha.vd.nombre} · una más para racha`;
   } else {
     elStreak.textContent    = '—';
     elStreakWho.textContent = 'aún sin racha activa';
@@ -2698,13 +2700,12 @@ function renderLeaderboard(highlightId = null) {
       <div class="row__info">
         <div class="row__name">${vd.nombre}</div>
         <div class="row__meta">
-          <span>${vd.count} ${vd.count === 1 ? 'venta cerrada' : 'ventas cerradas'}</span>
+          <span>${vd.count > 0 ? '✅ ACTIVA' : '— sin ventas hoy'}</span>
           ${racha >= 2 ? `<span class="streak">· 🔥 racha ${racha}</span>` : ''}
         </div>
       </div>
-      <div class="row__amount">
+      <div class="row__amount" style="visibility:hidden;">
         ${vd.count}
-        <span class="row__amount-label">${vd.count === 1 ? 'venta' : 'ventas'}</span>
       </div>
     `;
     if (highlightId === vd.id) li.classList.add('flash');
@@ -3173,7 +3174,7 @@ function registrarVenta(vendedorId) {
   const vd = state.vendedores.find(v => v.id === vendedorId);
   const frase = FRASES[Math.floor(Math.random() * FRASES.length)];
   const ventasAhora = ventasAntes + 1;
-  mostrarToast(frase, `${vd.nombre} · venta #${ventasAhora}`);
+  mostrarToast(frase, `${vd.nombre} · ¡VENTA CERRADA!`);
   chaChing();
   if (estadioActivo) setTimeout(miniAplauso, 200);
   lanzarConfetti(false, vd.color);
@@ -3424,7 +3425,7 @@ function actualizarAnticipoMilestone() {
         label.className = 'bar-col__almost-label';
         col.appendChild(label);
       }
-      label.textContent = `🎯 ${faltan} PARA EL ${count + faltan}`;
+      label.textContent = faltan === 1 ? '🎯 ¡UNA MÁS Y EXPLOTA!' : '🎯 CASI PARA EL SIGUIENTE NIVEL';
     } else if (label) {
       label.remove();
     }
@@ -3876,7 +3877,7 @@ function reSincronizarDesdeStorage() {
       dispararHypePop();
       const frase = FRASES[Math.floor(Math.random() * FRASES.length)];
       const ventasAhora = state.ventas.filter(v => v.vendedorId === vd.id).length;
-      mostrarToast(frase, `${vd.nombre} · venta #${ventasAhora}`);
+      mostrarToast(frase, `${vd.nombre} · ¡VENTA CERRADA!`);
       if (ventasAhora > 0 && ventasAhora % 10 === 0) {
         setTimeout(() => onMilestoneVendedor(vd, ventasAhora), 600);
       }
