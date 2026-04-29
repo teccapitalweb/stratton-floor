@@ -2002,24 +2002,12 @@ function checkBonoDiario() {
   }
 }
 
-/* ============ Modal nueva venta ============ */
-const modalVenta = document.getElementById('modalBackdrop');
-function abrirModalVenta() {
-  document.getElementById('formVenta').reset();
-  modalVenta.classList.add('is-open');
-  setTimeout(() => document.getElementById('selVendedor').focus(), 50);
-}
-function cerrarModalVenta() { modalVenta.classList.remove('is-open'); }
-document.getElementById('btnNuevaVenta').addEventListener('click', abrirModalVenta);
-document.getElementById('modalClose').addEventListener('click', cerrarModalVenta);
-document.getElementById('btnCancel').addEventListener('click', cerrarModalVenta);
-modalVenta.addEventListener('click', (e) => { if (e.target === modalVenta) cerrarModalVenta(); });
-document.getElementById('formVenta').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const vendedorId = parseInt(document.getElementById('selVendedor').value, 10);
-  if (!vendedorId) return;
-  registrarVenta(vendedorId);
-  cerrarModalVenta();
+/* ============ Click directo en consultora = sumar venta ============ */
+document.getElementById('floorChart').addEventListener('click', (e) => {
+  const col = e.target.closest('.bar-col');
+  if (!col) return;
+  const id = parseInt(col.dataset.id, 10);
+  if (id) registrarVenta(id);
 });
 
 /* ============ Modal comisión (gerente) ============ */
@@ -2056,7 +2044,7 @@ document.getElementById('formComision').addEventListener('submit', (e) => {
 });
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { cerrarModalVenta(); cerrarModalComision(); }
+  if (e.key === 'Escape') cerrarModalComision();
 });
 
 /* ============ Mute ============ */
@@ -2075,16 +2063,14 @@ btnMute.addEventListener('click', () => {
   refreshMuteUI();
 });
 
-// Atajos: N nueva venta, M mute, C comisión
+// Atajos: M mute, C comisión
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-  if (e.key === 'n' || e.key === 'N') abrirModalVenta();
   if (e.key === 'm' || e.key === 'M') btnMute.click();
   if (e.key === 'c' || e.key === 'C') abrirModalComision();
 });
 
 /* ============ Render inicial ============ */
-renderSelectVendedores();
 renderAll(false);
 
 // Frase motivacional inicial + rotación cada 30 minutos
