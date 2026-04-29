@@ -327,6 +327,44 @@ input, select { font-family: inherit; }
   letter-spacing: 0.06em;
 }
 .floor__title span { color: var(--color-magenta); }
+
+/* ===== Contador del equipo total ===== */
+.team-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  position: relative;
+}
+.team-counter__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--color-text-soft);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.team-counter__value {
+  font-family: var(--font-display);
+  font-size: 56px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  background: linear-gradient(180deg, var(--color-cyan) 0%, var(--color-magenta) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 18px rgba(0,229,255,0.4));
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.18s ease;
+}
+.team-counter__value.is-bumping {
+  animation: team-bump 0.5s cubic-bezier(.4,1.6,.5,1);
+}
+@keyframes team-bump {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.15); filter: drop-shadow(0 0 30px rgba(255,215,0,0.6)); }
+  100% { transform: scale(1); }
+}
 .floor__hint {
   display: none;  /* La frase se movió a su propia banda de protagonismo (.motivation-banner) */
 }
@@ -483,6 +521,63 @@ input, select { font-family: inherit; }
   opacity: 0; pointer-events: none;
 }
 .bar-col__bar.surging .bar-col__pulse { animation: pulse-up 1.2s ease-out; }
+
+/* =========================================================
+   ANTICIPO DE MILESTONE - 8 o 9 ventas (a punto de llegar a 10/20/30)
+   ========================================================= */
+.bar-col--almost {
+  animation: almost-shake 0.4s ease-in-out infinite alternate;
+}
+@keyframes almost-shake {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(0.5px, -0.5px); }
+}
+.bar-col--almost .bar-col__bar {
+  filter: brightness(1.15) saturate(1.3);
+  box-shadow: 0 0 22px var(--bar-color, var(--color-cyan)), 0 0 40px rgba(255,215,0,0.3) !important;
+}
+/* Chispas que suben de la barra cuando casi llegas */
+.bar-col--almost .bar-col__bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(255,215,0,0.9) 0, transparent 2px),
+    radial-gradient(circle at 50% 60%, rgba(255,255,255,0.9) 0, transparent 2px),
+    radial-gradient(circle at 80% 90%, rgba(255,215,0,0.9) 0, transparent 2px),
+    radial-gradient(circle at 30% 40%, rgba(255,255,255,0.9) 0, transparent 2px),
+    radial-gradient(circle at 70% 20%, rgba(255,215,0,0.9) 0, transparent 2px);
+  animation: sparkles-up 1.2s linear infinite;
+  pointer-events: none;
+  opacity: 1 !important;
+}
+@keyframes sparkles-up {
+  0%   { background-position: 0 100%, 0 100%, 0 100%, 0 100%, 0 100%; opacity: 1; }
+  100% { background-position: 0 -50%, 0 -80%, 0 -60%, 0 -100%, 0 -70%; opacity: 0; }
+}
+/* Label flotante: "1 PARA EL MILESTONE" */
+.bar-col__almost-label {
+  position: absolute;
+  top: -28px; left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--color-gold);
+  background: rgba(255,215,0,0.12);
+  border: 1px solid rgba(255,215,0,0.5);
+  padding: 3px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  pointer-events: none;
+  animation: almost-label-pulse 1.2s ease-in-out infinite;
+  z-index: 5;
+}
+@keyframes almost-label-pulse {
+  0%, 100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+  50%      { opacity: 1;   transform: translateX(-50%) scale(1.06); }
+}
 @keyframes pulse-up {
   0% { bottom: -30%; opacity: 0; }
   20% { opacity: 1; }
@@ -1076,9 +1171,93 @@ input, select { font-family: inherit; }
   text-align: center;
 }
 
+/* ============ MODO ESTADIO (5-6 PM CDMX) ============ */
+body.modo-estadio {
+  position: relative;
+}
+body.modo-estadio::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(255,45,45,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 0%, rgba(255,45,210,0.06) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: estadio-pulse 4s ease-in-out infinite;
+}
+@keyframes estadio-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+body.modo-estadio .motivation-banner {
+  border-color: rgba(255,45,210,0.3);
+}
+
 /* =========================================================
-   POP-UP motivacional - palabra grande al cerrar venta
+   SPOTLIGHT TV - cada 90s una columna se ilumina
    ========================================================= */
+.floor__chart.is-spotlighting .bar-col {
+  filter: brightness(0.3) saturate(0.5);
+  transition: filter 0.6s ease;
+}
+.floor__chart.is-spotlighting .bar-col.is-spotlight {
+  filter: brightness(1.2) saturate(1.4);
+  transform: translateY(-8px) scale(1.04);
+  z-index: 5;
+}
+.floor__chart.is-spotlighting .bar-col.is-spotlight .bar-col__bar {
+  box-shadow: 0 0 50px var(--bar-color), 0 0 100px var(--bar-color) !important;
+}
+.spotlight-banner {
+  position: fixed;
+  bottom: 30px; left: 50%;
+  transform: translateX(-50%) translateY(120%);
+  background: linear-gradient(90deg, rgba(0,229,255,0.15), rgba(255,45,210,0.15));
+  border: 1px solid rgba(0,229,255,0.5);
+  border-radius: 30px;
+  padding: 12px 24px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: var(--color-cyan);
+  text-transform: uppercase;
+  z-index: 800;
+  transition: transform 0.5s cubic-bezier(.4,1.4,.6,1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 30px rgba(0,229,255,0.25);
+}
+.spotlight-banner.is-active {
+  transform: translateX(-50%) translateY(0);
+}
+.spotlight-banner__dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #FF2D2D;
+  margin-right: 10px;
+  animation: spotlight-rec-blink 1s ease-in-out infinite;
+  vertical-align: middle;
+}
+@keyframes spotlight-rec-blink {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(255,45,45,0.8); }
+  50%      { opacity: 0.3; }
+}
+.emoji-floater {
+  position: fixed;
+  z-index: 850;
+  pointer-events: none;
+  opacity: 0;
+  filter: drop-shadow(0 0 8px rgba(255,255,255,0.4));
+  animation: floater-rise 2s cubic-bezier(.25,.5,.5,1) forwards;
+}
+@keyframes floater-rise {
+  0%   { opacity: 0; transform: translate(0, 0) scale(0.5) rotate(0deg); }
+  15%  { opacity: 1; transform: translate(0, -40px) scale(1) rotate(8deg); }
+  100% { opacity: 0; transform: translate(var(--drift, 0), -460px) scale(0.7) rotate(-12deg); }
+}
+
 .hype-pop {
   position: fixed;
   top: 50%; left: 50%;
@@ -1104,6 +1283,131 @@ input, select { font-family: inherit; }
   35%  { transform: translate(-50%, -50%) scale(0.95); }
   50%  { transform: translate(-50%, -50%) scale(1.05); }
   100% { opacity: 0; transform: translate(-50%, -50%) scale(1.4); }
+}
+
+/* =========================================================
+   COACH - modal para escribir + broadcast en pantalla
+   ========================================================= */
+.coach-modal {
+  position: fixed; inset: 0;
+  z-index: 1300;
+  display: none;
+  align-items: center; justify-content: center;
+  background: rgba(10,11,20,0.7);
+  backdrop-filter: blur(10px);
+}
+.coach-modal.is-open {
+  display: flex;
+  animation: fadeInCoach 0.25s ease;
+}
+@keyframes fadeInCoach { from { opacity: 0; } to { opacity: 1; } }
+.coach-modal__inner {
+  background: linear-gradient(180deg, #0F1126 0%, #0A0B14 100%);
+  border: 1px solid rgba(0,229,255,0.3);
+  border-radius: 18px;
+  padding: 30px 28px;
+  width: min(500px, 92vw);
+  position: relative;
+  box-shadow: 0 30px 80px rgba(0,229,255,0.2);
+}
+.coach-modal__close {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--color-text-soft);
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+}
+.coach-modal__title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: 0.04em;
+  color: var(--color-cyan);
+  margin-bottom: 6px;
+}
+.coach-modal__sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-muted);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+#coachInput {
+  width: 100%;
+  min-height: 100px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 14px 16px;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+#coachInput:focus {
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 0 3px rgba(0,229,255,0.15);
+}
+.coach-modal__counter {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-muted);
+  letter-spacing: 0.14em;
+  margin-top: 8px;
+}
+.coach-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Broadcast del coach - banda superior cuando manda mensaje */
+.coach-broadcast {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1400;
+  display: none;
+  padding: 28px 5%;
+  background: linear-gradient(180deg,
+    rgba(0,229,255,0.94) 0%,
+    rgba(0,180,220,0.90) 100%);
+  border-bottom: 3px solid rgba(255,255,255,0.4);
+  box-shadow: 0 12px 50px rgba(0,229,255,0.5);
+}
+.coach-broadcast.is-active {
+  display: block;
+  animation: coach-slidedown 0.5s cubic-bezier(.4,1.5,.5,1);
+}
+@keyframes coach-slidedown {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+.coach-broadcast__inner { text-align: center; position: relative; }
+.coach-broadcast__label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  color: rgba(10,11,20,0.7);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.coach-broadcast__text {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 56px);
+  letter-spacing: 0.02em;
+  color: #0A0B14;
+  line-height: 1.15;
+  text-shadow: 0 2px 4px rgba(255,255,255,0.5);
 }
 
 /* =========================================================
@@ -1644,6 +1948,12 @@ input, select { font-family: inherit; }
       </svg>
     </button>
 
+    <button class="icon-btn icon-btn--coach" id="btnCoach" title="Mensaje del coach al equipo (Atajo: K)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 11l18-8-8 18-2-7-8-3z"></path>
+      </svg>
+    </button>
+
     <button class="icon-btn icon-btn--history" id="btnHistorial" title="Ver historial de días anteriores">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
@@ -1699,7 +2009,10 @@ input, select { font-family: inherit; }
   <section class="floor">
     <div class="floor__head">
       <div class="floor__title">TEC CAPITAL <span>GROUP</span></div>
-      <div class="floor__hint" id="floorHint">cargando...</div>
+      <div class="team-counter" id="teamCounter">
+        <div class="team-counter__label">Hoy · ventas equipo</div>
+        <div class="team-counter__value" id="teamCounterValue">0</div>
+      </div>
     </div>
     <div class="floor__chart" id="floorChart"></div>
   </section>
@@ -1807,6 +2120,35 @@ input, select { font-family: inherit; }
   </div>
 </div>
 
+<!-- Banner SPOTLIGHT TV -->
+<div class="spotlight-banner" id="spotlightBanner">
+  <span class="spotlight-banner__dot"></span>
+  <span id="spotlightText">EN VIVO</span>
+</div>
+
+<!-- Modal MENSAJE DEL COACH -->
+<div class="coach-modal" id="coachModal">
+  <div class="coach-modal__inner">
+    <button class="coach-modal__close" id="coachClose">×</button>
+    <div class="coach-modal__title">📣 Mensaje al equipo</div>
+    <div class="coach-modal__sub">Lo que escribas aparece en grande en la pantalla por 5 segundos</div>
+    <textarea id="coachInput" placeholder="ej. faltan 12 ventas para el récord, no aflojen..." maxlength="120"></textarea>
+    <div class="coach-modal__counter"><span id="coachCounter">0</span>/120</div>
+    <div class="coach-modal__actions">
+      <button type="button" class="btn-secondary" id="coachCancel">Cancelar</button>
+      <button type="button" class="btn-primary" id="coachSend">Transmitir 📡</button>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay BROADCAST del coach (cuando manda mensaje) -->
+<div class="coach-broadcast" id="coachBroadcast">
+  <div class="coach-broadcast__inner">
+    <div class="coach-broadcast__label">📣 EL COACH DICE</div>
+    <div class="coach-broadcast__text" id="coachBroadcastText"></div>
+  </div>
+</div>
+
 <!-- Pop-up motivacional gigante - 1s al momento de cada venta -->
 <div class="hype-pop" id="hypePop"><span id="hypePopText">¡VENTA!</span></div>
 
@@ -1828,7 +2170,7 @@ input, select { font-family: inherit; }
    - Comisión editable desde el front (gerente)
    - Paleta synthwave (cyan + magenta + dorado)
    ============================================================== */
-const STORAGE_KEY = 'stratton.state.v9';
+const STORAGE_KEY = 'stratton.state.v10';
 const META_DEL_DIA = 200000;
 const VENTAS_AYER = 162000;
 
@@ -1877,21 +2219,21 @@ const FRASES_MOTIVACIONALES = [
    Cada consultora es una barra independiente con su logo y color.
 */
 const VENDEDORES_INICIAL = [
-  { id: 1,  nombre: 'Sinergia Agrícola',  avatar: 'SI', imgs: ['img/sinergia.png'],       color: '#84FF00', colorDim: '#5FCC00' },
-  { id: 2,  nombre: 'Bionova',            avatar: 'BN', imgs: ['img/bionova.png'],        color: '#00FF9D', colorDim: '#00CC7E' },
-  { id: 3,  nombre: 'AgroTec',            avatar: 'AG', imgs: ['img/agrotec.png'],        color: '#FFD200', colorDim: '#CC9F00' },
-  { id: 4,  nombre: 'Bioterra',           avatar: 'BT', imgs: ['img/bioterra.png'],       color: '#00D4B5', colorDim: '#00A88F' },
-  { id: 5,  nombre: 'Zoorigen',           avatar: 'ZO', imgs: ['img/zoorigen.png'],       color: '#00B8D9', colorDim: '#0088A8' },
-  { id: 6,  nombre: 'IMDIIL',             avatar: 'ID', imgs: ['img/imdiil.png'],         color: '#4DA8FF', colorDim: '#2D7FCC' },
-  { id: 7,  nombre: 'GlobalVet',          avatar: 'GV', imgs: ['img/globalvet.png'],      color: '#2D7FFF', colorDim: '#1A5FCC' },
-  { id: 8,  nombre: 'Dermalysse',         avatar: 'DM', imgs: ['img/dermalysse.png'],     color: '#FF5E8E', colorDim: '#CC4671' },
-  { id: 9,  nombre: 'Synova',             avatar: 'SY', imgs: ['img/synova.png'],         color: '#FF7A00', colorDim: '#CC5F00' },
-  { id: 10, nombre: 'Visión Pecuaria',    avatar: 'VP', imgs: ['img/visionpecuaria.png'], color: '#FF4500', colorDim: '#CC3700' },
-  { id: 11, nombre: 'Ing. Avícola',       avatar: 'IA', imgs: ['img/avicola.png'],        color: '#FF2DD2', colorDim: '#B7228F' },
-  { id: 12, nombre: 'ICADEM',             avatar: 'IC', imgs: ['img/icadem.png'],         color: '#B14BFF', colorDim: '#8235CC' },
-  { id: 13, nombre: 'IMDAC',              avatar: 'DC', imgs: ['img/imdac.png'],          color: '#9333FF', colorDim: '#6B25BF' },
-  { id: 14, nombre: 'Fisiotec',           avatar: 'FT', imgs: ['img/fisiotec.png'],       color: '#00E5FF', colorDim: '#00A5C4' },
-  { id: 15, nombre: 'Odonteck',           avatar: 'OT', imgs: ['img/odonteck.png'],       color: '#4DEBFF', colorDim: '#2DB3CC' },
+  { id: 1,  nombre: 'Sinergia Agrícola',  avatar: 'SI', imgs: ['img/sinergia.png'],       color: '#84FF00', colorDim: '#5FCC00', emoji: '🌱' },
+  { id: 2,  nombre: 'Bionova',            avatar: 'BN', imgs: ['img/bionova.png'],        color: '#00FF9D', colorDim: '#00CC7E', emoji: '🧬' },
+  { id: 3,  nombre: 'AgroTec',            avatar: 'AG', imgs: ['img/agrotec.png'],        color: '#FFD200', colorDim: '#CC9F00', emoji: '🌾' },
+  { id: 4,  nombre: 'Bioterra',           avatar: 'BT', imgs: ['img/bioterra.png'],       color: '#00D4B5', colorDim: '#00A88F', emoji: '💧' },
+  { id: 5,  nombre: 'Zoorigen',           avatar: 'ZO', imgs: ['img/zoorigen.png'],       color: '#00B8D9', colorDim: '#0088A8', emoji: '🦒' },
+  { id: 6,  nombre: 'IMDIIL',             avatar: 'ID', imgs: ['img/imdiil.png'],         color: '#4DA8FF', colorDim: '#2D7FCC', emoji: '🏗️' },
+  { id: 7,  nombre: 'GlobalVet',          avatar: 'GV', imgs: ['img/globalvet.png'],      color: '#2D7FFF', colorDim: '#1A5FCC', emoji: '🌎' },
+  { id: 8,  nombre: 'Dermalysse',         avatar: 'DM', imgs: ['img/dermalysse.png'],     color: '#FF5E8E', colorDim: '#CC4671', emoji: '✨' },
+  { id: 9,  nombre: 'Synova',             avatar: 'SY', imgs: ['img/synova.png'],         color: '#FF7A00', colorDim: '#CC5F00', emoji: '🧪' },
+  { id: 10, nombre: 'Visión Pecuaria',    avatar: 'VP', imgs: ['img/visionpecuaria.png'], color: '#FF4500', colorDim: '#CC3700', emoji: '🐂' },
+  { id: 11, nombre: 'Ing. Avícola',       avatar: 'IA', imgs: ['img/avicola.png'],        color: '#FF2DD2', colorDim: '#B7228F', emoji: '🐔' },
+  { id: 12, nombre: 'ICADEM',             avatar: 'IC', imgs: ['img/icadem.png'],         color: '#B14BFF', colorDim: '#8235CC', emoji: '🎓' },
+  { id: 13, nombre: 'IMDAC',              avatar: 'DC', imgs: ['img/imdac.png'],          color: '#9333FF', colorDim: '#6B25BF', emoji: '🏢' },
+  { id: 14, nombre: 'Fisiotec',           avatar: 'FT', imgs: ['img/fisiotec.png'],       color: '#00E5FF', colorDim: '#00A5C4', emoji: '💪' },
+  { id: 15, nombre: 'Odonteck',           avatar: 'OT', imgs: ['img/odonteck.png'],       color: '#4DEBFF', colorDim: '#2DB3CC', emoji: '🦷' },
 ];
 
 /* Empezamos en cero - el día arranca limpio, todas las barras a 0 */
@@ -2186,6 +2528,12 @@ function renderFloor(highlightId = null) {
 
     col.classList.toggle('bar-col--leader', id === leaderId);
     col.querySelector('.bar-col__amount').textContent = data.count > 0 ? data.count : '—';
+
+    // ⭐ ANTICIPO MILESTONE: si está en X8 o X9 (a 1-2 ventas de un múltiplo de 10)
+    const ultimoDigito = data.count % 10;
+    const cercaMilestone = data.count >= 8 && (ultimoDigito === 8 || ultimoDigito === 9);
+    col.classList.toggle('bar-col--anticipating', cercaMilestone);
+    col.classList.toggle('bar-col--anticipating-9', cercaMilestone && ultimoDigito === 9);
 
     const bar = col.querySelector('.bar-col__bar');
     bar.style.height = pct + '%';
@@ -2553,6 +2901,89 @@ function aplauso() {
   } catch (e) {}
 }
 
+// Mini-aplauso (versión corta y suave, para modo estadio)
+function miniAplauso() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const dur = 0.7;
+    const buf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ac.sampleRate * 0.18));
+    }
+    const src = ac.createBufferSource();
+    const f = ac.createBiquadFilter();
+    const g = ac.createGain();
+    f.type = 'bandpass';
+    f.frequency.value = 2200;
+    f.Q.value = 0.8;
+    g.gain.setValueAtTime(0.08, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    src.buffer = buf;
+    src.connect(f); f.connect(g); g.connect(ac.destination);
+    src.start(t);
+  } catch (e) {}
+}
+
+// ===== MODO ESTADIO: drone bass loopeado durante hora pico (5-6 PM CDMX) =====
+let estadioOsc = null, estadioGain = null;
+function activarEstadio() {
+  if (estadioOsc || !state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    estadioOsc = ac.createOscillator();
+    estadioGain = ac.createGain();
+    const lfo  = ac.createOscillator();
+    const lfoGain = ac.createGain();
+    estadioOsc.type = 'sawtooth';
+    estadioOsc.frequency.value = 50;
+    // LFO para que el drone "respire"
+    lfo.frequency.value = 0.3;
+    lfoGain.gain.value = 6;
+    lfo.connect(lfoGain);
+    lfoGain.connect(estadioOsc.frequency);
+    const f = ac.createBiquadFilter();
+    f.type = 'lowpass';
+    f.frequency.value = 180;
+    estadioGain.gain.setValueAtTime(0, ac.currentTime);
+    estadioGain.gain.linearRampToValueAtTime(0.04, ac.currentTime + 6);
+    estadioOsc.connect(f); f.connect(estadioGain); estadioGain.connect(ac.destination);
+    estadioOsc.start(); lfo.start();
+  } catch (e) {}
+}
+function desactivarEstadio() {
+  if (!estadioOsc) return;
+  try {
+    const ac = getAudio();
+    estadioGain.gain.linearRampToValueAtTime(0, ac.currentTime + 2);
+    setTimeout(() => {
+      try { estadioOsc.stop(); } catch (e) {}
+      estadioOsc = null;
+      estadioGain = null;
+    }, 2200);
+  } catch (e) {}
+}
+
+let estadioActivo = false;
+function checkModoEstadio() {
+  // Activo entre 17:00 y 18:00 CDMX (última hora antes del cierre)
+  const cdmxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
+  const h = cdmxNow.getHours();
+  const debeEstar = (h === 17);
+  if (debeEstar && !estadioActivo) {
+    estadioActivo = true;
+    activarEstadio();
+    document.body.classList.add('modo-estadio');
+    mostrarToast('🏟️ ÚLTIMA HORA · MODO ESTADIO', 'el equipo está sintonizado, dale recio');
+  } else if (!debeEstar && estadioActivo) {
+    estadioActivo = false;
+    desactivarEstadio();
+    document.body.classList.remove('modo-estadio');
+  }
+}
+
 /* ============ Confetti ============ */
 const canvas = document.getElementById('confetti');
 const ctx = canvas.getContext('2d');
@@ -2626,9 +3057,13 @@ function registrarVenta(vendedorId) {
   const ventasAhora = ventasAntes + 1;
   mostrarToast(frase, `${vd.nombre} · venta #${ventasAhora}`);
   chaChing();
+  if (estadioActivo) setTimeout(miniAplauso, 200);
   lanzarConfetti(false, vd.color);
-  dispararHypePop();           // ⭐ Pop-up motivacional gigante
-  actualizarHotStreaks();      // ⭐ Re-evaluar racha caliente
+  lanzarEmojiFloaters(vd.emoji, vd.color);  // Partículas temáticas
+  dispararHypePop();           // Pop-up motivacional gigante
+  actualizarHotStreaks();      // Re-evaluar racha caliente
+  actualizarAnticipoMilestone(); // Chispas si va en 8 o 9
+  actualizarContadorEquipo(true); // Contador equipo (con bump)
 
   // ===== MILESTONE: la consultora cruzó un múltiplo de 10 ventas =====
   if (ventasAhora > 0 && ventasAhora % 10 === 0) {
@@ -2769,6 +3204,56 @@ function dispararHypePop() {
   el.classList.add('is-firing');
 }
 
+/* ============ SPOTLIGHT TV — cada 90s ============ */
+let spotlightTimer = null;
+function disparoSpotlight() {
+  // Solo si hay al menos 1 consultora con ventas
+  const conVentas = state.vendedores.filter(vd =>
+    state.ventas.some(v => v.vendedorId === vd.id)
+  );
+  if (conVentas.length === 0) return;
+
+  const elegida = conVentas[Math.floor(Math.random() * conVentas.length)];
+  const chart = document.getElementById('floorChart');
+  const banner = document.getElementById('spotlightBanner');
+  const txt = document.getElementById('spotlightText');
+
+  chart.classList.add('is-spotlighting');
+  const col = chart.querySelector(`.bar-col[data-id="${elegida.id}"]`);
+  if (col) col.classList.add('is-spotlight');
+  txt.textContent = `EN VIVO · ${elegida.nombre}`;
+  banner.classList.add('is-active');
+
+  // Quitar después de 4 segundos
+  setTimeout(() => {
+    chart.classList.remove('is-spotlighting');
+    if (col) col.classList.remove('is-spotlight');
+    banner.classList.remove('is-active');
+  }, 4000);
+}
+
+/* ============ EMOJI FLOATERS - partículas temáticas ============ */
+function lanzarEmojiFloaters(emoji, color) {
+  if (!emoji) return;
+  const cantidad = 6;
+  for (let i = 0; i < cantidad; i++) {
+    const el = document.createElement('div');
+    el.className = 'emoji-floater';
+    el.textContent = emoji;
+    const xRandom = 30 + Math.random() * 40; // 30-70% horizontal
+    const drift   = (Math.random() - 0.5) * 200;
+    const dur     = 1800 + Math.random() * 800;
+    const size    = 28 + Math.random() * 18;
+    el.style.left = xRandom + '%';
+    el.style.bottom = '20%';
+    el.style.fontSize = size + 'px';
+    el.style.setProperty('--drift', drift + 'px');
+    el.style.animationDuration = dur + 'ms';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), dur + 100);
+  }
+}
+
 /* ============ HOT STREAK detector — 3 ventas en <5 min ============ */
 function consultorasEnRacha() {
   const limite = Date.now() - 5 * 60 * 1000; // últimos 5 minutos
@@ -2776,6 +3261,56 @@ function consultorasEnRacha() {
   const contador = {};
   recientes.forEach(v => { contador[v.vendedorId] = (contador[v.vendedorId] || 0) + 1; });
   return Object.keys(contador).filter(id => contador[id] >= 3).map(Number);
+}
+
+function actualizarContadorEquipo(esVentaNueva) {
+  const el = document.getElementById('teamCounterValue');
+  if (!el) return;
+  const total = state.ventas.length;
+  el.textContent = total;
+  if (esVentaNueva) {
+    el.classList.remove('is-bumping');
+    void el.offsetWidth;
+    el.classList.add('is-bumping');
+    // Milestones de equipo: cada 25 ventas (25, 50, 75, 100…)
+    if (total > 0 && total % 25 === 0) {
+      setTimeout(() => onMilestoneEquipo(total), 400);
+    }
+  }
+}
+
+function onMilestoneEquipo(total) {
+  mostrarToast(`🚀 ¡${total} VENTAS DEL EQUIPO!`, 'todas las consultoras sumando');
+  impactBoom();
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => lanzarConfetti(true, '#00E5FF'), i * 200);
+  }
+  if (total % 100 === 0) {
+    setTimeout(fanfarria, 250);
+    setTimeout(aplauso, 600);
+  }
+}
+
+function actualizarAnticipoMilestone() {
+  document.querySelectorAll('.bar-col').forEach(col => {
+    const id = parseInt(col.dataset.id, 10);
+    const count = state.ventas.filter(v => v.vendedorId === id).length;
+    const resto = count % 10;
+    const casi = count > 0 && (resto === 8 || resto === 9);
+    col.classList.toggle('bar-col--almost', casi);
+    let label = col.querySelector('.bar-col__almost-label');
+    if (casi) {
+      const faltan = 10 - resto;
+      if (!label) {
+        label = document.createElement('div');
+        label.className = 'bar-col__almost-label';
+        col.appendChild(label);
+      }
+      label.textContent = `🎯 ${faltan} PARA EL ${count + faltan}`;
+    } else if (label) {
+      label.remove();
+    }
+  });
 }
 
 function actualizarHotStreaks() {
@@ -2807,17 +3342,44 @@ function rotarFraseMotivacional() {
 }
 
 /* ============ BONO DEL DÍA — auto-cambio cada 24h a las 10:00 AM CDMX ============
-   Distribución: ~5 veces al mes premium ($25-$30), el resto normal ($12-$24).
-   5/30 días ≈ 16.7% probabilidad de premium.
+   Reglas:
+   - Distribución base: ~17% premium ($25-30), ~83% normal ($12-24)
+   - PREMIUM nunca cae en lunes (los lunes el equipo se prende solo, premium se reserva para mediados/finales de semana)
+   - PREMIUM tiene cap de 5 por semana ISO (lunes-domingo) - si ya hubo 5, no sale más esa semana
 */
+function getISOWeekKey(date) {
+  // Devuelve algo tipo "2026-W18" para agrupar premiums por semana
+  const d = new Date(date.getTime());
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+  const yearStart = new Date(d.getFullYear(), 0, 1);
+  const weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+}
+
 function generarBonoDelDia() {
-  const r = Math.random();
-  if (r < 0.167) {
-    // PREMIUM: $25 a $30 (raro, ~5 veces al mes)
-    return 25 + Math.floor(Math.random() * 6);  // 25,26,27,28,29,30
+  const cdmxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
+  const esLunes = cdmxNow.getDay() === 1;
+  const semanaActual = getISOWeekKey(cdmxNow);
+
+  // Inicializar tracking de premiums semanales
+  if (!state.premiumsSemana) state.premiumsSemana = {};
+  // Limpiar semanas viejas (deja solo la actual)
+  Object.keys(state.premiumsSemana).forEach(k => {
+    if (k !== semanaActual) delete state.premiumsSemana[k];
+  });
+  const premiumsEstaSemana = state.premiumsSemana[semanaActual] || 0;
+
+  // Decidir si TOCA premium (probabilidad base 16.7%)
+  let permitePremium = !esLunes && premiumsEstaSemana < 5;
+  const tocaPremium = permitePremium && Math.random() < 0.167;
+
+  if (tocaPremium) {
+    state.premiumsSemana[semanaActual] = premiumsEstaSemana + 1;
+    return 25 + Math.floor(Math.random() * 6);  // 25-30
   }
   // NORMAL: $12 a $24
-  return 12 + Math.floor(Math.random() * 13);    // 12..24
+  return 12 + Math.floor(Math.random() * 13);
 }
 
 let revealEnProgreso = false;
@@ -2990,14 +3552,63 @@ btnMute.addEventListener('click', () => {
   refreshMuteUI();
 });
 
-// Atajos: M mute, C comisión
+// Atajos: M mute, C comisión, K coach, H historial
 document.addEventListener('keydown', (e) => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
   if (e.key === 'm' || e.key === 'M') btnMute.click();
   if (e.key === 'c' || e.key === 'C') abrirModalComision();
+  if (e.key === 'k' || e.key === 'K') abrirCoach();
+  if (e.key === 'h' || e.key === 'H') abrirHistorial();
 });
 
-/* ============ HISTORIAL panel ============ */
+/* ============ COACH - mensaje al equipo ============ */
+const coachModal     = document.getElementById('coachModal');
+const coachBroadcast = document.getElementById('coachBroadcast');
+const coachInput     = document.getElementById('coachInput');
+const coachCounter   = document.getElementById('coachCounter');
+
+function abrirCoach() {
+  coachInput.value = '';
+  coachCounter.textContent = '0';
+  coachModal.classList.add('is-open');
+  setTimeout(() => coachInput.focus(), 100);
+}
+function cerrarCoach() {
+  coachModal.classList.remove('is-open');
+}
+function transmitirMensaje() {
+  const txt = coachInput.value.trim();
+  if (!txt) return;
+  cerrarCoach();
+  document.getElementById('coachBroadcastText').textContent = txt;
+  coachBroadcast.classList.remove('is-active');
+  void coachBroadcast.offsetWidth;
+  coachBroadcast.classList.add('is-active');
+  // Sonido de "anuncio" - bass corto + cha-ching
+  impactBoom();
+  setTimeout(chaChing, 250);
+  // Auto-cerrar el broadcast después de 6 segundos
+  setTimeout(() => {
+    coachBroadcast.classList.remove('is-active');
+  }, 6000);
+}
+document.getElementById('btnCoach').addEventListener('click', abrirCoach);
+document.getElementById('coachClose').addEventListener('click', cerrarCoach);
+document.getElementById('coachCancel').addEventListener('click', cerrarCoach);
+document.getElementById('coachSend').addEventListener('click', transmitirMensaje);
+coachInput.addEventListener('input', () => {
+  coachCounter.textContent = coachInput.value.length;
+});
+coachInput.addEventListener('keydown', (e) => {
+  // Ctrl/Cmd + Enter manda directo
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    transmitirMensaje();
+  }
+});
+coachModal.addEventListener('click', (e) => {
+  if (e.target === coachModal) cerrarCoach();
+});
 function renderHistorial() {
   const list   = document.getElementById('historyList');
   const sub    = document.getElementById('historySub');
@@ -3068,11 +3679,27 @@ document.addEventListener('keydown', (e) => {
 checkResetDiario();             // ⭐ Si cambió el día, archivar y resetear
 renderAll(false);
 actualizarHotStreaks();
+actualizarAnticipoMilestone();
+actualizarContadorEquipo(false);
 renderHistorial();
 
-// Frase motivacional inicial + rotación cada 30 minutos
+// Frase motivacional inicial + rotación: 30 min normal, 5 min en modo estadio
 rotarFraseMotivacional();
-setInterval(rotarFraseMotivacional, 30 * 60 * 1000);
+let ultimaRotacion = Date.now();
+setInterval(() => {
+  const intervaloMs = estadioActivo ? 5 * 60 * 1000 : 30 * 60 * 1000;
+  if (Date.now() - ultimaRotacion >= intervaloMs) {
+    rotarFraseMotivacional();
+    ultimaRotacion = Date.now();
+  }
+}, 60 * 1000);
+
+// Modo estadio: chequear cada 30s
+setTimeout(checkModoEstadio, 2000);
+setInterval(checkModoEstadio, 30 * 1000);
+
+// Spotlight TV: cada 90 segundos
+setInterval(disparoSpotlight, 90 * 1000);
 
 // Hot streaks: re-evaluar cada 30s para que se enfríen solas si pasan 5 min sin venta
 setInterval(actualizarHotStreaks, 30 * 1000);
@@ -3142,6 +3769,36 @@ window.stratton = {
     const b = 25 + Math.floor(Math.random() * 6);
     dispararRevealBono(b);
     return `Reveal PREMIUM con bono $${b}`;
+  },
+  // Probar el spotlight TV
+  spotlight() {
+    disparoSpotlight();
+    return 'Disparando spotlight TV';
+  },
+  // Probar broadcast del coach con mensaje custom
+  coach(mensaje) {
+    document.getElementById('coachBroadcastText').textContent = mensaje || '¡Vamos equipo, faltan pocas para el récord!';
+    coachBroadcast.classList.remove('is-active');
+    void coachBroadcast.offsetWidth;
+    coachBroadcast.classList.add('is-active');
+    impactBoom();
+    setTimeout(chaChing, 250);
+    setTimeout(() => coachBroadcast.classList.remove('is-active'), 6000);
+    return 'Broadcasting…';
+  },
+  // Activar modo estadio manualmente (para probar sin esperar a las 5 PM)
+  estadio(activar = true) {
+    if (activar) {
+      activarEstadio();
+      document.body.classList.add('modo-estadio');
+      estadioActivo = true;
+      return 'Modo estadio ACTIVO';
+    } else {
+      desactivarEstadio();
+      document.body.classList.remove('modo-estadio');
+      estadioActivo = false;
+      return 'Modo estadio OFF';
+    }
   },
   reset() {
     localStorage.removeItem(STORAGE_KEY);
