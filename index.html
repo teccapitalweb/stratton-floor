@@ -139,29 +139,37 @@ input, select { font-family: inherit; }
 .icon-btn:active { transform: scale(0.96); }
 .icon-btn.muted { color: var(--color-red); }
 
-/* === Chip de comisión editable === */
+/* === Chip de comisión editable - MUY LLAMATIVO === */
 .commission-chip {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 8px 14px; border-radius: var(--radius-sm);
-  background: var(--color-surface-2);
-  border: 1px solid var(--color-magenta);
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 9px 16px; border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, rgba(255,45,210,0.12), rgba(0,229,255,0.12));
+  border: 1.5px solid var(--color-magenta);
   color: var(--color-text);
   font-family: var(--font-mono); font-size: 13px;
   letter-spacing: 0.05em;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  position: relative;
+  animation: chip-pulse 2.4s ease-in-out infinite;
+}
+@keyframes chip-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,45,210,0.55), 0 0 18px rgba(255,45,210,0.25); }
+  50%      { box-shadow: 0 0 0 5px rgba(255,45,210,0.0),  0 0 28px rgba(255,45,210,0.45); }
 }
 .commission-chip:hover {
-  box-shadow: var(--shadow-glow-magenta);
   transform: translateY(-1px);
+  filter: brightness(1.12);
 }
 .commission-chip__label {
-  font-size: 10px; color: var(--color-muted);
+  font-size: 10px; color: var(--color-text-soft);
   letter-spacing: 0.2em; text-transform: uppercase;
+  opacity: 0.85;
 }
 .commission-chip__value {
-  font-family: var(--font-display); font-size: 22px;
+  font-family: var(--font-display); font-size: 28px;
   color: var(--color-magenta); letter-spacing: 0.04em;
   line-height: 1;
+  text-shadow: 0 0 12px rgba(255,45,210,0.5);
 }
 .commission-chip__gear {
   width: 16px; height: 16px; color: var(--color-muted);
@@ -171,6 +179,21 @@ input, select { font-family: inherit; }
   color: var(--color-magenta);
   transform: rotate(45deg);
 }
+/* Variante PREMIUM - cuando el bono cae en $25-$30 (raro, ~5 veces al mes) */
+.commission-chip--premium {
+  border-color: var(--color-gold);
+  background: linear-gradient(135deg, rgba(255,215,0,0.18), rgba(255,184,0,0.12));
+  animation: chip-pulse-premium 1.6s ease-in-out infinite;
+}
+@keyframes chip-pulse-premium {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,215,0,0.6),   0 0 24px rgba(255,215,0,0.3);  }
+  50%      { box-shadow: 0 0 0 7px rgba(255,215,0,0.0), 0 0 36px rgba(255,215,0,0.55); }
+}
+.commission-chip--premium .commission-chip__value {
+  color: var(--color-gold);
+  text-shadow: 0 0 14px rgba(255,215,0,0.6);
+}
+.commission-chip--premium .commission-chip__label::after { content: ' 🌟'; }
 .btn-primary {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 11px 18px; border-radius: var(--radius-sm);
@@ -475,10 +498,82 @@ input, select { font-family: inherit; }
   100% { opacity: 0; }
 }
 
+/* =========================================================
+   REVEAL DEL BONO DEL DÍA — 10 segundos a las 10:00 AM
+   ========================================================= */
+.commission-reveal {
+  position: fixed; inset: 0;
+  z-index: 1000;
+  display: none;
+  align-items: center; justify-content: center;
+  background: rgba(10,11,20,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.commission-reveal.is-active {
+  display: flex;
+  animation: reveal-fade 10s ease forwards;
+}
+@keyframes reveal-fade {
+  0%   { opacity: 0; }
+  3%   { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+.commission-reveal__inner {
+  text-align: center;
+  animation: reveal-scale 1.6s cubic-bezier(.2,.8,.25,1.05);
+}
+@keyframes reveal-scale {
+  0%   { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.commission-reveal__label {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  letter-spacing: 0.4em;
+  color: var(--color-cyan);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  animation: label-blink 1.6s ease-in-out infinite;
+}
+@keyframes label-blink {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+.commission-reveal__amount {
+  font-family: var(--font-display);
+  font-size: clamp(140px, 32vw, 360px);
+  color: var(--color-cyan);
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+  text-shadow: 0 0 100px rgba(0,229,255,0.6), 0 0 40px rgba(0,229,255,0.4);
+  font-variant-numeric: tabular-nums;
+}
+.commission-reveal__sub {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--color-text-soft);
+  letter-spacing: 0.25em;
+  margin-top: 32px;
+  text-transform: uppercase;
+}
+/* Variante PREMIUM ($25-$30) - dorado y más dramático */
+.commission-reveal--premium .commission-reveal__amount {
+  color: var(--color-gold);
+  text-shadow: 0 0 120px rgba(255,215,0,0.8), 0 0 50px rgba(255,215,0,0.5);
+}
+.commission-reveal--premium .commission-reveal__label {
+  color: var(--color-gold);
+}
+.commission-reveal--premium .commission-reveal__sub {
+  color: var(--color-gold);
+  font-weight: 700;
+}
+
 /* =====================================================
-   AVATARES CON FOTO (logos de consultoras)
-   - .avatar-photo--single  = un solo logo
-   - .avatar-photo--split   = círculo dividido en 2 mitades
+   AVATARES CON FOTO (logos de consultoras) - MEJORADOS
    ===================================================== */
 .avatar-photo {
   width: 100%; height: 100%;
@@ -486,12 +581,15 @@ input, select { font-family: inherit; }
   background: #fff;
   position: relative;
   overflow: hidden;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+  box-shadow:
+    0 0 0 2px var(--bar-color, transparent),
+    0 4px 14px rgba(0,0,0,0.5),
+    inset 0 0 0 1px rgba(0,0,0,0.05);
 }
 .avatar-photo--single img {
   width: 100%; height: 100%;
   object-fit: contain;
-  padding: 12%;
+  padding: 8%;
   display: block;
 }
 .avatar-photo--split { display: flex; }
@@ -506,6 +604,7 @@ input, select { font-family: inherit; }
 .avatar-photo--split .avatar-photo__half img {
   width: 95%; max-height: 80%;
   object-fit: contain; display: block;
+  padding: 4%;
 }
 /* Cuando el avatar tiene foto, el div padre NO debe pintar color de fondo */
 .bar-col__avatar.has-photo,
@@ -513,6 +612,8 @@ input, select { font-family: inherit; }
   background: transparent !important;
   padding: 0;
 }
+/* Avatares un poco más grandes en el Floor para que las fotos se vean */
+.bar-col__avatar { width: 46px; height: 46px; }
 
 /* KPIs */
 .kpis {
@@ -955,11 +1056,11 @@ input, select { font-family: inherit; }
   </div>
 
   <div class="actions">
-    <!-- Chip de comisión: dormido por ahora (sin monto no hay cálculo en pesos) -->
-    <button class="commission-chip" id="btnComision" title="Editar % de comisión por venta" style="display: none;">
+    <!-- Bono por venta - editable manualmente, cambia automático cada 24h a las 10AM -->
+    <button class="commission-chip" id="btnComision" title="Editar bono por venta — cambia automáticamente cada día a las 10AM">
       <div>
-        <div class="commission-chip__label">Comisión</div>
-        <div class="commission-chip__value" id="commissionValue">10%</div>
+        <div class="commission-chip__label">Bono · venta</div>
+        <div class="commission-chip__value" id="commissionValue">$12</div>
       </div>
       <svg class="commission-chip__gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"></circle>
@@ -1059,22 +1160,22 @@ input, select { font-family: inherit; }
         <line x1="18" y1="6" x2="6" y2="18"></line>
       </svg>
     </button>
-    <div class="modal__title">COMISIÓN POR VENTA</div>
-    <div class="modal__sub">Cambia el % aquí y todo el dashboard se recalcula al toque.</div>
+    <div class="modal__title">BONO POR VENTA</div>
+    <div class="modal__sub">Cambia el monto en pesos. Se actualiza automático cada día a las 10:00 AM CDMX (rango $12-$30 MXN).</div>
     <form id="formComision">
       <div class="field field--commission">
-        <label for="inpComision">Porcentaje (%)</label>
-        <input id="inpComision" type="number" min="0" max="100" step="0.5" required>
+        <label for="inpComision">Cantidad (MXN)</label>
+        <input id="inpComision" type="number" min="1" max="500" step="1" required>
       </div>
       <label class="field" style="margin-bottom: 6px;">
         <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; color: var(--color-muted); text-transform: uppercase;">Atajos rápidos</span>
       </label>
       <div class="commission-presets">
-        <button type="button" data-preset="5">5%</button>
-        <button type="button" data-preset="8">8%</button>
-        <button type="button" data-preset="10">10%</button>
-        <button type="button" data-preset="12">12%</button>
-        <button type="button" data-preset="15">15%</button>
+        <button type="button" data-preset="12">$12</button>
+        <button type="button" data-preset="15">$15</button>
+        <button type="button" data-preset="20">$20</button>
+        <button type="button" data-preset="25">$25</button>
+        <button type="button" data-preset="30">$30</button>
       </div>
       <div class="modal__actions">
         <button type="button" class="btn-secondary" id="btnComisionCancel">Cancelar</button>
@@ -1088,6 +1189,15 @@ input, select { font-family: inherit; }
 <div class="event-overlay event-overlay--hour" id="overlayHour"></div>
 <div class="event-overlay event-overlay--cierre" id="overlayCierre"></div>
 <div class="event-overlay event-overlay--milestone" id="overlayMilestone"></div>
+
+<!-- Reveal del bono diario - aparece a las 10:00 AM CDMX cada día -->
+<div class="commission-reveal" id="commissionReveal">
+  <div class="commission-reveal__inner">
+    <div class="commission-reveal__label" id="commissionRevealLabel">▼ BONO DEL DÍA ▼</div>
+    <div class="commission-reveal__amount" id="commissionRevealAmount">$0</div>
+    <div class="commission-reveal__sub" id="commissionRevealSub">por cada venta cerrada</div>
+  </div>
+</div>
 
 <canvas id="confetti"></canvas>
 
@@ -1107,7 +1217,7 @@ input, select { font-family: inherit; }
    - Comisión editable desde el front (gerente)
    - Paleta synthwave (cyan + magenta + dorado)
    ============================================================== */
-const STORAGE_KEY = 'stratton.state.v6';
+const STORAGE_KEY = 'stratton.state.v7';
 const META_DEL_DIA = 200000;
 const VENTAS_AYER = 162000;
 
@@ -1201,7 +1311,8 @@ function cargarEstado() {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed.vendedores) && parsed.vendedores.length === VENDEDORES_INICIAL.length) {
-        if (typeof parsed.comision !== 'number') parsed.comision = 10;
+        if (typeof parsed.comision !== 'number') parsed.comision = 12;
+        if (!parsed.ultimoCambioBono) parsed.ultimoCambioBono = null;
         return parsed;
       }
     }
@@ -1210,7 +1321,8 @@ function cargarEstado() {
     vendedores: VENDEDORES_INICIAL,
     ventas: VENTAS_INICIAL,
     sonidoActivo: true,
-    comision: 10
+    comision: 12,             // Bono por venta en MXN (mínimo del rango $12-$30)
+    ultimoCambioBono: null    // ISO datetime del último auto-cambio a las 10AM
   };
 }
 function guardarEstado() {
@@ -1434,7 +1546,7 @@ function renderLeaderboard(highlightId = null) {
     li.dataset.id = vd.id;
     const racha = calcularRacha(vd.id);
     const avatarHtml = avatarHasPhoto(vd)
-      ? `<div class="row__avatar has-photo">${htmlAvatar(vd)}</div>`
+      ? `<div class="row__avatar has-photo" style="--bar-color: ${vd.color};">${htmlAvatar(vd)}</div>`
       : `<div class="row__avatar" style="background: linear-gradient(135deg, ${vd.color}, ${vd.colorDim});">${vd.avatar}</div>`;
     li.innerHTML = `
       <div class="row__rank">${String(i + 1).padStart(2, '0')}</div>
@@ -1493,7 +1605,11 @@ function renderSelectVendedores() {
 }
 
 function renderComisionUI() {
-  document.getElementById('commissionValue').textContent = state.comision + '%';
+  const valEl = document.getElementById('commissionValue');
+  if (!valEl) return;
+  valEl.textContent = '$' + state.comision;
+  const chip = document.getElementById('btnComision');
+  if (chip) chip.classList.toggle('commission-chip--premium', state.comision >= 25);
 }
 
 function renderAll(animar = true, highlightId = null) {
@@ -1781,6 +1897,118 @@ function rotarFraseMotivacional() {
   }, 350);
 }
 
+/* ============ BONO DEL DÍA — auto-cambio cada 24h a las 10:00 AM CDMX ============
+   Distribución: ~5 veces al mes premium ($25-$30), el resto normal ($12-$24).
+   5/30 días ≈ 16.7% probabilidad de premium.
+*/
+function generarBonoDelDia() {
+  const r = Math.random();
+  if (r < 0.167) {
+    // PREMIUM: $25 a $30 (raro, ~5 veces al mes)
+    return 25 + Math.floor(Math.random() * 6);  // 25,26,27,28,29,30
+  }
+  // NORMAL: $12 a $24
+  return 12 + Math.floor(Math.random() * 13);    // 12..24
+}
+
+let revealEnProgreso = false;
+function dispararRevealBono(nuevoBono) {
+  if (revealEnProgreso) return;
+  revealEnProgreso = true;
+
+  const reveal    = document.getElementById('commissionReveal');
+  const elAmount  = document.getElementById('commissionRevealAmount');
+  const elSub     = document.getElementById('commissionRevealSub');
+  const esPremium = nuevoBono >= 25;
+
+  reveal.classList.toggle('commission-reveal--premium', esPremium);
+  elSub.textContent = esPremium
+    ? '🌟 BONO PREMIUM · POR CADA VENTA CERRADA 🌟'
+    : 'POR CADA VENTA CERRADA';
+
+  // Mostrar overlay
+  reveal.classList.remove('is-active');
+  void reveal.offsetWidth;
+  reveal.classList.add('is-active');
+
+  // ===== SLOT MACHINE (efecto ruleta) =====
+  // 6.5s de números rápidos -> 1s slowdown -> resultado final
+  const t0 = performance.now();
+  const dur_ciclo = 6500;
+  const dur_total = 7500;
+  function ciclo(now) {
+    const elapsed = now - t0;
+    if (elapsed < dur_ciclo) {
+      const r = 12 + Math.floor(Math.random() * 19);
+      elAmount.textContent = '$' + r;
+      requestAnimationFrame(ciclo);
+    } else if (elapsed < dur_total) {
+      if (Math.random() > 0.6) {
+        const r = 12 + Math.floor(Math.random() * 19);
+        elAmount.textContent = '$' + r;
+      }
+      setTimeout(() => requestAnimationFrame(ciclo), 100);
+    } else {
+      elAmount.textContent = '$' + nuevoBono;
+    }
+  }
+  requestAnimationFrame(ciclo);
+
+  // Sonido en cascada
+  chaChing();
+  setTimeout(chaChing, 250);
+  setTimeout(chaChing, 500);
+  if (esPremium) {
+    setTimeout(chaChing, 6800);
+    setTimeout(chaChing, 7100);
+    setTimeout(chaChing, 7400);
+  } else {
+    setTimeout(chaChing, 7100);
+  }
+
+  // Confetti al revelar el resultado final
+  setTimeout(() => {
+    const colorBono = esPremium ? '#FFD700' : '#00E5FF';
+    const oleadas = esPremium ? 6 : 3;
+    for (let i = 0; i < oleadas; i++) {
+      setTimeout(() => lanzarConfetti(true, colorBono), i * 280);
+    }
+  }, 7000);
+
+  // Cerrar después de 10s y refrescar UI
+  setTimeout(() => {
+    reveal.classList.remove('is-active');
+    revealEnProgreso = false;
+    renderComisionUI();
+  }, 10000);
+}
+
+function disparoCambioBono() {
+  const nuevoBono = generarBonoDelDia();
+  state.comision = nuevoBono;
+  state.ultimoCambioBono = new Date().toISOString();
+  guardarEstado();
+  dispararRevealBono(nuevoBono);
+}
+
+function checkBonoDiario() {
+  // Hora actual en CDMX
+  const cdmxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
+  const today10am = new Date(cdmxNow);
+  today10am.setHours(10, 0, 0, 0);
+
+  // Último cambio convertido a "hora CDMX" para comparar bien
+  const ultimo = state.ultimoCambioBono ? new Date(state.ultimoCambioBono) : null;
+  const ultimoCdmx = ultimo
+    ? new Date(ultimo.toLocaleString('en-US', { timeZone: 'America/Mexico_City' }))
+    : null;
+
+  // Si ya pasaron las 10 AM hoy y el último cambio fue ANTES de las 10 AM de hoy
+  if (cdmxNow >= today10am && (!ultimoCdmx || ultimoCdmx < today10am)) {
+    disparoCambioBono();
+  }
+}
+
 /* ============ Modal nueva venta ============ */
 const modalVenta = document.getElementById('modalBackdrop');
 function abrirModalVenta() {
@@ -1825,12 +2053,12 @@ document.querySelectorAll('.commission-presets button').forEach(btn => {
 });
 document.getElementById('formComision').addEventListener('submit', (e) => {
   e.preventDefault();
-  const v = parseFloat(document.getElementById('inpComision').value);
-  if (isNaN(v) || v < 0 || v > 100) return;
+  const v = parseInt(document.getElementById('inpComision').value, 10);
+  if (isNaN(v) || v < 1 || v > 500) return;
   state.comision = v;
   guardarEstado();
   renderAll(false);
-  mostrarToast(`COMISIÓN ACTUALIZADA · ${v}%`, 'Todos los cálculos del equipo se recalcularon.');
+  mostrarToast(`BONO ACTUALIZADO · $${v} MXN`, 'Cada venta cerrada genera este bono fijo.');
   cerrarModalComision();
 });
 
@@ -1870,6 +2098,11 @@ renderAll(false);
 rotarFraseMotivacional();
 setInterval(rotarFraseMotivacional, 30 * 60 * 1000);
 
+// Bono diario: chequear al cargar + cada minuto
+// Si nunca se ha cambiado y ya pasaron las 10 AM CDMX, dispara el primer reveal
+setTimeout(checkBonoDiario, 1500);  // arranca después del render para que el reveal no choque visualmente
+setInterval(checkBonoDiario, 60 * 1000);
+
 /* ============ Demo (consola) ============ */
 let demoTimer = null;
 window.stratton = {
@@ -1879,12 +2112,22 @@ window.stratton = {
     console.log('Demo ON — venta cada 4-9 segundos');
     function tick() {
       const v = state.vendedores[Math.floor(Math.random() * state.vendedores.length)];
-      const c = ['Cliente nuevo', 'Empresa referida', 'Cooperativa Rural', 'Cliente VIP', 'Granja referida', 'Consultorio nuevo'][Math.floor(Math.random() * 6)];
-      const m = Math.floor(Math.random() * 20000) + 2500;
-      registrarVenta(v.id, c, m);
+      registrarVenta(v.id);
       demoTimer = setTimeout(tick, 4000 + Math.random() * 5000);
     }
     tick();
+  },
+  // Disparar el reveal del bono SIN esperar a las 10 AM (para ensayar)
+  revealBono(bono) {
+    const b = bono || generarBonoDelDia();
+    dispararRevealBono(b);
+    return `Disparando reveal con bono $${b}${b >= 25 ? ' 🌟 PREMIUM' : ''}`;
+  },
+  // Disparar reveal forzando que sea premium
+  revealPremium() {
+    const b = 25 + Math.floor(Math.random() * 6);
+    dispararRevealBono(b);
+    return `Reveal PREMIUM con bono $${b}`;
   },
   reset() {
     localStorage.removeItem(STORAGE_KEY);
