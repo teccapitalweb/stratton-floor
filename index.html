@@ -15,11 +15,15 @@
 
   // ↓↓↓ MISMA CONFIG que en panel.html ↓↓↓
   const firebaseConfig = {
-    apiKey: "",
-    authDomain: "",
-    databaseURL: "",
-    projectId: "",
+    apiKey: "AIzaSyDNe7uSw8EEd9cfgJX2sTfc0iPc0z3ICiw",
+    authDomain: "stratton-floor-tec.firebaseapp.com",
+    databaseURL: "https://stratton-floor-tec-default-rtdb.firebaseio.com",
+    projectId: "stratton-floor-tec",
+    storageBucket: "stratton-floor-tec.firebasestorage.app",
+    messagingSenderId: "634301012053",
+    appId: "1:634301012053:web:029fb39714920eaf8b1cdc"
   };
+  // ↑↑↑ Configurado ↑↑↑
 
   if (firebaseConfig.databaseURL) {
     const app = initializeApp(firebaseConfig);
