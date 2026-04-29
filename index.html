@@ -808,6 +808,200 @@ input, select { font-family: inherit; }
 }
 
 /* =========================================================
+   PANEL DE HISTORIAL - desplegable lateral derecho
+   ========================================================= */
+.icon-btn--history { position: relative; }
+.history-badge {
+  position: absolute;
+  top: -4px; right: -4px;
+  min-width: 18px; height: 18px;
+  border-radius: 9px;
+  background: var(--color-magenta);
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  display: grid; place-items: center;
+  padding: 0 5px;
+  box-shadow: 0 0 8px rgba(255,45,210,0.6);
+  pointer-events: none;
+}
+.history-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(10,11,20,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 1100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.history-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.history-panel {
+  position: fixed;
+  top: 0; right: 0;
+  width: min(420px, 100vw);
+  height: 100vh;
+  background: linear-gradient(180deg, #0F1126 0%, #0A0B14 100%);
+  border-left: 1px solid rgba(255,255,255,0.08);
+  box-shadow: -20px 0 60px rgba(0,0,0,0.6);
+  z-index: 1200;
+  transform: translateX(100%);
+  transition: transform 0.32s cubic-bezier(.4,.2,.2,1);
+  display: flex;
+  flex-direction: column;
+}
+.history-panel.is-open { transform: translateX(0); }
+.history-panel__header {
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+.history-panel__title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 0.04em;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+.history-panel__sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-muted);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.history-panel__close {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--color-text-soft);
+  font-size: 22px;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+.history-panel__close:hover {
+  color: var(--color-text);
+  transform: rotate(90deg);
+}
+.history-panel__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+}
+.history-panel__list::-webkit-scrollbar { width: 6px; }
+.history-panel__list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+}
+.history-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  line-height: 1.7;
+}
+.history-empty__icon {
+  font-size: 48px;
+  margin-bottom: 14px;
+  opacity: 0.5;
+}
+.history-day {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.history-day:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.12);
+}
+.history-day__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.history-day__date {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: var(--color-text-soft);
+  text-transform: uppercase;
+}
+.history-day__total {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--color-cyan);
+  letter-spacing: 0.04em;
+}
+.history-day__total small {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-muted);
+  letter-spacing: 0.18em;
+  margin-left: 4px;
+  text-transform: uppercase;
+}
+.history-day__top3 {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.history-day__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.history-day__medal {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-family: var(--font-display);
+}
+.history-day__medal--1 { background: linear-gradient(135deg, #FFD700, #DAA520); color: #1A1530; }
+.history-day__medal--2 { background: linear-gradient(135deg, #E8E8E8, #A0A0A0); color: #1A1530; }
+.history-day__medal--3 { background: linear-gradient(135deg, #E89858, #B8651E); color: white; }
+.history-day__name {
+  flex: 1;
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.history-day__count {
+  color: var(--color-text-soft);
+  font-variant-numeric: tabular-nums;
+}
+.history-panel__footer {
+  padding: 14px 24px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-muted);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* =========================================================
    POP-UP motivacional - palabra grande al cerrar venta
    ========================================================= */
 .hype-pop {
@@ -1375,6 +1569,16 @@ input, select { font-family: inherit; }
       </svg>
     </button>
 
+    <button class="icon-btn icon-btn--history" id="btnHistorial" title="Ver historial de días anteriores">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
+        <polyline points="3 3 3 8 8 8"></polyline>
+        <line x1="12" y1="7" x2="12" y2="12"></line>
+        <line x1="12" y1="12" x2="15" y2="14"></line>
+      </svg>
+      <span class="history-badge" id="historyBadge" style="display:none;"></span>
+    </button>
+
     <button class="icon-btn" id="btnMute" title="Silenciar / Activar sonido">
       <svg id="iconSoundOn" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
@@ -1388,6 +1592,24 @@ input, select { font-family: inherit; }
     </button>
   </div>
 </header>
+
+<!-- Panel desplegable de HISTORIAL -->
+<aside class="history-panel" id="historyPanel">
+  <div class="history-panel__header">
+    <div>
+      <div class="history-panel__title">📊 Historial de días</div>
+      <div class="history-panel__sub" id="historySub">Sin días registrados todavía</div>
+    </div>
+    <button class="history-panel__close" id="historyClose" aria-label="Cerrar">×</button>
+  </div>
+  <div class="history-panel__list" id="historyList">
+    <!-- se llena dinámicamente -->
+  </div>
+  <div class="history-panel__footer">
+    Las ventas se reinician automáticamente cada medianoche CDMX
+  </div>
+</aside>
+<div class="history-backdrop" id="historyBackdrop"></div>
 
 <!-- ============================ MAIN ============================ -->
 <main class="shell">
@@ -1525,7 +1747,7 @@ input, select { font-family: inherit; }
    - Comisión editable desde el front (gerente)
    - Paleta synthwave (cyan + magenta + dorado)
    ============================================================== */
-const STORAGE_KEY = 'stratton.state.v8';
+const STORAGE_KEY = 'stratton.state.v9';
 const META_DEL_DIA = 200000;
 const VENTAS_AYER = 162000;
 
@@ -1621,6 +1843,8 @@ function cargarEstado() {
       if (Array.isArray(parsed.vendedores) && parsed.vendedores.length === VENDEDORES_INICIAL.length) {
         if (typeof parsed.comision !== 'number') parsed.comision = 12;
         if (!parsed.ultimoCambioBono) parsed.ultimoCambioBono = null;
+        if (!Array.isArray(parsed.historial)) parsed.historial = [];
+        if (!parsed.fechaActual) parsed.fechaActual = fechaCDMXHoy();
         return parsed;
       }
     }
@@ -1629,12 +1853,62 @@ function cargarEstado() {
     vendedores: VENDEDORES_INICIAL,
     ventas: VENTAS_INICIAL,
     sonidoActivo: true,
-    comision: 12,             // Bono por venta en MXN (mínimo del rango $12-$30)
-    ultimoCambioBono: null    // ISO datetime del último auto-cambio a las 10AM
+    comision: 12,
+    ultimoCambioBono: null,
+    fechaActual: fechaCDMXHoy(),  // Día actual en CDMX (YYYY-MM-DD)
+    historial: []                  // Array de días pasados con sus ventas
   };
 }
 function guardarEstado() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+/* Devuelve la fecha de HOY en CDMX en formato YYYY-MM-DD */
+function fechaCDMXHoy() {
+  const cdmx = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
+  const y = cdmx.getFullYear();
+  const m = String(cdmx.getMonth() + 1).padStart(2, '0');
+  const d = String(cdmx.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/* Formatear fecha YYYY-MM-DD a algo legible: "Lun 28 Abr" */
+function formatearFechaCorta(fecha) {
+  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const [y, m, d] = fecha.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return `${dias[dt.getDay()]} ${d} ${meses[m - 1]}`;
+}
+
+/* ============ RESET DIARIO + HISTORIAL ============
+   Si el día de CDMX cambió respecto a state.fechaActual,
+   archiva el día anterior en el historial y resetea las ventas a 0. */
+function checkResetDiario() {
+  const hoy = fechaCDMXHoy();
+  if (state.fechaActual === hoy) return;  // Mismo día, no hace nada
+
+  // Archivar el día que terminó (solo si tuvo ventas)
+  if (state.ventas.length > 0) {
+    const ranking = rankingVendedores().filter(r => r.count > 0);
+    const top3 = ranking.slice(0, 3).map(r => ({
+      id: r.id, nombre: r.nombre, count: r.count, color: r.color
+    }));
+    state.historial.unshift({
+      fecha: state.fechaActual,
+      total: state.ventas.length,
+      top3: top3
+    });
+    // Cap historial a últimos 60 días
+    if (state.historial.length > 60) state.historial = state.historial.slice(0, 60);
+  }
+
+  // Resetear día actual
+  state.ventas = [];
+  state.fechaActual = hoy;
+  guardarEstado();
+  renderAll(false);
+  renderHistorial();
 }
 
 let state = cargarEstado();
@@ -2647,9 +2921,78 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'c' || e.key === 'C') abrirModalComision();
 });
 
+/* ============ HISTORIAL panel ============ */
+function renderHistorial() {
+  const list   = document.getElementById('historyList');
+  const sub    = document.getElementById('historySub');
+  const badge  = document.getElementById('historyBadge');
+  const days   = state.historial || [];
+
+  // Badge contador
+  if (days.length > 0) {
+    badge.textContent = days.length;
+    badge.style.display = 'grid';
+    sub.textContent = `${days.length} ${days.length === 1 ? 'día registrado' : 'días registrados'}`;
+  } else {
+    badge.style.display = 'none';
+    sub.textContent = 'Sin días registrados todavía';
+  }
+
+  // Lista
+  if (days.length === 0) {
+    list.innerHTML = `
+      <div class="history-empty">
+        <div class="history-empty__icon">📅</div>
+        <div>aquí va a aparecer<br>el resumen de cada día<br>cuando termine la jornada</div>
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = days.map(dia => {
+    const fechaLegible = formatearFechaCorta(dia.fecha);
+    const top3HTML = dia.top3.map((vd, i) => `
+      <div class="history-day__row">
+        <div class="history-day__medal history-day__medal--${i + 1}">${i + 1}</div>
+        <div class="history-day__name">${vd.nombre}</div>
+        <div class="history-day__count">${vd.count} ${vd.count === 1 ? 'venta' : 'ventas'}</div>
+      </div>
+    `).join('');
+    return `
+      <div class="history-day">
+        <div class="history-day__top">
+          <div class="history-day__date">${fechaLegible}</div>
+          <div class="history-day__total">${dia.total}<small>VENTAS TOTAL</small></div>
+        </div>
+        <div class="history-day__top3">${top3HTML}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+const histPanel    = document.getElementById('historyPanel');
+const histBackdrop = document.getElementById('historyBackdrop');
+function abrirHistorial() {
+  renderHistorial();
+  histPanel.classList.add('is-open');
+  histBackdrop.classList.add('is-open');
+}
+function cerrarHistorial() {
+  histPanel.classList.remove('is-open');
+  histBackdrop.classList.remove('is-open');
+}
+document.getElementById('btnHistorial').addEventListener('click', abrirHistorial);
+document.getElementById('historyClose').addEventListener('click', cerrarHistorial);
+histBackdrop.addEventListener('click', cerrarHistorial);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && histPanel.classList.contains('is-open')) cerrarHistorial();
+});
+
 /* ============ Render inicial ============ */
+checkResetDiario();             // ⭐ Si cambió el día, archivar y resetear
 renderAll(false);
 actualizarHotStreaks();
+renderHistorial();
 
 // Frase motivacional inicial + rotación cada 30 minutos
 rotarFraseMotivacional();
@@ -2661,6 +3004,9 @@ setInterval(actualizarHotStreaks, 30 * 1000);
 // Bono diario: chequear al cargar + cada minuto
 setTimeout(checkBonoDiario, 1500);
 setInterval(checkBonoDiario, 60 * 1000);
+
+// Reset diario: chequear cada minuto si cambió el día (medianoche CDMX)
+setInterval(checkResetDiario, 60 * 1000);
 
 /* ============ Demo (consola) ============ */
 let demoTimer = null;
@@ -2679,7 +3025,6 @@ window.stratton = {
   // Probar el podio sin esperar a las 6 PM
   probarPodio() {
     if (state.ventas.length === 0) {
-      // Si no hay ventas, meter algunas de prueba
       const ids = state.vendedores.map(v => v.id);
       for (let i = 0; i < 25; i++) {
         const id = ids[Math.floor(Math.random() * ids.length)];
@@ -2690,6 +3035,26 @@ window.stratton = {
     }
     mostrarPodio();
     return 'Mostrando podio…';
+  },
+  // Forzar reset diario (archiva el día actual y resetea barras a 0)
+  resetDiarioManual() {
+    if (state.ventas.length === 0) return 'No hay ventas para archivar';
+    const ranking = rankingVendedores().filter(r => r.count > 0);
+    const top3 = ranking.slice(0, 3).map(r => ({
+      id: r.id, nombre: r.nombre, count: r.count, color: r.color
+    }));
+    state.historial.unshift({
+      fecha: state.fechaActual,
+      total: state.ventas.length,
+      top3: top3
+    });
+    if (state.historial.length > 60) state.historial = state.historial.slice(0, 60);
+    state.ventas = [];
+    state.fechaActual = fechaCDMXHoy();
+    guardarEstado();
+    renderAll(false);
+    renderHistorial();
+    return `Día archivado. Historial ahora tiene ${state.historial.length} día(s).`;
   },
   // Disparar el reveal del bono SIN esperar a las 10 AM
   revealBono(bono) {
