@@ -328,12 +328,87 @@ input, select { font-family: inherit; }
 }
 .floor__title span { color: var(--color-magenta); }
 .floor__hint {
-  font-family: var(--font-mono); font-size: 12px;
-  color: var(--color-text-soft); letter-spacing: 0.12em;
+  display: none;  /* La frase se movió a su propia banda de protagonismo (.motivation-banner) */
+}
+
+/* =========================================================
+   BANDA MOTIVACIONAL - protagonismo visual para que volteen
+   ========================================================= */
+.motivation-banner {
+  position: relative;
+  margin: 6px 24px 18px;
+  padding: 22px 32px;
+  border-radius: 16px;
+  background:
+    linear-gradient(120deg, rgba(0,229,255,0.06), rgba(255,45,210,0.06));
+  border: 1px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+  text-align: center;
+  min-height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Glow de fondo que se mueve - efecto "respira" */
+.motivation-banner::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -10%;
+  width: 120%; height: 200%;
+  background: radial-gradient(ellipse at center,
+    rgba(0,229,255,0.15) 0%,
+    rgba(255,45,210,0.08) 40%,
+    transparent 70%);
+  animation: motivation-glow 8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes motivation-glow {
+  0%, 100% { transform: translateX(-15%) scale(1); opacity: 0.7; }
+  50%      { transform: translateX(15%) scale(1.1); opacity: 1; }
+}
+/* Línea sutil en el lado izquierdo - acento */
+.motivation-banner::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 20%; bottom: 20%;
+  width: 4px;
+  background: linear-gradient(180deg, var(--color-cyan) 0%, var(--color-magenta) 100%);
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 0 18px rgba(0,229,255,0.5);
+}
+.motivation-banner__text {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.8vw, 38px);
+  letter-spacing: 0.02em;
+  font-weight: 400;
+  line-height: 1.25;
+  background: linear-gradient(135deg,
+    #FFFFFF 0%,
+    #E0EAFF 40%,
+    #FFFFFF 60%,
+    #DDF6FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 30px rgba(255,255,255,0.15);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  max-width: 95%;
+}
+.motivation-banner__text.is-changing {
+  opacity: 0;
+  transform: translateY(8px);
+}
+/* Pequeño label arriba con vibe de "FRASE DEL MOMENTO" */
+.motivation-banner__label {
+  position: absolute;
+  top: 10px; left: 24px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  color: var(--color-cyan);
   text-transform: uppercase;
-  text-align: right; max-width: 60%;
-  transition: opacity 0.4s ease;
-  font-style: italic;
+  opacity: 0.55;
 }
 .floor__chart {
   display: grid; grid-template-columns: repeat(15, 1fr);
@@ -1593,6 +1668,12 @@ input, select { font-family: inherit; }
   </div>
 </header>
 
+<!-- Banda motivacional - protagonismo visual -->
+<div class="motivation-banner">
+  <div class="motivation-banner__label">▌ frase del momento</div>
+  <div class="motivation-banner__text" id="floorHint">cargando…</div>
+</div>
+
 <!-- Panel desplegable de HISTORIAL -->
 <aside class="history-panel" id="historyPanel">
   <div class="history-panel__header">
@@ -1770,31 +1851,26 @@ const FRASES = [
 
 /* Frases motivacionales - rotan cada 30 minutos para mantener el alma del equipo */
 const FRASES_MOTIVACIONALES = [
-  "El que vende, come. El que cierra, festeja. 💪",
-  "No es suerte — es chamba constante.",
-  "Cada NO te acerca al SÍ. Sigue.",
-  "Las leyendas se hacen tras los teléfonos.",
-  "Tu meta no es tu límite, es tu mínimo.",
-  "Hoy vendes. Mañana cobras. Pasado disfrutas.",
-  "El cliente difícil hoy es el referido de mañana.",
-  "No vendas un curso. Vende un cambio de vida. 🎓",
-  "Tu siguiente venta está a una llamada.",
-  "Vendedor que cree es vendedor que vende.",
-  "El equipo que cierra junto, gana junto. 🤝",
-  "El miedo al NO se cura con MÁS llamadas.",
-  "Si fuera fácil, todos lo harían. Por eso te pagan a TI.",
-  "La diferencia entre el #1 y el #5 es 1 llamada más.",
-  "El reloj no te detiene. Tu actitud sí. ⏰",
-  "Cada minuto sin llamar es un cliente para la competencia.",
-  "Tu actitud firma la venta antes que el contrato.",
-  "Vendedor con propósito > vendedor con guion.",
-  "Un equipo prendido es imparable. Tú decides el ritmo. 🔥",
-  "Los cracks no esperan motivación. La generan.",
-  "Cierra como si tu bonus dependiera de eso. Spoiler: depende.",
-  "Hoy tienes el día. Mañana tienes la historia.",
-  "No bajes el ritmo. La meta no se mueve sola.",
-  "El cliente compra confianza. Tú la traes puesta. 💼",
-  "Mientras unos se quejan, tú estás cerrando. 📞",
+  "Cada llamada cuenta. Cada cierre suma.",
+  "El éxito no es suerte. Es repetición.",
+  "Hoy es un buen día para romper tu récord.",
+  "Lo que sigue depende de ti.",
+  "Los grandes no esperan el momento. Lo crean.",
+  "Una venta más cambia tu día. Diez cambian tu mes.",
+  "Si no eres tú, va a ser alguien más.",
+  "El cliente decide en segundos. Tú entrenas para esos segundos.",
+  "Después del NO viene el SÍ. Sigue.",
+  "Tu mejor versión empieza con la siguiente llamada.",
+  "Confía en el proceso. El número llega.",
+  "El equipo gana cuando cada uno aporta.",
+  "Quien cree, vende. Quien duda, observa.",
+  "Hoy vendes. Mañana cuentas la historia.",
+  "El reloj no se detiene. Tú tampoco.",
+  "Cada conversación es una oportunidad real.",
+  "Ningún campeón se hizo en zona de confort.",
+  "El cliente compra tu seguridad antes que el producto.",
+  "Mientras unos lo piensan, tú lo cierras.",
+  "Un cierre más. Solo uno más. Y luego otro.",
 ];
 
 /* ============ 15 CONSULTORAS de IPCI / TEC CAPITAL GROUP ============
@@ -2722,12 +2798,12 @@ function rotarFraseMotivacional() {
 
   const el = document.getElementById('floorHint');
   if (!el) return;
-  // Fade out -> cambia texto -> fade in
-  el.style.opacity = '0';
+  // Fade out + slide up -> cambia texto -> fade in
+  el.classList.add('is-changing');
   setTimeout(() => {
     el.textContent = FRASES_MOTIVACIONALES[fraseIdx];
-    el.style.opacity = '1';
-  }, 350);
+    el.classList.remove('is-changing');
+  }, 450);
 }
 
 /* ============ BONO DEL DÍA — auto-cambio cada 24h a las 10:00 AM CDMX ============
