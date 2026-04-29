@@ -4600,12 +4600,29 @@ function tamboresTribales() {
   });
 }
 
-function activarModoLeon() {
+function activarModoLeon(fraseOverride) {
   if (lionActive) return;
   lionActive = true;
 
-  // Elegir frase aleatoria
-  const frase = FRASES_LEON[Math.floor(Math.random() * FRASES_LEON.length)];
+  // Si vino frase del panel admin, usarla. Si no, elegir aleatoria sin repetir últimas 3.
+  let frase;
+  if (fraseOverride && fraseOverride.titulo) {
+    frase = fraseOverride;
+  } else {
+    // Sin repetir últimas 3
+    let ultimasIdx = [];
+    try { ultimasIdx = JSON.parse(localStorage.getItem('stratton.lion.lastFrases') || '[]'); } catch(e){}
+    const ultimas = new Set(ultimasIdx);
+    const candidatas = FRASES_LEON.map((_, i) => i).filter(i => !ultimas.has(i));
+    const pool = candidatas.length > 0 ? candidatas : FRASES_LEON.map((_, i) => i);
+    const elegida = pool[Math.floor(Math.random() * pool.length)];
+    frase = FRASES_LEON[elegida];
+    // Recordar la elegida
+    let arr = ultimasIdx;
+    arr.unshift(elegida);
+    arr = arr.slice(0, 3);
+    try { localStorage.setItem('stratton.lion.lastFrases', JSON.stringify(arr)); } catch(e){}
+  }
   document.getElementById('lionQuote').textContent = frase.titulo;
   document.getElementById('lionSubquote').textContent = frase.sub;
 
@@ -4670,7 +4687,8 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-/* Scheduler automático: 2:30 PM a 5:00 PM CDMX, 1 vez por día */
+/* Scheduler automático: 2:30 PM a 5:00 PM CDMX, 1 vez por día.
+   Respeta si la contadora desactivó el auto desde el panel. */
 function checkModoLeon() {
   try {
     const cdmx = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
@@ -4683,7 +4701,14 @@ function checkModoLeon() {
     const enRango = totalMin >= inicio && totalMin < fin;
     const fechaHoy = `${cdmx.getFullYear()}-${cdmx.getMonth()+1}-${cdmx.getDate()}`;
 
-    if (enRango && lionAutoTriggeredToday !== fechaHoy && !lionActive) {
+    // Verificar si la contadora desactivó el auto hoy
+    let autoDisabled = false;
+    try {
+      const stored = localStorage.getItem('stratton.lion.autoDisabledDate');
+      autoDisabled = (stored === fechaHoy);
+    } catch (e) {}
+
+    if (enRango && !autoDisabled && lionAutoTriggeredToday !== fechaHoy && !lionActive) {
       lionAutoTriggeredToday = fechaHoy;
       activarModoLeon();
     }
@@ -4698,6 +4723,36 @@ function checkModoLeon() {
 setInterval(checkModoLeon, 60 * 1000);
 // Y uno inicial 5s después de cargar (por si carga en horario)
 setTimeout(checkModoLeon, 5000);
+
+/* === Listener del TRIGGER del Panel admin: la contadora pidió disparar el león === */
+const LION_TRIGGER_KEY_FLOOR = 'stratton.lion.trigger';
+let lastLionTriggerTs = 0;
+function checkLionTriggerFromPanel() {
+  let raw;
+  try { raw = localStorage.getItem(LION_TRIGGER_KEY_FLOOR); } catch (e) { return; }
+  if (!raw) return;
+  let trigger;
+  try { trigger = JSON.parse(raw); } catch (e) { return; }
+  if (!trigger || !trigger.ts || trigger.ts <= lastLionTriggerTs) return;
+  // Solo procesar triggers recientes (últimos 30s) para no disparar al cargar
+  if (Date.now() - trigger.ts > 30000) return;
+  lastLionTriggerTs = trigger.ts;
+  // Si vino frase específica del panel, úsala
+  if (trigger.titulo && trigger.sub) {
+    activarModoLeon({ titulo: trigger.titulo, sub: trigger.sub });
+  } else {
+    activarModoLeon();
+  }
+}
+window.addEventListener('storage', (e) => {
+  if (e.key === LION_TRIGGER_KEY_FLOOR) checkLionTriggerFromPanel();
+});
+setInterval(checkLionTriggerFromPanel, 500);
+// Inicializar timestamp para no disparar triggers viejos al cargar
+try {
+  const existing = JSON.parse(localStorage.getItem(LION_TRIGGER_KEY_FLOOR) || '{}');
+  if (existing.ts) lastLionTriggerTs = existing.ts;
+} catch (e) {}
 
 // Helper de consola para debug rápido
 window.lion = activarModoLeon;
