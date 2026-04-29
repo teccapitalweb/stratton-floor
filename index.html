@@ -2409,6 +2409,281 @@ body.modo-estadio .motivation-banner {
   .lion-subquote { font-size: 11px; letter-spacing: 0.32em; }
 }
 
+/* =========================================================
+   👶 OVERLAY DEL BEBÉ MOTIVADOR (saludo de inicio de día)
+   ========================================================= */
+.bebe-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9550;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255,200,180,0.12) 0%, transparent 60%),
+    radial-gradient(circle at 30% 80%, rgba(255,160,200,0.1) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(180,200,255,0.1) 0%, transparent 50%),
+    rgba(20,12,30,0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+  cursor: pointer;
+}
+.bebe-overlay.is-active {
+  display: flex;
+  animation: bebe-fade-in 0.8s ease-out forwards;
+}
+.bebe-overlay.is-closing {
+  animation: bebe-fade-out 0.6s ease-in forwards;
+}
+@keyframes bebe-fade-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bebe-fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+/* Resplandor tierno detrás */
+.bebe-bg-glow {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 90vmin; height: 90vmin;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle,
+    rgba(255,210,200,0.35) 0%,
+    rgba(255,170,180,0.2) 30%,
+    rgba(180,140,200,0.12) 50%,
+    transparent 70%);
+  filter: blur(50px);
+  animation: bebe-glow-pulse 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes bebe-glow-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.7; }
+  50%      { transform: translate(-50%, -50%) scale(1.08); opacity: 1; }
+}
+
+/* Corazones flotando hacia arriba */
+.bebe-corazones, .bebe-burbujas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.bebe-corazones span {
+  position: absolute;
+  bottom: -30px;
+  font-size: 24px;
+  animation: corazon-rise linear infinite;
+  filter: drop-shadow(0 0 10px rgba(255,100,150,0.6));
+}
+@keyframes corazon-rise {
+  0%   { transform: translateY(0) translateX(0) scale(0.6) rotate(0); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translateY(-120vh) translateX(var(--drift, 50px)) scale(1.1) rotate(20deg); opacity: 0; }
+}
+/* Burbujas suaves */
+.bebe-burbujas span {
+  position: absolute;
+  bottom: -20px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,200,220,0.5) 70%, transparent 100%);
+  box-shadow: 0 0 12px rgba(255,200,220,0.6);
+  animation: burbuja-rise linear infinite;
+}
+@keyframes burbuja-rise {
+  0%   { transform: translateY(0) translateX(0) scale(0.5); opacity: 0; }
+  15%  { opacity: 0.9; }
+  100% { transform: translateY(-110vh) translateX(var(--drift, 30px)) scale(1.4); opacity: 0; }
+}
+
+/* Confetti tierno */
+.bebe-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.bebe-confetti span {
+  position: absolute;
+  top: -20px;
+  width: 8px; height: 14px;
+  border-radius: 2px;
+  animation: confetti-fall linear infinite;
+}
+@keyframes confetti-fall {
+  0%   { transform: translateY(0) rotate(0); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.4; }
+}
+
+/* Stage */
+.bebe-stage {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 900px;
+  padding: 0 24px;
+}
+
+/* Personaje del bebé (con animación de caminar entrando) */
+.bebe-personaje {
+  position: relative;
+  width: clamp(220px, 36vmin, 360px);
+  height: clamp(220px, 36vmin, 360px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Empieza fuera de pantalla a la izquierda */
+  animation: bebe-walk-in 4s cubic-bezier(.3,.7,.3,1) forwards;
+}
+@keyframes bebe-walk-in {
+  0%   { transform: translateX(-150vw) scale(0.6); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+/* Aura tierna alrededor del bebé */
+.bebe-aura {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255,220,200,0.5) 0%,
+    rgba(255,180,200,0.3) 30%,
+    rgba(180,140,200,0.15) 60%,
+    transparent 80%);
+  filter: blur(28px);
+  animation: bebe-aura-pulse 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes bebe-aura-pulse {
+  0%, 100% { transform: scale(0.85); opacity: 0.6; }
+  50%      { transform: scale(1.15); opacity: 1; }
+}
+
+/* Wrapper de la foto/emoji */
+.bebe-foto-wrap {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Animación de "caminar" - rebote leve simulando pasos + balanceo */
+  animation: bebe-step 0.6s ease-in-out infinite;
+}
+.bebe-foto-wrap.is-llegado {
+  /* Cuando ya llegó al centro, cambia animación a saludo */
+  animation: bebe-saludo 1.6s ease-in-out infinite;
+}
+@keyframes bebe-step {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-10px) rotate(3deg); }
+}
+@keyframes bebe-saludo {
+  0%, 100% { transform: translateY(0) scale(1) rotate(0); }
+  20%      { transform: translateY(-8px) scale(1.04) rotate(-3deg); }
+  40%      { transform: translateY(0) scale(1) rotate(3deg); }
+  60%      { transform: translateY(-6px) scale(1.03) rotate(-2deg); }
+  80%      { transform: translateY(0) scale(1) rotate(2deg); }
+}
+
+/* Foto real */
+.bebe-foto-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 6px rgba(255,255,255,0.15),
+    0 0 0 12px rgba(255,180,200,0.25),
+    0 20px 50px rgba(0,0,0,0.5),
+    0 0 60px rgba(255,180,200,0.4);
+}
+
+/* Emoji fallback */
+.bebe-emoji {
+  font-size: clamp(160px, 28vmin, 280px);
+  line-height: 1;
+  filter:
+    drop-shadow(0 16px 24px rgba(0,0,0,0.4))
+    drop-shadow(0 0 40px rgba(255,200,180,0.6))
+    drop-shadow(0 0 80px rgba(255,160,180,0.4));
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Sombra debajo del bebé */
+.bebe-sombra {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 65%;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse,
+    rgba(0,0,0,0.55) 0%,
+    rgba(0,0,0,0.25) 50%,
+    transparent 80%);
+  filter: blur(8px);
+  animation: bebe-sombra-step 0.6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes bebe-sombra-step {
+  0%, 100% { width: 65%; opacity: 0.55; }
+  50%      { width: 50%; opacity: 0.35; }
+}
+
+/* Burbuja de diálogo */
+.bebe-bubble {
+  position: relative;
+  background: linear-gradient(135deg, #FFF8E7 0%, #FFE5D9 100%);
+  color: #3a1a00;
+  padding: 24px 36px;
+  border-radius: 28px;
+  max-width: 90%;
+  text-align: center;
+  box-shadow:
+    0 12px 40px rgba(255,180,200,0.4),
+    0 0 0 3px rgba(255,255,255,0.5),
+    inset 0 -3px 8px rgba(0,0,0,0.08);
+  opacity: 0;
+  transform: translateY(20px) scale(0.8);
+  animation: bebe-bubble-in 0.6s cubic-bezier(.3,1.6,.5,1) 4s forwards;
+}
+.bebe-bubble::before {
+  content: '';
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #FFF8E7 0%, #FFE5D9 100%);
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+@keyframes bebe-bubble-in {
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.bebe-bubble-text {
+  font-family: 'Comic Sans MS', 'Quicksand', var(--font-ui);
+  font-size: clamp(20px, 2.4vw, 32px);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+/* Responsive bebé */
+@media (max-width: 760px) {
+  .bebe-bubble { padding: 18px 24px; border-radius: 22px; }
+  .bebe-bubble-text { font-size: 18px; }
+}
+
 </style>
 </head>
 <body>
@@ -2612,6 +2887,41 @@ body.modo-estadio .motivation-banner {
 
     <div class="lion-quote" id="lionQuote">DESPIERTA, MI REY</div>
     <div class="lion-subquote" id="lionSubquote">LAS GANANCIAS TE ESPERAN</div>
+  </div>
+
+  <div class="lion-close-hint">[ click o ESC para cerrar ]</div>
+</div>
+
+<!-- 👶 OVERLAY DEL BEBÉ MOTIVADOR — saludo de inicio de día (30s) -->
+<div class="bebe-overlay" id="bebeOverlay" role="dialog" aria-label="Saludo motivacional">
+  <button class="lion-close-btn" id="bebeCloseBtn" aria-label="Cerrar">×</button>
+
+  <!-- Fondo cálido con luz suave -->
+  <div class="bebe-bg-glow"></div>
+  <!-- Corazones flotando -->
+  <div class="bebe-corazones" id="bebeCorazones"></div>
+  <!-- Burbujas tiernas -->
+  <div class="bebe-burbujas" id="bebeBurbujas"></div>
+  <!-- Confetti suave -->
+  <div class="bebe-confetti" id="bebeConfetti"></div>
+
+  <div class="bebe-stage">
+    <!-- Bebé entrando caminando desde la izquierda -->
+    <div class="bebe-personaje" id="bebePersonaje">
+      <!-- Aura tierna alrededor -->
+      <div class="bebe-aura"></div>
+      <!-- Foto real (si existe img/bebe.jpg) o emoji fallback -->
+      <div class="bebe-foto-wrap" id="bebeFotoWrap">
+        <div class="bebe-emoji" id="bebeEmoji">👶</div>
+      </div>
+      <!-- Sombra debajo -->
+      <div class="bebe-sombra"></div>
+    </div>
+
+    <!-- Burbuja de diálogo con la frase -->
+    <div class="bebe-bubble" id="bebeBubble">
+      <div class="bebe-bubble-text" id="bebeBubbleText">¡Hola, paps!</div>
+    </div>
   </div>
 
   <div class="lion-close-hint">[ click o ESC para cerrar ]</div>
@@ -5145,6 +5455,306 @@ window.oso = () => activarModoLeon({ animalKey: 'oso' });
 window.gorila = () => activarModoLeon({ animalKey: 'gorila' });
 window.jaguar = () => activarModoLeon({ animalKey: 'jaguar' });
 window.toro = () => activarModoLeon({ animalKey: 'toro' });
+
+/* ===========================================================
+   👶 MODO BEBÉ MOTIVADOR — Saludo de inicio del día (30 segundos)
+   - El bebé entra caminando desde la izquierda (4s)
+   - TTS dice frase completa en español
+   - Burbuja de diálogo con la frase
+   - Auto-cierra a los 30 segundos
+   =========================================================== */
+
+const BEBE_FRASE = '¡Hola, paps! ¿Estamos listos para comenzar el día? Confío en ustedes y en que lo darán todo. ¡A COMENZAR!';
+const BEBE_FRASE_CORTA = '¡Hola paps! ¿Listos para el día? Confío en que lo darán todo. ¡A COMENZAR! 💪';
+const BEBE_FOTO_URL = 'img/bebe.jpg';  // Si existe el archivo, se usa; si no, fallback al emoji
+
+let bebeActive = false;
+let bebeTimers = [];
+let bebeUtterance = null;
+
+function setupBebeFondoEfectos() {
+  // Corazones flotando (12)
+  const corazones = document.getElementById('bebeCorazones');
+  if (corazones) {
+    corazones.innerHTML = '';
+    const tipos = ['💖', '💕', '💗', '💝', '🌟', '✨'];
+    for (let i = 0; i < 12; i++) {
+      const c = document.createElement('span');
+      c.textContent = tipos[Math.floor(Math.random() * tipos.length)];
+      c.style.left = (Math.random() * 100) + '%';
+      c.style.animationDuration = (5 + Math.random() * 5) + 's';
+      c.style.animationDelay = (-Math.random() * 8) + 's';
+      c.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+      c.style.fontSize = (18 + Math.random() * 14) + 'px';
+      corazones.appendChild(c);
+    }
+  }
+  // Burbujas (20)
+  const burbujas = document.getElementById('bebeBurbujas');
+  if (burbujas) {
+    burbujas.innerHTML = '';
+    for (let i = 0; i < 20; i++) {
+      const b = document.createElement('span');
+      b.style.left = (Math.random() * 100) + '%';
+      b.style.animationDuration = (4 + Math.random() * 5) + 's';
+      b.style.animationDelay = (-Math.random() * 9) + 's';
+      b.style.setProperty('--drift', (Math.random() * 60 - 30) + 'px');
+      const sz = 8 + Math.random() * 14;
+      b.style.width = sz + 'px';
+      b.style.height = sz + 'px';
+      burbujas.appendChild(b);
+    }
+  }
+  // Confetti suave (24)
+  const confetti = document.getElementById('bebeConfetti');
+  if (confetti) {
+    confetti.innerHTML = '';
+    const colores = ['#FFB6C1', '#FFD700', '#87CEEB', '#FF69B4', '#FFA07A', '#DDA0DD'];
+    for (let i = 0; i < 24; i++) {
+      const c = document.createElement('span');
+      c.style.left = (Math.random() * 100) + '%';
+      c.style.background = colores[Math.floor(Math.random() * colores.length)];
+      c.style.animationDuration = (4 + Math.random() * 4) + 's';
+      c.style.animationDelay = (-Math.random() * 5) + 's';
+      confetti.appendChild(c);
+    }
+  }
+}
+
+function checkBebeFotoExiste() {
+  // Intenta cargar img/bebe.jpg. Si carga, usa la foto. Si no, queda el emoji.
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = BEBE_FOTO_URL + '?v=' + Date.now();
+  });
+}
+
+async function setupBebeImagen() {
+  const wrap = document.getElementById('bebeFotoWrap');
+  if (!wrap) return;
+  const fotoExiste = await checkBebeFotoExiste();
+  if (fotoExiste) {
+    wrap.innerHTML = `<img src="${BEBE_FOTO_URL}" alt="Bebé motivador" class="bebe-foto-img">`;
+  } else {
+    wrap.innerHTML = `<div class="bebe-emoji">👶</div>`;
+  }
+}
+
+/* === Voz TTS (Text-to-Speech del navegador) === */
+function hablarBebe(texto) {
+  if (!('speechSynthesis' in window)) {
+    console.warn('TTS no soportado en este navegador');
+    return;
+  }
+  // Cancelar cualquier voz previa
+  window.speechSynthesis.cancel();
+
+  // Esperar a que carguen las voces
+  function _hablar() {
+    const voces = window.speechSynthesis.getVoices();
+    // Preferir voz infantil/femenina en español MX, ES o cualquier es-*
+    const preferidas = [
+      'Microsoft Sabina',         // Windows MX
+      'Microsoft Helena',         // Windows ES
+      'Google español de Estados Unidos',
+      'Google español',
+      'Paulina',                  // macOS MX
+      'Mónica',                   // macOS ES
+    ];
+    let vozElegida = null;
+    for (const nombre of preferidas) {
+      vozElegida = voces.find(v => v.name.includes(nombre));
+      if (vozElegida) break;
+    }
+    // Fallback: cualquier voz en español
+    if (!vozElegida) {
+      vozElegida = voces.find(v => v.lang && v.lang.startsWith('es'));
+    }
+
+    bebeUtterance = new SpeechSynthesisUtterance(texto);
+    if (vozElegida) bebeUtterance.voice = vozElegida;
+    bebeUtterance.lang = 'es-MX';
+    bebeUtterance.rate = 0.95;     // un poco más lento (suena tierno)
+    bebeUtterance.pitch = 1.4;     // pitch alto (voz infantil)
+    bebeUtterance.volume = 1.0;
+    window.speechSynthesis.speak(bebeUtterance);
+  }
+
+  // Si las voces aún no están cargadas, esperar el evento
+  if (window.speechSynthesis.getVoices().length === 0) {
+    window.speechSynthesis.addEventListener('voiceschanged', _hablar, { once: true });
+    setTimeout(_hablar, 100);  // fallback por si el evento no dispara
+  } else {
+    _hablar();
+  }
+}
+
+/* === Sonidos de fondo del bebé (campanitas + risa de bebé sintetizada) === */
+function campanaSuave() {
+  const ac = getAudio();
+  if (!ac) return;
+  const t = ac.currentTime;
+  [880, 1100, 1320].forEach((freq, i) => {
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = 'sine';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.001, t + i * 0.15);
+    g.gain.exponentialRampToValueAtTime(0.18, t + i * 0.15 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.15 + 0.6);
+    o.connect(g).connect(ac.destination);
+    o.start(t + i * 0.15);
+    o.stop(t + i * 0.15 + 0.65);
+  });
+}
+
+function risaBebeSintetica() {
+  const ac = getAudio();
+  if (!ac) return;
+  // 4 hipos cortos imitando "ji ji ji ji"
+  for (let i = 0; i < 4; i++) {
+    setTimeout(() => {
+      const t = ac.currentTime;
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(880, t);
+      o.frequency.exponentialRampToValueAtTime(1320, t + 0.1);
+      o.frequency.exponentialRampToValueAtTime(700, t + 0.2);
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.exponentialRampToValueAtTime(0.16, t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+      o.connect(g).connect(ac.destination);
+      o.start(t);
+      o.stop(t + 0.25);
+    }, i * 220);
+  }
+}
+
+/* === Activar el modo bebé === */
+async function activarModoBebe() {
+  if (bebeActive) return;
+  bebeActive = true;
+
+  // Resetear cualquier timer previo
+  bebeTimers.forEach(t => clearTimeout(t));
+  bebeTimers = [];
+
+  // Setup imagen y efectos
+  await setupBebeImagen();
+  setupBebeFondoEfectos();
+
+  // Set texto inicial corto en burbuja
+  const bubbleText = document.getElementById('bebeBubbleText');
+  if (bubbleText) bubbleText.textContent = BEBE_FRASE_CORTA;
+
+  // Reset clase de saludo
+  const fotoWrap = document.getElementById('bebeFotoWrap');
+  if (fotoWrap) fotoWrap.classList.remove('is-llegado');
+
+  // Mostrar overlay
+  const overlay = document.getElementById('bebeOverlay');
+  overlay.classList.remove('is-closing');
+  overlay.classList.add('is-active');
+
+  try { getAudio().resume(); } catch (e) {}
+
+  // === Secuencia de 30 segundos ===
+
+  // 0s - Campanita inicial
+  bebeTimers.push(setTimeout(() => campanaSuave(), 200));
+
+  // 4s - El bebé llegó al centro, cambia a animación de saludo
+  bebeTimers.push(setTimeout(() => {
+    if (fotoWrap) fotoWrap.classList.add('is-llegado');
+  }, 4000));
+
+  // 4.5s - Risa del bebé
+  bebeTimers.push(setTimeout(() => risaBebeSintetica(), 4500));
+
+  // 5s - Voz TTS dice la frase completa
+  bebeTimers.push(setTimeout(() => hablarBebe(BEBE_FRASE), 5000));
+
+  // 14s - Risa del bebé otra vez
+  bebeTimers.push(setTimeout(() => risaBebeSintetica(), 14000));
+
+  // 15s - Repite la frase para reforzar
+  bebeTimers.push(setTimeout(() => hablarBebe('¡A COMENZAR el día, paps!'), 16000));
+
+  // 22s - Campanita final
+  bebeTimers.push(setTimeout(() => campanaSuave(), 22000));
+
+  // 25s - Risa final + tercera frase
+  bebeTimers.push(setTimeout(() => {
+    risaBebeSintetica();
+    hablarBebe('¡Confío en ustedes!');
+  }, 25000));
+
+  // 30s - Auto cerrar
+  bebeTimers.push(setTimeout(() => cerrarModoBebe(), 30000));
+}
+
+function cerrarModoBebe() {
+  if (!bebeActive) return;
+  bebeActive = false;
+  bebeTimers.forEach(t => clearTimeout(t));
+  bebeTimers = [];
+  // Cancelar voz TTS
+  if ('speechSynthesis' in window) {
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+  }
+  const overlay = document.getElementById('bebeOverlay');
+  overlay.classList.add('is-closing');
+  setTimeout(() => {
+    overlay.classList.remove('is-active');
+    overlay.classList.remove('is-closing');
+  }, 600);
+}
+
+/* Listeners de cierre */
+document.getElementById('bebeOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'bebeOverlay' || e.target.id === 'bebeCloseBtn' ||
+      e.target.closest('#bebeCloseBtn')) {
+    cerrarModoBebe();
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && bebeActive) cerrarModoBebe();
+  // Tecla B = bebé manual
+  if ((e.key === 'b' || e.key === 'B') && !bebeActive && !lionActive) {
+    const tag = (e.target && e.target.tagName) || '';
+    if (tag !== 'INPUT' && tag !== 'TEXTAREA') activarModoBebe();
+  }
+});
+
+/* === Listener del trigger del Panel admin para el bebé === */
+const BEBE_TRIGGER_KEY = 'stratton.bebe.trigger';
+let lastBebeTriggerTs = 0;
+function checkBebeTriggerFromPanel() {
+  let raw;
+  try { raw = localStorage.getItem(BEBE_TRIGGER_KEY); } catch (e) { return; }
+  if (!raw) return;
+  let trigger;
+  try { trigger = JSON.parse(raw); } catch (e) { return; }
+  if (!trigger || !trigger.ts || trigger.ts <= lastBebeTriggerTs) return;
+  if (Date.now() - trigger.ts > 30000) return;
+  lastBebeTriggerTs = trigger.ts;
+  activarModoBebe();
+}
+window.addEventListener('storage', (e) => {
+  if (e.key === BEBE_TRIGGER_KEY) checkBebeTriggerFromPanel();
+});
+setInterval(checkBebeTriggerFromPanel, 500);
+try {
+  const existing = JSON.parse(localStorage.getItem(BEBE_TRIGGER_KEY) || '{}');
+  if (existing.ts) lastBebeTriggerTs = existing.ts;
+} catch (e) {}
+
+// Helper de consola
+window.bebe = activarModoBebe;
+window.bebeClose = cerrarModoBebe;
 
 /* ============ Render inicial ============ */
 checkResetDiario();             // ⭐ Si cambió el día, archivar y resetear
