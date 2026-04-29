@@ -2161,73 +2161,167 @@ body.modo-estadio .motivation-banner {
   max-width: 100%;
 }
 
-/* SVG del león */
-.lion-svg-wrap {
+/* === EMOJI 3D del animal con animaciones === */
+.lion-emoji-wrap {
   position: relative;
-  width: clamp(280px, 50vmin, 580px);
-  height: clamp(280px, 50vmin, 580px);
+  width: clamp(220px, 38vmin, 380px);
+  height: clamp(220px, 38vmin, 380px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   animation: lion-entrance 1.4s cubic-bezier(.2,.8,.25,1.1);
+  margin-bottom: 8px;
 }
 @keyframes lion-entrance {
-  0%   { transform: scale(0.4) rotate(-8deg); opacity: 0; filter: blur(20px); }
-  60%  { transform: scale(1.05) rotate(2deg); opacity: 1; filter: blur(0); }
+  0%   { transform: scale(0.3) rotate(-25deg); opacity: 0; filter: blur(30px); }
+  50%  { transform: scale(1.15) rotate(8deg); opacity: 1; filter: blur(0); }
+  75%  { transform: scale(0.95) rotate(-3deg); }
   100% { transform: scale(1) rotate(0); opacity: 1; }
 }
-.lion-svg {
-  width: 100%;
-  height: 100%;
+
+/* Aura pulsante detrás del emoji */
+.lion-emoji-aura {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255,200,80,0.4) 0%,
+    rgba(255,140,0,0.25) 30%,
+    rgba(180,40,0,0.1) 60%,
+    transparent 80%);
+  filter: blur(30px);
+  animation: emoji-aura-pulse 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes emoji-aura-pulse {
+  0%, 100% { transform: scale(0.85); opacity: 0.6; }
+  50%      { transform: scale(1.15); opacity: 1; }
+}
+
+/* El emoji propiamente dicho */
+.lion-emoji {
+  position: relative;
+  font-size: clamp(180px, 32vmin, 320px);
+  line-height: 1;
+  z-index: 2;
+  animation:
+    emoji-bounce 2.4s ease-in-out infinite,
+    emoji-rotate 6s ease-in-out infinite;
   filter:
-    drop-shadow(0 0 40px rgba(255,140,0,0.85))
-    drop-shadow(0 0 80px rgba(255,80,0,0.5))
-    drop-shadow(0 0 120px rgba(255,40,0,0.4));
-  animation: lion-breathe 3.2s ease-in-out infinite;
+    drop-shadow(0 16px 24px rgba(0,0,0,0.5))
+    drop-shadow(0 0 40px rgba(255,140,0,0.6))
+    drop-shadow(0 0 80px rgba(255,80,0,0.4));
+  transition: filter 0.3s ease;
+  user-select: none;
+  -webkit-user-select: none;
 }
-@keyframes lion-breathe {
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.025); }
+@keyframes emoji-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  25%      { transform: translateY(-12px) scale(1.04); }
+  50%      { transform: translateY(0) scale(1); }
+  75%      { transform: translateY(-6px) scale(1.02); }
 }
-
-/* Animaciones internas del SVG */
-.lion-mane {
-  transform-origin: 250px 290px;
-  animation: mane-flicker 0.18s ease-in-out infinite alternate;
-}
-@keyframes mane-flicker {
-  from { filter: brightness(1) saturate(1.1); }
-  to   { filter: brightness(1.18) saturate(1.4); }
-}
-.lion-mane-strand {
-  animation: strand-wave 3s ease-in-out infinite;
-  transform-origin: center;
-}
-.lion-mane-strand:nth-child(2n)  { animation-duration: 2.4s; animation-delay: -0.5s; }
-.lion-mane-strand:nth-child(3n)  { animation-duration: 3.6s; animation-delay: -1.2s; }
-.lion-mane-strand:nth-child(4n)  { animation-duration: 2.8s; animation-delay: -0.8s; }
-@keyframes strand-wave {
-  0%, 100% { transform: translateY(0) scale(1); opacity: 0.85; }
-  50%      { transform: translateY(-3px) scale(1.04); opacity: 1; }
+@keyframes emoji-rotate {
+  0%, 100% { rotate: 0deg; }
+  25%      { rotate: -6deg; }
+  75%      { rotate: 6deg; }
 }
 
-/* Ojos brillando */
-.lion-eye {
-  animation: eye-glow 1.6s ease-in-out infinite;
-  transform-origin: center;
+/* Sombra debajo del emoji */
+.lion-emoji-shadow {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse,
+    rgba(0,0,0,0.6) 0%,
+    rgba(0,0,0,0.3) 50%,
+    transparent 80%);
+  filter: blur(8px);
+  animation: shadow-pulse 2.4s ease-in-out infinite;
+  pointer-events: none;
 }
-.lion-eye:nth-child(2) { animation-delay: -0.3s; }
-@keyframes eye-glow {
-  0%, 100% {
-    filter: drop-shadow(0 0 8px #FFD700) drop-shadow(0 0 14px #FFA500);
-  }
-  50% {
-    filter: drop-shadow(0 0 20px #FFD700) drop-shadow(0 0 30px #FFA500) drop-shadow(0 0 45px #FF4500);
-  }
+@keyframes shadow-pulse {
+  0%, 100% { width: 60%; opacity: 0.6; }
+  25%      { width: 50%; opacity: 0.4; }
+  50%      { width: 60%; opacity: 0.6; }
+  75%      { width: 55%; opacity: 0.5; }
 }
 
-/* Hocico/mandíbula con leve movimiento como respirando */
-.lion-snout { animation: snout-bounce 3.2s ease-in-out infinite; transform-origin: center; }
-@keyframes snout-bounce {
+/* Sparks/destellos brillantes alrededor */
+.lion-sparks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.lion-sparks span {
+  position: absolute;
+  width: 4px; height: 4px;
+  background: #FFE9C8;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #FFD700, 0 0 16px #FFA500;
+  animation: spark-flash 2.5s ease-in-out infinite;
+  opacity: 0;
+}
+@keyframes spark-flash {
+  0%, 90%, 100% { opacity: 0; transform: scale(0.3); }
+  45%, 50%      { opacity: 1; transform: scale(1.5); }
+}
+
+/* Variante PREMIUM por animal: efectos especiales */
+.lion-emoji.is-aguila { animation: aguila-soar 3s ease-in-out infinite; }
+@keyframes aguila-soar {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  25%      { transform: translateY(-25px) rotate(-8deg); }
+  50%      { transform: translateY(-15px) rotate(0); }
+  75%      { transform: translateY(-25px) rotate(8deg); }
+}
+
+.lion-emoji.is-lobo { animation: lobo-howl 2.8s ease-in-out infinite; }
+@keyframes lobo-howl {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  40%      { transform: translateY(-8px) rotate(-15deg); }
+  60%      { transform: translateY(-12px) rotate(-15deg); }
+}
+
+.lion-emoji.is-tigre { animation: tigre-prowl 2s ease-in-out infinite; }
+@keyframes tigre-prowl {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+  25%      { transform: translateY(-4px) translateX(-8px) scale(1.05); }
+  75%      { transform: translateY(-4px) translateX(8px) scale(1.05); }
+}
+
+.lion-emoji.is-gorila { animation: gorila-pound 1.6s ease-in-out infinite; }
+@keyframes gorila-pound {
+  0%, 100% { transform: translateY(0) scale(1); }
+  20%      { transform: translateY(-15px) scale(1.08); }
+  40%      { transform: translateY(0) scale(0.95); }
+  60%      { transform: translateY(-12px) scale(1.06); }
+  80%      { transform: translateY(0) scale(0.97); }
+}
+
+.lion-emoji.is-oso { animation: oso-stomp 2.2s ease-in-out infinite; }
+@keyframes oso-stomp {
   0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(1.5px); }
+  50%      { transform: translateY(-8px) rotate(3deg); }
+}
+
+.lion-emoji.is-jaguar { animation: jaguar-leap 2.4s ease-in-out infinite; }
+@keyframes jaguar-leap {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  30%      { transform: translateY(-30px) translateX(10px) rotate(15deg); }
+  60%      { transform: translateY(-10px) translateX(-5px) rotate(-5deg); }
+}
+
+.lion-emoji.is-toro { animation: toro-charge 1.8s ease-in-out infinite; }
+@keyframes toro-charge {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  25%      { transform: translateX(-8px) rotate(-5deg) scale(1.04); }
+  75%      { transform: translateX(8px) rotate(5deg) scale(1.04); }
 }
 
 /* Frase principal */
@@ -2494,196 +2588,26 @@ body.modo-estadio .motivation-banner {
 
 <!-- Reveal del bono diario - aparece a las 10:00 AM CDMX cada día -->
 <!-- 🦁 MODO LEÓN — Despertador motivacional 2:30-5:00 PM CDMX -->
-<div class="lion-overlay" id="lionOverlay" role="dialog" aria-label="Mensaje motivacional">
+<div class="lion-overlay" id="lionOverlay" role="dialog" aria-label="Despertador motivacional">
   <button class="lion-close-btn" id="lionCloseBtn" aria-label="Cerrar">×</button>
 
   <!-- Rayos de luz girando -->
   <div class="lion-rays"></div>
   <!-- Resplandor pulsante -->
   <div class="lion-glow"></div>
-  <!-- Embers flotando -->
+  <!-- Embers / chispas flotando -->
   <div class="lion-embers" id="lionEmbers"></div>
+  <!-- Partículas brillantes -->
+  <div class="lion-sparks" id="lionSparks"></div>
 
   <div class="lion-stage">
-    <div class="lion-svg-wrap">
-      <svg class="lion-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <!-- Gradiente principal de melena (fuego) -->
-          <radialGradient id="maneFire" cx="50%" cy="50%" r="60%">
-            <stop offset="0%"   stop-color="#FFF4D6"/>
-            <stop offset="20%"  stop-color="#FFD700"/>
-            <stop offset="50%"  stop-color="#FF8C00"/>
-            <stop offset="80%"  stop-color="#FF4500"/>
-            <stop offset="100%" stop-color="#8B0000"/>
-          </radialGradient>
-          <!-- Gradiente para el rostro -->
-          <linearGradient id="faceGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%"   stop-color="#FFE9C8"/>
-            <stop offset="40%"  stop-color="#FFB347"/>
-            <stop offset="100%" stop-color="#CC5500"/>
-          </linearGradient>
-          <!-- Gradiente para hocico -->
-          <linearGradient id="snoutGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%"   stop-color="#FFD8A0"/>
-            <stop offset="100%" stop-color="#A04000"/>
-          </linearGradient>
-          <!-- Glow ojo -->
-          <radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"   stop-color="#FFFFFF"/>
-            <stop offset="30%"  stop-color="#FFD700"/>
-            <stop offset="70%"  stop-color="#FFA500"/>
-            <stop offset="100%" stop-color="#FF4500"/>
-          </radialGradient>
-          <!-- Filtro glow general -->
-          <filter id="strongGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
-            <feMerge>
-              <feMergeNode in="blur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-
-        <!-- ===== MELENA (mechones de fuego en capas) ===== -->
-        <g class="lion-mane">
-          <!-- Mechones exteriores grandes -->
-          <g fill="url(#maneFire)" opacity="0.85">
-            <path class="lion-mane-strand" d="M250,90 Q120,120 90,250 Q70,380 200,420 Q150,300 180,180 Q210,120 250,90 Z"/>
-            <path class="lion-mane-strand" d="M250,90 Q380,120 410,250 Q430,380 300,420 Q350,300 320,180 Q290,120 250,90 Z"/>
-            <path class="lion-mane-strand" d="M250,80 Q160,100 130,200 Q140,320 250,360 Q360,320 370,200 Q340,100 250,80 Z"/>
-          </g>
-
-          <!-- Picos de fuego radiales (16 mechones tipo flama) -->
-          <g fill="url(#maneFire)" filter="url(#strongGlow)">
-            <path class="lion-mane-strand" d="M250,80 L240,30 L255,60 L265,20 L260,70 Z"/>
-            <path class="lion-mane-strand" d="M180,100 L150,50 L175,75 L155,40 L185,85 Z"/>
-            <path class="lion-mane-strand" d="M320,100 L350,50 L325,75 L345,40 L315,85 Z"/>
-            <path class="lion-mane-strand" d="M130,160 L80,140 L115,150 L70,170 L125,165 Z"/>
-            <path class="lion-mane-strand" d="M370,160 L420,140 L385,150 L430,170 L375,165 Z"/>
-            <path class="lion-mane-strand" d="M115,240 L55,235 L100,245 L50,255 L110,250 Z"/>
-            <path class="lion-mane-strand" d="M385,240 L445,235 L400,245 L450,255 L390,250 Z"/>
-            <path class="lion-mane-strand" d="M130,320 L80,355 L120,335 L75,365 L135,335 Z"/>
-            <path class="lion-mane-strand" d="M370,320 L420,355 L380,335 L425,365 L365,335 Z"/>
-            <path class="lion-mane-strand" d="M180,395 L155,440 L180,410 L160,450 L195,405 Z"/>
-            <path class="lion-mane-strand" d="M320,395 L345,440 L320,410 L340,450 L305,405 Z"/>
-            <path class="lion-mane-strand" d="M250,420 L240,470 L250,440 L260,475 L255,425 Z"/>
-            <path class="lion-mane-strand" d="M210,90 L195,40 L208,65 L200,30 L218,80 Z"/>
-            <path class="lion-mane-strand" d="M290,90 L305,40 L292,65 L300,30 L282,80 Z"/>
-            <path class="lion-mane-strand" d="M155,135 L110,95 L145,120 L105,110 L160,130 Z"/>
-            <path class="lion-mane-strand" d="M345,135 L390,95 L355,120 L395,110 L340,130 Z"/>
-          </g>
-
-          <!-- Brillos blancos en la melena (highlights) -->
-          <g fill="#FFF4D6" opacity="0.5">
-            <ellipse class="lion-mane-strand" cx="200" cy="150" rx="22" ry="50" transform="rotate(-25 200 150)"/>
-            <ellipse class="lion-mane-strand" cx="300" cy="150" rx="22" ry="50" transform="rotate(25 300 150)"/>
-            <ellipse class="lion-mane-strand" cx="155" cy="240" rx="14" ry="35" transform="rotate(-90 155 240)"/>
-            <ellipse class="lion-mane-strand" cx="345" cy="240" rx="14" ry="35" transform="rotate(90 345 240)"/>
-          </g>
-        </g>
-
-        <!-- ===== ROSTRO ===== -->
-        <g>
-          <!-- Cara base (forma de pera invertida estilizada) -->
-          <path d="M250,140
-                   Q175,150 165,230
-                   Q160,300 195,345
-                   Q230,380 250,385
-                   Q270,380 305,345
-                   Q340,300 335,230
-                   Q325,150 250,140 Z"
-                fill="url(#faceGrad)"
-                stroke="#8B3A00" stroke-width="2"/>
-
-          <!-- Líneas decorativas tribales/futuristas en mejillas -->
-          <g stroke="#5C2300" stroke-width="1.6" fill="none" opacity="0.75" stroke-linecap="round">
-            <path d="M195,250 Q190,265 200,280"/>
-            <path d="M205,255 Q200,272 215,285"/>
-            <path d="M305,250 Q310,265 300,280"/>
-            <path d="M295,255 Q300,272 285,285"/>
-          </g>
-
-          <!-- Sombra del entrecejo -->
-          <path d="M210,200 Q250,190 290,200 Q280,215 250,213 Q220,215 210,200 Z"
-                fill="#5C2300" opacity="0.45"/>
-
-          <!-- Cejas (arcos arriba de los ojos) -->
-          <path d="M200,205 Q220,195 235,205" stroke="#3a1500" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-          <path d="M265,205 Q280,195 300,205" stroke="#3a1500" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-
-          <!-- ===== OJOS BRILLANTES ===== -->
-          <g class="lion-eye">
-            <!-- Halo exterior -->
-            <circle cx="217" cy="232" r="20" fill="url(#eyeGlow)" opacity="0.5"/>
-            <!-- Globo del ojo -->
-            <ellipse cx="217" cy="232" rx="13" ry="11" fill="#FFD700"/>
-            <!-- Pupila -->
-            <ellipse cx="217" cy="232" rx="4" ry="9" fill="#1a0500"/>
-            <!-- Brillo -->
-            <circle cx="220" cy="228" r="2.5" fill="#FFFFFF"/>
-          </g>
-          <g class="lion-eye">
-            <circle cx="283" cy="232" r="20" fill="url(#eyeGlow)" opacity="0.5"/>
-            <ellipse cx="283" cy="232" rx="13" ry="11" fill="#FFD700"/>
-            <ellipse cx="283" cy="232" rx="4" ry="9" fill="#1a0500"/>
-            <circle cx="286" cy="228" r="2.5" fill="#FFFFFF"/>
-          </g>
-
-          <!-- ===== HOCICO + NARIZ + BOCA ===== -->
-          <g class="lion-snout">
-            <!-- Hocico (zona alrededor de la nariz/boca) -->
-            <ellipse cx="250" cy="295" rx="48" ry="38" fill="url(#snoutGrad)"/>
-
-            <!-- Triángulo entre nariz y boca (más oscuro) -->
-            <path d="M250,275 L235,300 L265,300 Z" fill="#2a0d00" opacity="0.85"/>
-
-            <!-- Nariz negra -->
-            <path d="M232,275 Q250,265 268,275 Q265,290 250,293 Q235,290 232,275 Z"
-                  fill="#0d0500" stroke="#FFD700" stroke-width="0.8"/>
-            <!-- Brillo en nariz -->
-            <ellipse cx="244" cy="272" rx="4" ry="2" fill="#FFFFFF" opacity="0.6"/>
-
-            <!-- Línea vertical hocico -->
-            <line x1="250" y1="293" x2="250" y2="315" stroke="#1a0500" stroke-width="2.2" stroke-linecap="round"/>
-
-            <!-- Boca (sonrisa de león) -->
-            <path d="M250,315 Q230,335 215,325" stroke="#1a0500" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-            <path d="M250,315 Q270,335 285,325" stroke="#1a0500" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-
-            <!-- Colmillos sutiles -->
-            <path d="M235,322 L233,332 L240,328 Z" fill="#FFFFFF" opacity="0.85"/>
-            <path d="M265,322 L267,332 L260,328 Z" fill="#FFFFFF" opacity="0.85"/>
-
-            <!-- Bigotes (futuristas, líneas brillantes) -->
-            <g stroke="#FFE9C8" stroke-width="1.2" stroke-linecap="round" opacity="0.7">
-              <line x1="200" y1="295" x2="155" y2="290"/>
-              <line x1="200" y1="305" x2="158" y2="305"/>
-              <line x1="200" y1="315" x2="160" y2="320"/>
-              <line x1="300" y1="295" x2="345" y2="290"/>
-              <line x1="300" y1="305" x2="342" y2="305"/>
-              <line x1="300" y1="315" x2="340" y2="320"/>
-            </g>
-          </g>
-
-          <!-- ===== OREJAS ===== -->
-          <g>
-            <!-- Oreja izquierda -->
-            <path d="M170,180 Q155,150 175,135 Q200,150 195,180 Z" fill="url(#faceGrad)" stroke="#8B3A00" stroke-width="1.5"/>
-            <path d="M175,170 Q170,155 182,148 Q190,160 188,173 Z" fill="#8B0000" opacity="0.7"/>
-            <!-- Oreja derecha -->
-            <path d="M330,180 Q345,150 325,135 Q300,150 305,180 Z" fill="url(#faceGrad)" stroke="#8B3A00" stroke-width="1.5"/>
-            <path d="M325,170 Q330,155 318,148 Q310,160 312,173 Z" fill="#8B0000" opacity="0.7"/>
-          </g>
-
-          <!-- Detalles "futuristas" en el rostro (líneas tipo HUD) -->
-          <g stroke="#FFD700" stroke-width="0.6" fill="none" opacity="0.4">
-            <path d="M168,225 L155,225"/>
-            <path d="M332,225 L345,225"/>
-            <circle cx="155" cy="225" r="2" fill="#FFD700"/>
-            <circle cx="345" cy="225" r="2" fill="#FFD700"/>
-          </g>
-        </g>
-      </svg>
+    <div class="lion-emoji-wrap">
+      <!-- Aura pulsante -->
+      <div class="lion-emoji-aura"></div>
+      <!-- El emoji 3D del animal -->
+      <div class="lion-emoji" id="lionEmoji">🦁</div>
+      <!-- Sombra debajo -->
+      <div class="lion-emoji-shadow"></div>
     </div>
 
     <div class="lion-quote" id="lionQuote">DESPIERTA, MI REY</div>
@@ -4433,25 +4357,107 @@ try {
 } catch (e) {}
 
 /* ===========================================================
-   🦁 MODO LEÓN - Despertador motivacional 2:30-5:00 PM CDMX
-   Activación automática 1 vez en ese rango. Tecla L = manual.
+   🦁🐅🦅🐺🐻🦍🐆🐃 DESPERTADOR ANIMAL · 2:30-5:00 PM CDMX
+   8 animales con sonidos sintéticos realistas + frases temáticas
    =========================================================== */
-const FRASES_LEON = [
-  { titulo: '¡DESPIERTA, MI REY!',         sub: 'LAS GANANCIAS TE ESPERAN' },
-  { titulo: 'EL LEÓN NO DUERME',           sub: 'CAZA · GUERRERO · DOMINANTE' },
-  { titulo: 'LEVANTA LA CORONA',           sub: 'EL TERRITORIO ES TUYO' },
-  { titulo: 'RUGE FUERTE',                 sub: 'QUE EL MUNDO TE ESCUCHE' },
-  { titulo: 'NO HAY PRESA QUE SE ESCAPE',  sub: 'CIERRA · CIERRA · CIERRA' },
-  { titulo: 'MI REINA · MI REY',           sub: 'LA SAVANA TE PERTENECE' },
-  { titulo: 'EL DINERO HUYE DEL DÉBIL',    sub: 'TÚ ERES EL DEPREDADOR' },
-  { titulo: 'NACISTE PARA ESTO',           sub: 'NO PARA LA MEDIOCRIDAD' },
-  { titulo: 'LAS OVEJAS NO COMEN CARNE',   sub: 'TÚ SÍ · TÚ ERES LEÓN' },
-  { titulo: 'ENCIENDE LA HOGUERA',         sub: 'QUE QUEMEN TUS RESULTADOS' },
-];
+
+const ANIMALES = {
+  leon: {
+    emoji: '🦁',
+    nombre: 'León',
+    cssClass: '',
+    frases: [
+      { titulo: '¡DESPIERTA, MI REY!',         sub: 'LAS GANANCIAS TE ESPERAN' },
+      { titulo: 'EL LEÓN NO DUERME',           sub: 'CAZA · GUERRERO · DOMINANTE' },
+      { titulo: 'LEVANTA LA CORONA',           sub: 'EL TERRITORIO ES TUYO' },
+      { titulo: 'RUGE FUERTE',                 sub: 'QUE EL MUNDO TE ESCUCHE' },
+      { titulo: 'MI REINA · MI REY',           sub: 'LA SAVANA TE PERTENECE' },
+    ]
+  },
+  tigre: {
+    emoji: '🐅',
+    nombre: 'Tigre',
+    cssClass: 'is-tigre',
+    frases: [
+      { titulo: 'ACECHA. CAZA. GANA.',         sub: 'EL TIGRE NUNCA FALLA' },
+      { titulo: 'OJOS DE FUEGO',               sub: 'CADA PRESA ES UN CIERRE' },
+      { titulo: 'SILENCIOSO Y LETAL',          sub: 'ASÍ SE GANA LA SELVA' },
+      { titulo: 'SIN MIEDO. SIN PIEDAD.',      sub: 'TÚ ERES EL CAZADOR' },
+    ]
+  },
+  aguila: {
+    emoji: '🦅',
+    nombre: 'Águila',
+    cssClass: 'is-aguila',
+    frases: [
+      { titulo: 'VUELA SOBRE TODOS',           sub: 'LA VISIÓN ES TU ARMA' },
+      { titulo: 'OJO DE ÁGUILA',               sub: 'NADA SE ESCAPA DE TI' },
+      { titulo: 'ALAS PARA EL ÉXITO',          sub: 'EL CIELO NO ES EL LÍMITE' },
+      { titulo: 'CAZA DESDE LAS ALTURAS',      sub: 'PRECISIÓN · POTENCIA · TRIUNFO' },
+    ]
+  },
+  lobo: {
+    emoji: '🐺',
+    nombre: 'Lobo',
+    cssClass: 'is-lobo',
+    frases: [
+      { titulo: 'AÚLLA POR LA MANADA',         sub: 'JUNTOS SOMOS IMPARABLES' },
+      { titulo: 'EL LOBO ALPHA',               sub: 'NACIDO PARA LIDERAR' },
+      { titulo: 'LA NOCHE ES TUYA',            sub: 'CIERRA SIN DESCANSO' },
+      { titulo: 'NO TEMAS A LA LUNA',          sub: 'TÚ LA HACES BRILLAR' },
+    ]
+  },
+  oso: {
+    emoji: '🐻',
+    nombre: 'Oso',
+    cssClass: 'is-oso',
+    frases: [
+      { titulo: 'FUERZA BRUTA',                sub: 'NADA TE DETIENE' },
+      { titulo: 'TERRITORIO PROPIO',           sub: 'DEFIENDE LO QUE ES TUYO' },
+      { titulo: 'RESISTENCIA INFINITA',        sub: 'SIGUE ADELANTE' },
+      { titulo: 'EL OSO NO PIDE PERMISO',      sub: 'TÚ TAMPOCO' },
+    ]
+  },
+  gorila: {
+    emoji: '🦍',
+    nombre: 'Gorila',
+    cssClass: 'is-gorila',
+    frases: [
+      { titulo: 'GOLPEA EL PECHO',             sub: 'MUESTRA TU PODER' },
+      { titulo: 'KING KONG MODE',              sub: 'NADA TE PUEDE PARAR' },
+      { titulo: 'INDESTRUCTIBLE',              sub: 'CIERRA CON FUERZA' },
+      { titulo: 'EL JEFE DE LA SELVA',         sub: 'ESE ERES TÚ' },
+    ]
+  },
+  jaguar: {
+    emoji: '🐆',
+    nombre: 'Jaguar',
+    cssClass: 'is-jaguar',
+    frases: [
+      { titulo: 'VELOCIDAD MORTAL',            sub: 'CIERRA ANTES QUE OTROS PIENSEN' },
+      { titulo: 'SALTO DE FE',                 sub: 'ARRIESGA · GANA · REPITE' },
+      { titulo: 'JAGUAR DEPREDADOR',           sub: 'UN GOLPE · UN CIERRE' },
+      { titulo: 'AGILIDAD ÚNICA',              sub: 'NADIE TE ALCANZA' },
+    ]
+  },
+  toro: {
+    emoji: '🐃',
+    nombre: 'Toro',
+    cssClass: 'is-toro',
+    frases: [
+      { titulo: 'EMBISTE SIN MIEDO',           sub: 'EL ÉXITO NO ESPERA' },
+      { titulo: 'CUERNOS AL VIENTO',           sub: 'CARGA CON TODO' },
+      { titulo: 'BULL MARKET MENTALITY',       sub: 'COMPRA · VENDE · GANA' },
+      { titulo: 'IMPARABLE',                   sub: 'EL TORO NO RETROCEDE' },
+    ]
+  }
+};
+
+const ANIMAL_KEYS = Object.keys(ANIMALES);
 
 let lionActive = false;
-let lionRugidoLoop = null;
-let lionAutoTriggeredToday = null; // 'YYYY-MM-DD' para no disparar 2 veces
+let lionLoopInterval = null;
+let lionAutoTriggeredToday = null;
 
 function setupLionEmbers() {
   const cont = document.getElementById('lionEmbers');
@@ -4471,79 +4477,173 @@ function setupLionEmbers() {
   }
 }
 
-/* ===== Sonidos del modo león ===== */
-function rugidoLeon() {
-  // Rugido sintetizado: bass profundo + ruido + filtro variable
+function setupLionSparks() {
+  const cont = document.getElementById('lionSparks');
+  if (!cont) return;
+  cont.innerHTML = '';
+  // 16 destellos en posiciones aleatorias alrededor del emoji
+  for (let i = 0; i < 16; i++) {
+    const s = document.createElement('span');
+    const angle = (i / 16) * Math.PI * 2;
+    const radius = 30 + Math.random() * 25;
+    const cx = 50 + Math.cos(angle) * radius;
+    const cy = 50 + Math.sin(angle) * radius;
+    s.style.left = cx + '%';
+    s.style.top = cy + '%';
+    s.style.animationDelay = (Math.random() * 2.5) + 's';
+    s.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+    cont.appendChild(s);
+  }
+}
+
+/* =============================================================
+   🔊 SÍNTESIS DE SONIDOS REALISTAS POR ANIMAL
+   Multicapa, intensos, con vibrato, ruido bandpass y modulación
+   ============================================================= */
+
+function _bufRuidoBlanco(ac, dur) {
+  const buf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+  return buf;
+}
+
+function _bufRuidoBrowniano(ac, dur) {
+  // Ruido marrón (más grave que blanco) - mejor para rugidos
+  const buf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+  const d = buf.getChannelData(0);
+  let last = 0;
+  for (let i = 0; i < d.length; i++) {
+    const white = Math.random() * 2 - 1;
+    last = (last + 0.02 * white) / 1.02;
+    d[i] = last * 3.5;
+  }
+  return buf;
+}
+
+/* === LEÓN: Rugido grave de 3 capas con vibrato === */
+function sonidoLeon() {
   const ac = getAudio();
   if (!ac) return;
   const t = ac.currentTime;
-  const dur = 1.8;
+  const dur = 2.4;
 
-  // Capa 1: Sub bass (sine 60Hz cayendo)
+  // Layer 1: Sub-bass que cae
   const o1 = ac.createOscillator();
   const g1 = ac.createGain();
   o1.type = 'sine';
-  o1.frequency.setValueAtTime(80, t);
-  o1.frequency.exponentialRampToValueAtTime(45, t + dur * 0.6);
-  o1.frequency.exponentialRampToValueAtTime(35, t + dur);
+  o1.frequency.setValueAtTime(95, t);
+  o1.frequency.exponentialRampToValueAtTime(48, t + dur * 0.5);
+  o1.frequency.exponentialRampToValueAtTime(32, t + dur);
   g1.gain.setValueAtTime(0.001, t);
-  g1.gain.exponentialRampToValueAtTime(0.55, t + 0.15);
-  g1.gain.exponentialRampToValueAtTime(0.3,  t + dur * 0.7);
+  g1.gain.exponentialRampToValueAtTime(0.85, t + 0.18);
+  g1.gain.exponentialRampToValueAtTime(0.4, t + dur * 0.7);
   g1.gain.exponentialRampToValueAtTime(0.001, t + dur);
   o1.connect(g1).connect(ac.destination);
   o1.start(t); o1.stop(t + dur + 0.1);
 
-  // Capa 2: Sawtooth con vibrato (la "voz" del rugido)
+  // Layer 2: Sawtooth con vibrato fuerte
   const o2 = ac.createOscillator();
   const lfo = ac.createOscillator();
   const lfoGain = ac.createGain();
   const g2 = ac.createGain();
   const f2 = ac.createBiquadFilter();
   o2.type = 'sawtooth';
-  o2.frequency.setValueAtTime(140, t);
-  o2.frequency.exponentialRampToValueAtTime(85,  t + dur * 0.5);
-  o2.frequency.exponentialRampToValueAtTime(55,  t + dur);
+  o2.frequency.setValueAtTime(180, t);
+  o2.frequency.exponentialRampToValueAtTime(95, t + dur * 0.5);
+  o2.frequency.exponentialRampToValueAtTime(60, t + dur);
   lfo.type = 'sine';
-  lfo.frequency.value = 18; // vibrato grueso
-  lfoGain.gain.value = 12;
-  lfo.connect(lfoGain);
-  lfoGain.connect(o2.frequency);
+  lfo.frequency.value = 22;
+  lfoGain.gain.value = 18;
+  lfo.connect(lfoGain).connect(o2.frequency);
   f2.type = 'lowpass';
-  f2.frequency.setValueAtTime(800, t);
+  f2.frequency.setValueAtTime(900, t);
   f2.frequency.exponentialRampToValueAtTime(380, t + dur);
-  f2.Q.value = 4;
+  f2.Q.value = 6;
   g2.gain.setValueAtTime(0.001, t);
-  g2.gain.exponentialRampToValueAtTime(0.18, t + 0.2);
-  g2.gain.exponentialRampToValueAtTime(0.12, t + dur * 0.7);
+  g2.gain.exponentialRampToValueAtTime(0.32, t + 0.2);
+  g2.gain.exponentialRampToValueAtTime(0.18, t + dur * 0.7);
   g2.gain.exponentialRampToValueAtTime(0.001, t + dur);
   o2.connect(f2); f2.connect(g2); g2.connect(ac.destination);
   o2.start(t); o2.stop(t + dur + 0.1);
   lfo.start(t); lfo.stop(t + dur + 0.1);
 
-  // Capa 3: Ruido filtrado (textura del rugido)
-  const noiseBuf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
-  const noiseData = noiseBuf.getChannelData(0);
-  for (let i = 0; i < noiseData.length; i++) {
-    noiseData[i] = (Math.random() * 2 - 1) * 0.6;
-  }
-  const noiseSrc = ac.createBufferSource();
-  const fNoise = ac.createBiquadFilter();
-  const gNoise = ac.createGain();
-  noiseSrc.buffer = noiseBuf;
-  fNoise.type = 'bandpass';
-  fNoise.frequency.setValueAtTime(450, t);
-  fNoise.frequency.exponentialRampToValueAtTime(220, t + dur);
-  fNoise.Q.value = 2.5;
-  gNoise.gain.setValueAtTime(0.001, t);
-  gNoise.gain.exponentialRampToValueAtTime(0.22, t + 0.2);
-  gNoise.gain.exponentialRampToValueAtTime(0.08, t + dur * 0.8);
-  gNoise.gain.exponentialRampToValueAtTime(0.001, t + dur);
-  noiseSrc.connect(fNoise); fNoise.connect(gNoise); gNoise.connect(ac.destination);
-  noiseSrc.start(t); noiseSrc.stop(t + dur);
+  // Layer 3: Ruido browniano filtrado (textura gutural)
+  const buf = _bufRuidoBrowniano(ac, dur);
+  const src = ac.createBufferSource();
+  const f = ac.createBiquadFilter();
+  const gN = ac.createGain();
+  src.buffer = buf;
+  f.type = 'bandpass';
+  f.frequency.setValueAtTime(420, t);
+  f.frequency.exponentialRampToValueAtTime(200, t + dur);
+  f.Q.value = 3;
+  gN.gain.setValueAtTime(0.001, t);
+  gN.gain.exponentialRampToValueAtTime(0.45, t + 0.2);
+  gN.gain.exponentialRampToValueAtTime(0.15, t + dur * 0.8);
+  gN.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  src.connect(f); f.connect(gN); gN.connect(ac.destination);
+  src.start(t); src.stop(t + dur);
 }
 
-/* Águila/halcón gritando (chirrido agudo) */
-function chirridoAguila() {
+/* === TIGRE: Rugido similar al león pero más agudo y agresivo === */
+function sonidoTigre() {
+  const ac = getAudio();
+  if (!ac) return;
+  const t = ac.currentTime;
+  const dur = 1.8;
+
+  // Sub-bass con caída más rápida
+  const o1 = ac.createOscillator();
+  const g1 = ac.createGain();
+  o1.type = 'triangle';
+  o1.frequency.setValueAtTime(120, t);
+  o1.frequency.exponentialRampToValueAtTime(60, t + dur);
+  g1.gain.setValueAtTime(0.001, t);
+  g1.gain.exponentialRampToValueAtTime(0.7, t + 0.1);
+  g1.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o1.connect(g1).connect(ac.destination);
+  o1.start(t); o1.stop(t + dur + 0.05);
+
+  // Snarl agudo
+  const o2 = ac.createOscillator();
+  const lfo = ac.createOscillator();
+  const lfoGain = ac.createGain();
+  const g2 = ac.createGain();
+  const f2 = ac.createBiquadFilter();
+  o2.type = 'sawtooth';
+  o2.frequency.setValueAtTime(280, t);
+  o2.frequency.exponentialRampToValueAtTime(140, t + dur);
+  lfo.type = 'square';
+  lfo.frequency.value = 30;
+  lfoGain.gain.value = 25;
+  lfo.connect(lfoGain).connect(o2.frequency);
+  f2.type = 'bandpass';
+  f2.frequency.value = 800;
+  f2.Q.value = 5;
+  g2.gain.setValueAtTime(0.001, t);
+  g2.gain.exponentialRampToValueAtTime(0.28, t + 0.15);
+  g2.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o2.connect(f2); f2.connect(g2); g2.connect(ac.destination);
+  o2.start(t); o2.stop(t + dur);
+  lfo.start(t); lfo.stop(t + dur);
+
+  // Layer ruido browniano
+  const buf = _bufRuidoBrowniano(ac, dur);
+  const src = ac.createBufferSource();
+  const fN = ac.createBiquadFilter();
+  const gN = ac.createGain();
+  src.buffer = buf;
+  fN.type = 'bandpass'; fN.frequency.value = 600; fN.Q.value = 2;
+  gN.gain.setValueAtTime(0.001, t);
+  gN.gain.exponentialRampToValueAtTime(0.35, t + 0.15);
+  gN.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  src.connect(fN); fN.connect(gN); gN.connect(ac.destination);
+  src.start(t); src.stop(t + dur);
+}
+
+/* === ÁGUILA: Chirrido muy agudo con vibrato rápido === */
+function sonidoAguila() {
   const ac = getAudio();
   if (!ac) return;
   const t = ac.currentTime;
@@ -4553,114 +4653,409 @@ function chirridoAguila() {
   const lfo = ac.createOscillator();
   const lfoGain = ac.createGain();
   o.type = 'sawtooth';
-  o.frequency.setValueAtTime(2200, t);
-  o.frequency.exponentialRampToValueAtTime(1400, t + 0.3);
-  o.frequency.exponentialRampToValueAtTime(1800, t + 0.6);
-  o.frequency.exponentialRampToValueAtTime(1100, t + 0.9);
+  o.frequency.setValueAtTime(2400, t);
+  o.frequency.exponentialRampToValueAtTime(1500, t + 0.25);
+  o.frequency.exponentialRampToValueAtTime(2100, t + 0.5);
+  o.frequency.exponentialRampToValueAtTime(1300, t + 0.75);
+  o.frequency.exponentialRampToValueAtTime(1900, t + 1.0);
+  o.frequency.exponentialRampToValueAtTime(900, t + 1.4);
   lfo.type = 'sine';
-  lfo.frequency.value = 25;
-  lfoGain.gain.value = 80;
-  lfo.connect(lfoGain);
-  lfoGain.connect(o.frequency);
+  lfo.frequency.value = 35;
+  lfoGain.gain.value = 120;
+  lfo.connect(lfoGain).connect(o.frequency);
   g.gain.setValueAtTime(0.001, t);
-  g.gain.exponentialRampToValueAtTime(0.12, t + 0.05);
-  g.gain.exponentialRampToValueAtTime(0.001, t + 0.95);
+  g.gain.exponentialRampToValueAtTime(0.18, t + 0.04);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 1.45);
   o.connect(g).connect(ac.destination);
-  o.start(t); o.stop(t + 1);
-  lfo.start(t); lfo.stop(t + 1);
+  o.start(t); o.stop(t + 1.5);
+  lfo.start(t); lfo.stop(t + 1.5);
+
+  // Chirp final
+  setTimeout(() => {
+    const ac2 = getAudio();
+    if (!ac2) return;
+    const t2 = ac2.currentTime;
+    const o2 = ac2.createOscillator();
+    const g2 = ac2.createGain();
+    o2.type = 'square';
+    o2.frequency.setValueAtTime(3200, t2);
+    o2.frequency.exponentialRampToValueAtTime(2000, t2 + 0.15);
+    g2.gain.setValueAtTime(0.001, t2);
+    g2.gain.exponentialRampToValueAtTime(0.15, t2 + 0.02);
+    g2.gain.exponentialRampToValueAtTime(0.001, t2 + 0.18);
+    o2.connect(g2).connect(ac2.destination);
+    o2.start(t2); o2.stop(t2 + 0.2);
+  }, 1500);
 }
 
-/* Tambores tribales (3 golpes) */
+/* === LOBO: Aullido largo con frecuencia subiendo y cayendo === */
+function sonidoLobo() {
+  const ac = getAudio();
+  if (!ac) return;
+  const t = ac.currentTime;
+  const dur = 3.2;
+  // Aullido: frecuencia sube despacio y baja al final
+  const o = ac.createOscillator();
+  const g = ac.createGain();
+  const f = ac.createBiquadFilter();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(280, t);
+  o.frequency.linearRampToValueAtTime(520, t + 0.6);
+  o.frequency.linearRampToValueAtTime(680, t + 1.6);
+  o.frequency.linearRampToValueAtTime(620, t + 2.4);
+  o.frequency.exponentialRampToValueAtTime(180, t + dur);
+  f.type = 'lowpass';
+  f.frequency.value = 1400;
+  f.Q.value = 4;
+  g.gain.setValueAtTime(0.001, t);
+  g.gain.exponentialRampToValueAtTime(0.22, t + 0.4);
+  g.gain.linearRampToValueAtTime(0.28, t + 1.6);
+  g.gain.linearRampToValueAtTime(0.18, t + 2.6);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(f); f.connect(g); g.connect(ac.destination);
+  o.start(t); o.stop(t + dur + 0.05);
+
+  // Bass de apoyo
+  const o2 = ac.createOscillator();
+  const g2 = ac.createGain();
+  o2.type = 'sine';
+  o2.frequency.setValueAtTime(140, t);
+  o2.frequency.linearRampToValueAtTime(260, t + 1.6);
+  o2.frequency.exponentialRampToValueAtTime(80, t + dur);
+  g2.gain.setValueAtTime(0.001, t);
+  g2.gain.exponentialRampToValueAtTime(0.35, t + 0.5);
+  g2.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o2.connect(g2).connect(ac.destination);
+  o2.start(t); o2.stop(t + dur);
+}
+
+/* === OSO: Gruñido grave y largo === */
+function sonidoOso() {
+  const ac = getAudio();
+  if (!ac) return;
+  const t = ac.currentTime;
+  const dur = 2.0;
+
+  // Bass profundo
+  const o1 = ac.createOscillator();
+  const g1 = ac.createGain();
+  o1.type = 'sine';
+  o1.frequency.setValueAtTime(70, t);
+  o1.frequency.linearRampToValueAtTime(55, t + dur * 0.5);
+  o1.frequency.exponentialRampToValueAtTime(40, t + dur);
+  g1.gain.setValueAtTime(0.001, t);
+  g1.gain.exponentialRampToValueAtTime(0.95, t + 0.15);
+  g1.gain.linearRampToValueAtTime(0.7, t + dur * 0.7);
+  g1.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o1.connect(g1).connect(ac.destination);
+  o1.start(t); o1.stop(t + dur);
+
+  // Growl con vibrato lento (gruñido)
+  const o2 = ac.createOscillator();
+  const lfo = ac.createOscillator();
+  const lfoGain = ac.createGain();
+  const g2 = ac.createGain();
+  const f2 = ac.createBiquadFilter();
+  o2.type = 'sawtooth';
+  o2.frequency.setValueAtTime(110, t);
+  o2.frequency.exponentialRampToValueAtTime(75, t + dur);
+  lfo.type = 'sine';
+  lfo.frequency.value = 12; // vibrato lento
+  lfoGain.gain.value = 8;
+  lfo.connect(lfoGain).connect(o2.frequency);
+  f2.type = 'lowpass';
+  f2.frequency.value = 500;
+  f2.Q.value = 5;
+  g2.gain.setValueAtTime(0.001, t);
+  g2.gain.exponentialRampToValueAtTime(0.4, t + 0.2);
+  g2.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o2.connect(f2); f2.connect(g2); g2.connect(ac.destination);
+  o2.start(t); o2.stop(t + dur);
+  lfo.start(t); lfo.stop(t + dur);
+
+  // Ruido grave
+  const buf = _bufRuidoBrowniano(ac, dur);
+  const src = ac.createBufferSource();
+  const fN = ac.createBiquadFilter();
+  const gN = ac.createGain();
+  src.buffer = buf;
+  fN.type = 'lowpass'; fN.frequency.value = 350;
+  gN.gain.setValueAtTime(0.001, t);
+  gN.gain.exponentialRampToValueAtTime(0.3, t + 0.2);
+  gN.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  src.connect(fN); fN.connect(gN); gN.connect(ac.destination);
+  src.start(t); src.stop(t + dur);
+}
+
+/* === GORILA: Aullido + golpes de pecho === */
+function sonidoGorila() {
+  const ac = getAudio();
+  if (!ac) return;
+  const t = ac.currentTime;
+  // Aullido / hooting
+  const o = ac.createOscillator();
+  const g = ac.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(160, t);
+  o.frequency.linearRampToValueAtTime(240, t + 0.4);
+  o.frequency.linearRampToValueAtTime(180, t + 0.8);
+  o.frequency.exponentialRampToValueAtTime(110, t + 1.4);
+  g.gain.setValueAtTime(0.001, t);
+  g.gain.exponentialRampToValueAtTime(0.28, t + 0.2);
+  g.gain.linearRampToValueAtTime(0.22, t + 1.0);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
+  o.connect(g).connect(ac.destination);
+  o.start(t); o.stop(t + 1.5);
+
+  // Golpes de pecho (3 thumps)
+  [1.6, 1.85, 2.1].forEach(delay => {
+    const tt = ac.currentTime + delay;
+    const oT = ac.createOscillator();
+    const gT = ac.createGain();
+    oT.type = 'sine';
+    oT.frequency.setValueAtTime(80, tt);
+    oT.frequency.exponentialRampToValueAtTime(35, tt + 0.15);
+    gT.gain.setValueAtTime(0.7, tt);
+    gT.gain.exponentialRampToValueAtTime(0.001, tt + 0.18);
+    oT.connect(gT).connect(ac.destination);
+    oT.start(tt); oT.stop(tt + 0.2);
+    // Crack del puño
+    const buf = _bufRuidoBlanco(ac, 0.05);
+    const src = ac.createBufferSource();
+    const fN = ac.createBiquadFilter();
+    const gN = ac.createGain();
+    src.buffer = buf;
+    fN.type = 'bandpass'; fN.frequency.value = 1500;
+    gN.gain.setValueAtTime(0.4, tt);
+    gN.gain.exponentialRampToValueAtTime(0.001, tt + 0.06);
+    src.connect(fN); fN.connect(gN); gN.connect(ac.destination);
+    src.start(tt); src.stop(tt + 0.06);
+  });
+}
+
+/* === JAGUAR: Snarl agudo y corto, muy agresivo === */
+function sonidoJaguar() {
+  const ac = getAudio();
+  if (!ac) return;
+  const t = ac.currentTime;
+  const dur = 1.4;
+
+  const o1 = ac.createOscillator();
+  const g1 = ac.createGain();
+  o1.type = 'sawtooth';
+  o1.frequency.setValueAtTime(220, t);
+  o1.frequency.exponentialRampToValueAtTime(380, t + 0.3);
+  o1.frequency.exponentialRampToValueAtTime(140, t + dur);
+  g1.gain.setValueAtTime(0.001, t);
+  g1.gain.exponentialRampToValueAtTime(0.45, t + 0.1);
+  g1.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+  const lfo = ac.createOscillator();
+  const lfoGain = ac.createGain();
+  lfo.type = 'square';
+  lfo.frequency.value = 35;
+  lfoGain.gain.value = 30;
+  lfo.connect(lfoGain).connect(o1.frequency);
+  const f1 = ac.createBiquadFilter();
+  f1.type = 'bandpass'; f1.frequency.value = 700; f1.Q.value = 6;
+
+  o1.connect(f1); f1.connect(g1); g1.connect(ac.destination);
+  o1.start(t); o1.stop(t + dur);
+  lfo.start(t); lfo.stop(t + dur);
+
+  // Hiss textura
+  const buf = _bufRuidoBlanco(ac, dur);
+  const src = ac.createBufferSource();
+  const fN = ac.createBiquadFilter();
+  const gN = ac.createGain();
+  src.buffer = buf;
+  fN.type = 'bandpass'; fN.frequency.value = 2500; fN.Q.value = 3;
+  gN.gain.setValueAtTime(0.001, t);
+  gN.gain.exponentialRampToValueAtTime(0.18, t + 0.1);
+  gN.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  src.connect(fN); fN.connect(gN); gN.connect(ac.destination);
+  src.start(t); src.stop(t + dur);
+}
+
+/* === TORO: Bramido grave + resoplido === */
+function sonidoToro() {
+  const ac = getAudio();
+  if (!ac) return;
+  const t = ac.currentTime;
+  const dur = 1.8;
+
+  // Bramido
+  const o = ac.createOscillator();
+  const g = ac.createGain();
+  const f = ac.createBiquadFilter();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(150, t);
+  o.frequency.linearRampToValueAtTime(180, t + 0.3);
+  o.frequency.linearRampToValueAtTime(160, t + 1.0);
+  o.frequency.exponentialRampToValueAtTime(85, t + dur);
+  f.type = 'lowpass';
+  f.frequency.value = 600;
+  f.Q.value = 7;
+  g.gain.setValueAtTime(0.001, t);
+  g.gain.exponentialRampToValueAtTime(0.45, t + 0.15);
+  g.gain.linearRampToValueAtTime(0.4, t + 1.0);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(f); f.connect(g); g.connect(ac.destination);
+  o.start(t); o.stop(t + dur);
+
+  // Sub-bass apoyo
+  const o2 = ac.createOscillator();
+  const g2 = ac.createGain();
+  o2.type = 'sine';
+  o2.frequency.setValueAtTime(60, t);
+  o2.frequency.exponentialRampToValueAtTime(40, t + dur);
+  g2.gain.setValueAtTime(0.001, t);
+  g2.gain.exponentialRampToValueAtTime(0.7, t + 0.15);
+  g2.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o2.connect(g2).connect(ac.destination);
+  o2.start(t); o2.stop(t + dur);
+
+  // Resoplido (ruido al inicio)
+  const buf = _bufRuidoBrowniano(ac, 0.5);
+  const src = ac.createBufferSource();
+  const fN = ac.createBiquadFilter();
+  const gN = ac.createGain();
+  src.buffer = buf;
+  fN.type = 'bandpass'; fN.frequency.value = 400;
+  gN.gain.setValueAtTime(0.45, t);
+  gN.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+  src.connect(fN); fN.connect(gN); gN.connect(ac.destination);
+  src.start(t); src.stop(t + 0.5);
+}
+
+/* === TAMBORES TRIBALES (intro genérico para todos) === */
 function tamboresTribales() {
   const ac = getAudio();
   if (!ac) return;
-  [0, 0.25, 0.5].forEach(delay => {
+  [0, 0.22, 0.44, 0.66].forEach((delay, i) => {
     const t = ac.currentTime + delay;
     const o = ac.createOscillator();
     const g = ac.createGain();
     o.type = 'sine';
-    o.frequency.setValueAtTime(120, t);
-    o.frequency.exponentialRampToValueAtTime(50, t + 0.18);
-    g.gain.setValueAtTime(0.6, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+    o.frequency.setValueAtTime(140 - i * 10, t);
+    o.frequency.exponentialRampToValueAtTime(45, t + 0.2);
+    g.gain.setValueAtTime(0.75, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
     o.connect(g).connect(ac.destination);
     o.start(t); o.stop(t + 0.3);
-    // Capa de "thwack" (ruido corto)
-    const buf = ac.createBuffer(1, ac.sampleRate * 0.06, ac.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ac.sampleRate * 0.015));
+    // Thwack
+    const buf = _bufRuidoBlanco(ac, 0.06);
     const src = ac.createBufferSource();
-    const f = ac.createBiquadFilter();
-    const gn = ac.createGain();
+    const fN = ac.createBiquadFilter();
+    const gN = ac.createGain();
     src.buffer = buf;
-    f.type = 'lowpass'; f.frequency.value = 800;
-    gn.gain.value = 0.4;
-    src.connect(f); f.connect(gn); gn.connect(ac.destination);
-    src.start(t);
+    fN.type = 'lowpass'; fN.frequency.value = 900;
+    gN.gain.setValueAtTime(0.5, t);
+    gN.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+    src.connect(fN); fN.connect(gN); gN.connect(ac.destination);
+    src.start(t); src.stop(t + 0.07);
   });
 }
 
-function activarModoLeon(fraseOverride) {
+/* === Mapa de sonidos por animal === */
+const SONIDOS_ANIMAL = {
+  leon:   sonidoLeon,
+  tigre:  sonidoTigre,
+  aguila: sonidoAguila,
+  lobo:   sonidoLobo,
+  oso:    sonidoOso,
+  gorila: sonidoGorila,
+  jaguar: sonidoJaguar,
+  toro:   sonidoToro,
+};
+
+/* =============================================================
+   ACTIVAR EL DESPERTADOR (con animal y frase específicos)
+   ============================================================= */
+function activarModoLeon(opciones) {
   if (lionActive) return;
   lionActive = true;
 
-  // Si vino frase del panel admin, usarla. Si no, elegir aleatoria sin repetir últimas 3.
-  let frase;
-  if (fraseOverride && fraseOverride.titulo) {
-    frase = fraseOverride;
-  } else {
-    // Sin repetir últimas 3
-    let ultimasIdx = [];
-    try { ultimasIdx = JSON.parse(localStorage.getItem('stratton.lion.lastFrases') || '[]'); } catch(e){}
-    const ultimas = new Set(ultimasIdx);
-    const candidatas = FRASES_LEON.map((_, i) => i).filter(i => !ultimas.has(i));
-    const pool = candidatas.length > 0 ? candidatas : FRASES_LEON.map((_, i) => i);
-    const elegida = pool[Math.floor(Math.random() * pool.length)];
-    frase = FRASES_LEON[elegida];
-    // Recordar la elegida
-    let arr = ultimasIdx;
-    arr.unshift(elegida);
-    arr = arr.slice(0, 3);
+  // opciones puede venir con: animalKey, frase{titulo,sub}
+  let animalKey = (opciones && opciones.animalKey) || null;
+  let fraseObj = (opciones && opciones.titulo && opciones.sub) ? opciones : null;
+
+  // Si no vino animal, elegir aleatorio sin repetir últimos 2
+  if (!animalKey) {
+    let ultimos = [];
+    try { ultimos = JSON.parse(localStorage.getItem('stratton.lion.lastAnimales') || '[]'); } catch(e){}
+    const setUltimos = new Set(ultimos);
+    const pool = ANIMAL_KEYS.filter(k => !setUltimos.has(k));
+    const candidatos = pool.length > 0 ? pool : ANIMAL_KEYS;
+    animalKey = candidatos[Math.floor(Math.random() * candidatos.length)];
+    let arr = ultimos;
+    arr.unshift(animalKey);
+    arr = arr.slice(0, 2);
+    try { localStorage.setItem('stratton.lion.lastAnimales', JSON.stringify(arr)); } catch(e){}
+  }
+
+  const animal = ANIMALES[animalKey] || ANIMALES.leon;
+
+  // Si no vino frase específica, elegir aleatoria del animal sin repetir
+  if (!fraseObj) {
+    let ultimasFrases = [];
+    try { ultimasFrases = JSON.parse(localStorage.getItem('stratton.lion.lastFrases') || '[]'); } catch(e){}
+    const ultimasSet = new Set(ultimasFrases);
+    const pool = animal.frases.filter(f => !ultimasSet.has(f.titulo));
+    const candidatas = pool.length > 0 ? pool : animal.frases;
+    fraseObj = candidatas[Math.floor(Math.random() * candidatas.length)];
+    let arr = ultimasFrases;
+    arr.unshift(fraseObj.titulo);
+    arr = arr.slice(0, 4);
     try { localStorage.setItem('stratton.lion.lastFrases', JSON.stringify(arr)); } catch(e){}
   }
-  document.getElementById('lionQuote').textContent = frase.titulo;
-  document.getElementById('lionSubquote').textContent = frase.sub;
 
-  // Generar embers
+  // Set emoji y texto
+  const elEmoji = document.getElementById('lionEmoji');
+  if (elEmoji) {
+    // Limpiar todas las clases is-* anteriores
+    elEmoji.className = 'lion-emoji';
+    elEmoji.textContent = animal.emoji;
+    if (animal.cssClass) elEmoji.classList.add(animal.cssClass);
+  }
+  document.getElementById('lionQuote').textContent = fraseObj.titulo;
+  document.getElementById('lionSubquote').textContent = fraseObj.sub;
+
+  // Setup efectos visuales
   setupLionEmbers();
+  setupLionSparks();
 
   // Mostrar overlay
   const overlay = document.getElementById('lionOverlay');
   overlay.classList.remove('is-closing');
   overlay.classList.add('is-active');
 
-  // Activar audio
   try { getAudio().resume(); } catch (e) {}
 
-  // Sonidos en secuencia: tambores → rugido → águila → rugido
-  setTimeout(() => tamboresTribales(),  300);
-  setTimeout(() => rugidoLeon(),       1000);
-  setTimeout(() => chirridoAguila(),   3500);
-  setTimeout(() => rugidoLeon(),       5500);
-  setTimeout(() => tamboresTribales(), 7500);
+  // Secuencia de sonidos: tambores + sonido del animal x3
+  const sonido = SONIDOS_ANIMAL[animalKey] || sonidoLeon;
+  setTimeout(() => tamboresTribales(),  200);
+  setTimeout(() => sonido(),             900);
+  setTimeout(() => sonido(),            3500);
+  setTimeout(() => tamboresTribales(),  6500);
+  setTimeout(() => sonido(),            7200);
 
-  // Loop de rugidos cada ~10s mientras esté visible
-  if (lionRugidoLoop) clearInterval(lionRugidoLoop);
-  lionRugidoLoop = setInterval(() => {
-    if (lionActive && Math.random() < 0.6) rugidoLeon();
-    else if (lionActive) chirridoAguila();
+  // Loop del sonido cada ~10s mientras esté activo
+  if (lionLoopInterval) clearInterval(lionLoopInterval);
+  lionLoopInterval = setInterval(() => {
+    if (lionActive && Math.random() < 0.7) sonido();
   }, 11000);
 
-  // Auto-cerrar después de 30 segundos
+  // Auto-cerrar en 30s
   setTimeout(() => { if (lionActive) cerrarModoLeon(); }, 30000);
 }
 
 function cerrarModoLeon() {
   if (!lionActive) return;
   lionActive = false;
-  if (lionRugidoLoop) {
-    clearInterval(lionRugidoLoop);
-    lionRugidoLoop = null;
+  if (lionLoopInterval) {
+    clearInterval(lionLoopInterval);
+    lionLoopInterval = null;
   }
   const overlay = document.getElementById('lionOverlay');
   overlay.classList.add('is-closing');
@@ -4670,9 +5065,8 @@ function cerrarModoLeon() {
   }, 600);
 }
 
-/* Listeners para cerrar */
+/* === Listeners de cierre === */
 document.getElementById('lionOverlay').addEventListener('click', (e) => {
-  // Solo cerrar si clickea el fondo o el botón cerrar (no la sección del león)
   if (e.target.id === 'lionOverlay' || e.target.id === 'lionCloseBtn' ||
       e.target.closest('.lion-close-btn')) {
     cerrarModoLeon();
@@ -4680,28 +5074,22 @@ document.getElementById('lionOverlay').addEventListener('click', (e) => {
 });
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && lionActive) cerrarModoLeon();
-  // Tecla L = activar manualmente (para probar)
   if ((e.key === 'l' || e.key === 'L') && !lionActive) {
     const tag = (e.target && e.target.tagName) || '';
     if (tag !== 'INPUT' && tag !== 'TEXTAREA') activarModoLeon();
   }
 });
 
-/* Scheduler automático: 2:30 PM a 5:00 PM CDMX, 1 vez por día.
-   Respeta si la contadora desactivó el auto desde el panel. */
+/* === Scheduler 2:30-5:00 PM CDMX === */
 function checkModoLeon() {
   try {
     const cdmx = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
-    const horas = cdmx.getHours();
-    const minutos = cdmx.getMinutes();
-    const totalMin = horas * 60 + minutos;
-    const inicio = 14 * 60 + 30; // 14:30
-    const fin    = 17 * 60;      // 17:00
-
+    const totalMin = cdmx.getHours() * 60 + cdmx.getMinutes();
+    const inicio = 14 * 60 + 30;
+    const fin = 17 * 60;
     const enRango = totalMin >= inicio && totalMin < fin;
     const fechaHoy = `${cdmx.getFullYear()}-${cdmx.getMonth()+1}-${cdmx.getDate()}`;
 
-    // Verificar si la contadora desactivó el auto hoy
     let autoDisabled = false;
     try {
       const stored = localStorage.getItem('stratton.lion.autoDisabledDate');
@@ -4712,19 +5100,15 @@ function checkModoLeon() {
       lionAutoTriggeredToday = fechaHoy;
       activarModoLeon();
     }
-
-    // Reset del flag a la medianoche del próximo día
     if (totalMin < inicio && lionAutoTriggeredToday && lionAutoTriggeredToday !== fechaHoy) {
       lionAutoTriggeredToday = null;
     }
   } catch (e) {}
 }
-// Chequeo cada 60s
 setInterval(checkModoLeon, 60 * 1000);
-// Y uno inicial 5s después de cargar (por si carga en horario)
 setTimeout(checkModoLeon, 5000);
 
-/* === Listener del TRIGGER del Panel admin: la contadora pidió disparar el león === */
+/* === Listener del trigger del Panel admin === */
 const LION_TRIGGER_KEY_FLOOR = 'stratton.lion.trigger';
 let lastLionTriggerTs = 0;
 function checkLionTriggerFromPanel() {
@@ -4734,29 +5118,33 @@ function checkLionTriggerFromPanel() {
   let trigger;
   try { trigger = JSON.parse(raw); } catch (e) { return; }
   if (!trigger || !trigger.ts || trigger.ts <= lastLionTriggerTs) return;
-  // Solo procesar triggers recientes (últimos 30s) para no disparar al cargar
   if (Date.now() - trigger.ts > 30000) return;
   lastLionTriggerTs = trigger.ts;
-  // Si vino frase específica del panel, úsala
-  if (trigger.titulo && trigger.sub) {
-    activarModoLeon({ titulo: trigger.titulo, sub: trigger.sub });
-  } else {
-    activarModoLeon();
-  }
+  activarModoLeon({
+    animalKey: trigger.animalKey,
+    titulo: trigger.titulo,
+    sub: trigger.sub
+  });
 }
 window.addEventListener('storage', (e) => {
   if (e.key === LION_TRIGGER_KEY_FLOOR) checkLionTriggerFromPanel();
 });
 setInterval(checkLionTriggerFromPanel, 500);
-// Inicializar timestamp para no disparar triggers viejos al cargar
 try {
   const existing = JSON.parse(localStorage.getItem(LION_TRIGGER_KEY_FLOOR) || '{}');
   if (existing.ts) lastLionTriggerTs = existing.ts;
 } catch (e) {}
 
-// Helper de consola para debug rápido
+// Helpers de consola
 window.lion = activarModoLeon;
 window.lionClose = cerrarModoLeon;
+window.tigre = () => activarModoLeon({ animalKey: 'tigre' });
+window.aguila = () => activarModoLeon({ animalKey: 'aguila' });
+window.lobo = () => activarModoLeon({ animalKey: 'lobo' });
+window.oso = () => activarModoLeon({ animalKey: 'oso' });
+window.gorila = () => activarModoLeon({ animalKey: 'gorila' });
+window.jaguar = () => activarModoLeon({ animalKey: 'jaguar' });
+window.toro = () => activarModoLeon({ animalKey: 'toro' });
 
 /* ============ Render inicial ============ */
 checkResetDiario();             // ⭐ Si cambió el día, archivar y resetear

@@ -663,6 +663,56 @@ button:focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 2px
   font-weight: 700;
 }
 
+/* Selector de animal con emojis grandes */
+.lion-animal-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid rgba(255,140,0,0.15);
+  margin-bottom: 6px;
+}
+.lion-animal-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 6px 8px;
+  background: rgba(255,140,0,0.06);
+  border: 1.5px solid rgba(255,140,0,0.3);
+  border-radius: 18px;
+  color: var(--color-text-soft);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-transform: uppercase;
+}
+.lion-animal-pill .lion-animal-emoji {
+  font-size: 22px;
+  filter: drop-shadow(0 0 6px rgba(255,140,0,0.4));
+  transition: transform 0.2s ease;
+}
+.lion-animal-pill:hover {
+  background: rgba(255,140,0,0.16);
+  border-color: rgba(255,180,80,0.7);
+  color: var(--color-text);
+  transform: translateY(-1px);
+}
+.lion-animal-pill:hover .lion-animal-emoji { transform: scale(1.15); }
+.lion-animal-pill.is-selected {
+  background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,140,0,0.15));
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+  box-shadow: 0 0 12px rgba(255,180,40,0.4);
+  font-weight: 700;
+}
+.lion-animal-pill.is-selected .lion-animal-emoji {
+  transform: scale(1.18);
+  filter: drop-shadow(0 0 12px rgba(255,180,40,0.8));
+}
+
 /* ============== Grid de consultoras ============== */
 .cp-grid {
   display: grid;
@@ -1162,57 +1212,7 @@ button:focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 2px
     <button class="btn-retro" id="btnRetroSale">📅 Registrar venta de OTRO día</button>
   </div>
 
-  <!-- 🦁 PANEL CONTROL DEL MODO LEÓN -->
-  <div class="lion-panel">
-    <div class="lion-panel-head">
-      <div class="lion-panel-title">🦁 MODO LEÓN · DESPERTADOR</div>
-      <div class="lion-panel-status" id="lionStatus">⏰ Activo · 2:30 a 5:00 PM</div>
-    </div>
-    <div class="lion-panel-info">
-      Si entre <strong>2:30 PM y 5:00 PM CDMX</strong> el equipo está sin energía, el león se dispara
-      automáticamente <strong>una vez al día</strong>. Tú decides si lo lanzas manual antes, eliges la
-      frase específica, o lo desactivas si la oficina ya está prendida.
-    </div>
-
-    <div class="lion-actions">
-      <button class="lion-action-btn lion-action-btn--big" id="lionBtnAhora">
-        <div class="lion-action-btn-icon">🚀</div>
-        <div class="lion-action-btn-info">
-          <div class="lion-action-btn-label">DISPARAR AHORA</div>
-          <div class="lion-action-btn-desc">Lanza el león inmediatamente en la TV (frase aleatoria).</div>
-        </div>
-      </button>
-
-      <button class="lion-action-btn" id="lionBtnFraseRandom">
-        <div class="lion-action-btn-icon">🎲</div>
-        <div class="lion-action-btn-info">
-          <div class="lion-action-btn-label">FRASE ALEATORIA</div>
-          <div class="lion-action-btn-desc">El sistema elige sin repetir las últimas 3 frases.</div>
-        </div>
-      </button>
-
-      <button class="lion-action-btn" id="lionBtnVistaPrevia">
-        <div class="lion-action-btn-icon">👁️</div>
-        <div class="lion-action-btn-info">
-          <div class="lion-action-btn-label">VISTA PREVIA AQUÍ</div>
-          <div class="lion-action-btn-desc">Lanza el león solo en este panel (sin TV) para ensayar.</div>
-        </div>
-      </button>
-
-      <button class="lion-action-btn lion-action-btn--off" id="lionBtnAuto">
-        <div class="lion-action-btn-icon">⏰</div>
-        <div class="lion-action-btn-info">
-          <div class="lion-action-btn-label" id="lionBtnAutoLabel">AUTO ACTIVO</div>
-          <div class="lion-action-btn-desc" id="lionBtnAutoDesc">Click para desactivar el disparo automático de hoy.</div>
-        </div>
-      </button>
-    </div>
-
-    <div class="lion-frase-selector" id="lionFraseSelector">
-      <span class="lion-frase-label">FRASE ESPECÍFICA:</span>
-      <!-- Pills de frases insertadas con JS -->
-    </div>
-  </div>
+  <!-- 🦁 PANEL DEL LEÓN MOVIDO AL FINAL — solo queda el grid arriba -->
 
   <div class="cp-grid" id="cpGrid"></div>
 
@@ -1227,6 +1227,63 @@ button:focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 2px
       <div class="cp-earnings-total" id="cpEarningsTotal">Total día: <strong>$0 MXN</strong></div>
     </div>
     <div id="cpEarningsBody"></div>
+  </div>
+
+  <!-- 🦁 PANEL CONTROL DEL DESPERTADOR (al final) -->
+  <div class="lion-panel">
+    <div class="lion-panel-head">
+      <div class="lion-panel-title">🦁 DESPERTADOR · MODO ANIMAL</div>
+      <div class="lion-panel-status" id="lionStatus">⏰ Activo · 2:30 a 5:00 PM</div>
+    </div>
+    <div class="lion-panel-info">
+      Si entre <strong>2:30 PM y 5:00 PM CDMX</strong> el equipo está sin energía, el despertador se dispara
+      automáticamente <strong>una vez al día</strong> con un animal aleatorio (león, tigre, águila, lobo, oso, gorila o jaguar).
+      Tú decides si lo lanzas manual antes, eliges qué animal, o lo desactivas.
+    </div>
+
+    <div class="lion-actions">
+      <button class="lion-action-btn lion-action-btn--big" id="lionBtnAhora">
+        <div class="lion-action-btn-icon">🚀</div>
+        <div class="lion-action-btn-info">
+          <div class="lion-action-btn-label">DISPARAR AHORA</div>
+          <div class="lion-action-btn-desc">Lanza el animal seleccionado o uno aleatorio en la TV.</div>
+        </div>
+      </button>
+
+      <button class="lion-action-btn" id="lionBtnFraseRandom">
+        <div class="lion-action-btn-icon">🎲</div>
+        <div class="lion-action-btn-info">
+          <div class="lion-action-btn-label">RANDOM TOTAL</div>
+          <div class="lion-action-btn-desc">Animal + frase aleatorios (sin repetir últimos 3).</div>
+        </div>
+      </button>
+
+      <button class="lion-action-btn" id="lionBtnVistaPrevia">
+        <div class="lion-action-btn-icon">👁️</div>
+        <div class="lion-action-btn-info">
+          <div class="lion-action-btn-label">VISTA PREVIA AQUÍ</div>
+          <div class="lion-action-btn-desc">Ensaya solo en este panel (sin afectar la TV).</div>
+        </div>
+      </button>
+
+      <button class="lion-action-btn lion-action-btn--off" id="lionBtnAuto">
+        <div class="lion-action-btn-icon">⏰</div>
+        <div class="lion-action-btn-info">
+          <div class="lion-action-btn-label" id="lionBtnAutoLabel">AUTO ACTIVO</div>
+          <div class="lion-action-btn-desc" id="lionBtnAutoDesc">Click para desactivar el disparo automático de hoy.</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- Selector de animal -->
+    <div class="lion-animal-selector" id="lionAnimalSelector">
+      <span class="lion-frase-label">ANIMAL:</span>
+    </div>
+
+    <!-- Selector de frase -->
+    <div class="lion-frase-selector" id="lionFraseSelector">
+      <span class="lion-frase-label">FRASE ESPECÍFICA:</span>
+    </div>
   </div>
 </div>
 
@@ -2396,50 +2453,77 @@ btnWeek.addEventListener('click', () => {
 });
 
 /* ============================================================
-   🦁 PANEL DEL MODO LEÓN — control desde la contadora
+   🦁🐅🦅🐺 PANEL ADMIN DEL DESPERTADOR ANIMAL
    ============================================================ */
 const LION_TRIGGER_KEY = 'stratton.lion.trigger';
 const LION_AUTO_DISABLE_KEY = 'stratton.lion.autoDisabledDate';
 const LION_LAST_FRASES_KEY = 'stratton.lion.lastFrases';
+const LION_LAST_ANIMALES_KEY = 'stratton.lion.lastAnimales';
 
-const FRASES_LEON_PANEL = [
-  { titulo: '¡DESPIERTA, MI REY!',         sub: 'LAS GANANCIAS TE ESPERAN' },
-  { titulo: 'EL LEÓN NO DUERME',           sub: 'CAZA · GUERRERO · DOMINANTE' },
-  { titulo: 'LEVANTA LA CORONA',           sub: 'EL TERRITORIO ES TUYO' },
-  { titulo: 'RUGE FUERTE',                 sub: 'QUE EL MUNDO TE ESCUCHE' },
-  { titulo: 'NO HAY PRESA QUE SE ESCAPE',  sub: 'CIERRA · CIERRA · CIERRA' },
-  { titulo: 'MI REINA · MI REY',           sub: 'LA SAVANA TE PERTENECE' },
-  { titulo: 'EL DINERO HUYE DEL DÉBIL',    sub: 'TÚ ERES EL DEPREDADOR' },
-  { titulo: 'NACISTE PARA ESTO',           sub: 'NO PARA LA MEDIOCRIDAD' },
-  { titulo: 'LAS OVEJAS NO COMEN CARNE',   sub: 'TÚ SÍ · TÚ ERES LEÓN' },
-  { titulo: 'ENCIENDE LA HOGUERA',         sub: 'QUE QUEMEN TUS RESULTADOS' },
-];
+const ANIMALES_PANEL = {
+  leon:   { emoji: '🦁', nombre: 'León',   frases: [
+    { titulo: '¡DESPIERTA, MI REY!',         sub: 'LAS GANANCIAS TE ESPERAN' },
+    { titulo: 'EL LEÓN NO DUERME',           sub: 'CAZA · GUERRERO · DOMINANTE' },
+    { titulo: 'LEVANTA LA CORONA',           sub: 'EL TERRITORIO ES TUYO' },
+    { titulo: 'RUGE FUERTE',                 sub: 'QUE EL MUNDO TE ESCUCHE' },
+    { titulo: 'MI REINA · MI REY',           sub: 'LA SAVANA TE PERTENECE' },
+  ]},
+  tigre:  { emoji: '🐅', nombre: 'Tigre',  frases: [
+    { titulo: 'ACECHA. CAZA. GANA.',         sub: 'EL TIGRE NUNCA FALLA' },
+    { titulo: 'OJOS DE FUEGO',               sub: 'CADA PRESA ES UN CIERRE' },
+    { titulo: 'SILENCIOSO Y LETAL',          sub: 'ASÍ SE GANA LA SELVA' },
+    { titulo: 'SIN MIEDO. SIN PIEDAD.',      sub: 'TÚ ERES EL CAZADOR' },
+  ]},
+  aguila: { emoji: '🦅', nombre: 'Águila', frases: [
+    { titulo: 'VUELA SOBRE TODOS',           sub: 'LA VISIÓN ES TU ARMA' },
+    { titulo: 'OJO DE ÁGUILA',               sub: 'NADA SE ESCAPA DE TI' },
+    { titulo: 'ALAS PARA EL ÉXITO',          sub: 'EL CIELO NO ES EL LÍMITE' },
+    { titulo: 'CAZA DESDE LAS ALTURAS',      sub: 'PRECISIÓN · POTENCIA · TRIUNFO' },
+  ]},
+  lobo:   { emoji: '🐺', nombre: 'Lobo',   frases: [
+    { titulo: 'AÚLLA POR LA MANADA',         sub: 'JUNTOS SOMOS IMPARABLES' },
+    { titulo: 'EL LOBO ALPHA',               sub: 'NACIDO PARA LIDERAR' },
+    { titulo: 'LA NOCHE ES TUYA',            sub: 'CIERRA SIN DESCANSO' },
+    { titulo: 'NO TEMAS A LA LUNA',          sub: 'TÚ LA HACES BRILLAR' },
+  ]},
+  oso:    { emoji: '🐻', nombre: 'Oso',    frases: [
+    { titulo: 'FUERZA BRUTA',                sub: 'NADA TE DETIENE' },
+    { titulo: 'TERRITORIO PROPIO',           sub: 'DEFIENDE LO QUE ES TUYO' },
+    { titulo: 'RESISTENCIA INFINITA',        sub: 'SIGUE ADELANTE' },
+    { titulo: 'EL OSO NO PIDE PERMISO',      sub: 'TÚ TAMPOCO' },
+  ]},
+  gorila: { emoji: '🦍', nombre: 'Gorila', frases: [
+    { titulo: 'GOLPEA EL PECHO',             sub: 'MUESTRA TU PODER' },
+    { titulo: 'KING KONG MODE',              sub: 'NADA TE PUEDE PARAR' },
+    { titulo: 'INDESTRUCTIBLE',              sub: 'CIERRA CON FUERZA' },
+    { titulo: 'EL JEFE DE LA SELVA',         sub: 'ESE ERES TÚ' },
+  ]},
+  jaguar: { emoji: '🐆', nombre: 'Jaguar', frases: [
+    { titulo: 'VELOCIDAD MORTAL',            sub: 'CIERRA ANTES QUE OTROS PIENSEN' },
+    { titulo: 'SALTO DE FE',                 sub: 'ARRIESGA · GANA · REPITE' },
+    { titulo: 'JAGUAR DEPREDADOR',           sub: 'UN GOLPE · UN CIERRE' },
+    { titulo: 'AGILIDAD ÚNICA',              sub: 'NADIE TE ALCANZA' },
+  ]},
+  toro:   { emoji: '🐃', nombre: 'Toro',   frases: [
+    { titulo: 'EMBISTE SIN MIEDO',           sub: 'EL ÉXITO NO ESPERA' },
+    { titulo: 'CUERNOS AL VIENTO',           sub: 'CARGA CON TODO' },
+    { titulo: 'BULL MARKET MENTALITY',       sub: 'COMPRA · VENDE · GANA' },
+    { titulo: 'IMPARABLE',                   sub: 'EL TORO NO RETROCEDE' },
+  ]},
+};
+const ANIMAL_KEYS_PANEL = Object.keys(ANIMALES_PANEL);
 
-let lionFraseSeleccionada = null;  // null = aleatoria; o índice 0-9 si la contadora elige
+let lionAnimalSeleccionado = null;  // null = aleatorio
+let lionFraseSeleccionada = null;   // null = aleatoria
 
 function fechaCDMXSimple() {
   const cdmx = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
   return `${cdmx.getFullYear()}-${cdmx.getMonth()+1}-${cdmx.getDate()}`;
 }
 
-function getUltimasFrases() {
-  try {
-    const raw = localStorage.getItem(LION_LAST_FRASES_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch (e) { return []; }
-}
-
-function pushUltimaFrase(idx) {
-  let arr = getUltimasFrases();
-  arr.unshift(idx);
-  arr = arr.slice(0, 3);  // recordamos las últimas 3
-  try { localStorage.setItem(LION_LAST_FRASES_KEY, JSON.stringify(arr)); } catch (e) {}
-}
-
 function isLionAutoDisabledToday() {
   try {
-    const stored = localStorage.getItem(LION_AUTO_DISABLE_KEY);
-    return stored === fechaCDMXSimple();
+    return localStorage.getItem(LION_AUTO_DISABLE_KEY) === fechaCDMXSimple();
   } catch (e) { return false; }
 }
 
@@ -2450,90 +2534,106 @@ function setLionAutoDisabled(disabled) {
   } catch (e) {}
 }
 
-/* === Disparar león en la TV (Floor) === */
-function dispararLeonEnTV(fraseIdx) {
-  let idx = fraseIdx;
-  if (idx == null) {
-    // Aleatoria sin repetir las últimas 3
-    const ultimas = new Set(getUltimasFrases());
-    const candidatas = FRASES_LEON_PANEL
-      .map((_, i) => i)
-      .filter(i => !ultimas.has(i));
-    const pool = candidatas.length > 0 ? candidatas : FRASES_LEON_PANEL.map((_, i) => i);
-    idx = pool[Math.floor(Math.random() * pool.length)];
+/* === Disparar despertador en la TV === */
+function dispararLeonEnTV() {
+  // Decidir animal
+  let animalKey = lionAnimalSeleccionado;
+  if (!animalKey) {
+    let ultimos = [];
+    try { ultimos = JSON.parse(localStorage.getItem(LION_LAST_ANIMALES_KEY) || '[]'); } catch(e){}
+    const setU = new Set(ultimos);
+    const pool = ANIMAL_KEYS_PANEL.filter(k => !setU.has(k));
+    const candidatos = pool.length > 0 ? pool : ANIMAL_KEYS_PANEL;
+    animalKey = candidatos[Math.floor(Math.random() * candidatos.length)];
   }
-  pushUltimaFrase(idx);
-  const frase = FRASES_LEON_PANEL[idx];
+  const animal = ANIMALES_PANEL[animalKey];
+
+  // Decidir frase
+  let frase;
+  if (lionFraseSeleccionada != null && lionAnimalSeleccionado === animalKey) {
+    frase = animal.frases[lionFraseSeleccionada];
+  } else {
+    let ultimasFrases = [];
+    try { ultimasFrases = JSON.parse(localStorage.getItem(LION_LAST_FRASES_KEY) || '[]'); } catch(e){}
+    const setF = new Set(ultimasFrases);
+    const pool = animal.frases.filter(f => !setF.has(f.titulo));
+    const candidatas = pool.length > 0 ? pool : animal.frases;
+    frase = candidatas[Math.floor(Math.random() * candidatas.length)];
+  }
+
   const trigger = {
+    animalKey: animalKey,
     titulo: frase.titulo,
     sub: frase.sub,
-    fraseIdx: idx,
     ts: Date.now()
   };
   try { localStorage.setItem(LION_TRIGGER_KEY, JSON.stringify(trigger)); } catch (e) {}
-  toast(`🦁 León lanzado en TV · "${frase.titulo}"`);
-  // Reset del selector
+
+  toast(`${animal.emoji} ${animal.nombre} lanzado · "${frase.titulo}"`);
+  lionAnimalSeleccionado = null;
   lionFraseSeleccionada = null;
+  renderLionAnimalPills();
   renderLionFrasePills();
 }
 
-/* === Vista previa local (en el panel, sin afectar la TV) === */
+/* === Vista previa local en el panel === */
 function lionVistaPreviaLocal() {
-  // Mostrar un toast preview con la frase que se vería
-  let idx = lionFraseSeleccionada;
-  if (idx == null) {
-    const ultimas = new Set(getUltimasFrases());
-    const candidatas = FRASES_LEON_PANEL.map((_, i) => i).filter(i => !ultimas.has(i));
-    const pool = candidatas.length > 0 ? candidatas : FRASES_LEON_PANEL.map((_, i) => i);
-    idx = pool[Math.floor(Math.random() * pool.length)];
+  let animalKey = lionAnimalSeleccionado;
+  if (!animalKey) animalKey = ANIMAL_KEYS_PANEL[Math.floor(Math.random() * ANIMAL_KEYS_PANEL.length)];
+  const animal = ANIMALES_PANEL[animalKey];
+
+  let frase;
+  if (lionFraseSeleccionada != null && lionAnimalSeleccionado === animalKey) {
+    frase = animal.frases[lionFraseSeleccionada];
+  } else {
+    frase = animal.frases[Math.floor(Math.random() * animal.frases.length)];
   }
-  const frase = FRASES_LEON_PANEL[idx];
-  // Crear un overlay de preview pequeñito en el panel
+
   let preview = document.getElementById('lionLocalPreview');
-  if (!preview) {
-    preview = document.createElement('div');
-    preview.id = 'lionLocalPreview';
-    preview.style.cssText = `
-      position: fixed; inset: 0; z-index: 9999;
-      display: flex; align-items: center; justify-content: center;
-      background: radial-gradient(circle at 50% 40%, rgba(60,15,0,0.92) 0%, rgba(8,3,0,0.97) 70%);
-      backdrop-filter: blur(20px);
-      cursor: pointer;
-      animation: lionPreviewIn 0.6s ease;
-    `;
-    preview.innerHTML = `
-      <style>
-        @keyframes lionPreviewIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes lionPreviewBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
-        @keyframes lionPreviewPulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
-      </style>
-      <div style="text-align:center; padding: 0 24px; max-width: 95vw;">
-        <div style="font-size: clamp(80px, 18vw, 180px); animation: lionPreviewBreathe 3s ease-in-out infinite; filter: drop-shadow(0 0 60px rgba(255,140,0,0.8));">🦁</div>
-        <div id="lionPreviewTitle" style="font-family: 'Bebas Neue', sans-serif; font-size: clamp(32px, 5vw, 64px); margin-top: 16px; background: linear-gradient(180deg, #FFFFFF 0%, #FFE9C8 30%, #FFC149 60%, #FF8C00 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 24px rgba(255,180,40,0.7)); letter-spacing: 0.04em; text-transform: uppercase;"></div>
-        <div id="lionPreviewSub" style="font-family: 'JetBrains Mono', monospace; font-size: clamp(12px, 1.5vw, 16px); margin-top: 16px; color: rgba(255,210,140,0.9); letter-spacing: 0.4em; text-transform: uppercase; animation: lionPreviewPulse 2s ease-in-out infinite;"></div>
-        <div style="margin-top: 30px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.3em; color: rgba(255,210,140,0.5); text-transform: uppercase;">[ click para cerrar · vista previa local · NO se ve en la TV ]</div>
-      </div>
-    `;
-    document.body.appendChild(preview);
-    preview.addEventListener('click', () => preview.remove());
-  }
-  document.getElementById('lionPreviewTitle').textContent = frase.titulo;
-  document.getElementById('lionPreviewSub').textContent = frase.sub;
+  if (preview) preview.remove();
+  preview = document.createElement('div');
+  preview.id = 'lionLocalPreview';
+  preview.style.cssText = `
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 40%, rgba(60,15,0,0.92) 0%, rgba(8,3,0,0.97) 70%);
+    backdrop-filter: blur(20px);
+    cursor: pointer;
+    animation: lionPreviewIn 0.6s ease;
+  `;
+  preview.innerHTML = `
+    <style>
+      @keyframes lionPreviewIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes lionPreviewBreathe { 0%, 100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.06) translateY(-10px); } }
+      @keyframes lionPreviewPulse { 0%, 100% { opacity: 0.65; } 50% { opacity: 1; } }
+      @keyframes lionPreviewAura { 0%, 100% { transform: translate(-50%, -50%) scale(0.85); opacity: 0.5; } 50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; } }
+    </style>
+    <div style="text-align:center; padding: 0 24px; max-width: 95vw; position: relative;">
+      <div style="position: absolute; top: 30%; left: 50%; width: 80%; aspect-ratio: 1; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(255,200,80,0.4) 0%, rgba(255,140,0,0.25) 30%, transparent 70%); filter: blur(40px); animation: lionPreviewAura 2.6s ease-in-out infinite;"></div>
+      <div style="font-size: clamp(120px, 26vw, 280px); animation: lionPreviewBreathe 2.4s ease-in-out infinite; filter: drop-shadow(0 16px 24px rgba(0,0,0,0.5)) drop-shadow(0 0 40px rgba(255,140,0,0.6)) drop-shadow(0 0 80px rgba(255,80,0,0.4)); position: relative; z-index: 2;">${animal.emoji}</div>
+      <div id="lionPreviewTitle" style="font-family: 'Bebas Neue', sans-serif; font-size: clamp(34px, 5.6vw, 78px); margin-top: 24px; background: linear-gradient(180deg, #FFFFFF 0%, #FFE9C8 30%, #FFC149 60%, #FF8C00 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 24px rgba(255,180,40,0.7)); letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.05; position: relative; z-index: 2;"></div>
+      <div id="lionPreviewSub" style="font-family: 'JetBrains Mono', monospace; font-size: clamp(13px, 1.6vw, 17px); margin-top: 20px; color: rgba(255,210,140,0.9); letter-spacing: 0.45em; text-transform: uppercase; animation: lionPreviewPulse 2.4s ease-in-out infinite; position: relative; z-index: 2;"></div>
+      <div style="margin-top: 32px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.3em; color: rgba(255,210,140,0.5); text-transform: uppercase; position: relative; z-index: 2;">[ click para cerrar · vista previa local · NO se ve en la TV ]</div>
+    </div>
+  `;
+  document.body.appendChild(preview);
+  preview.querySelector('#lionPreviewTitle').textContent = frase.titulo;
+  preview.querySelector('#lionPreviewSub').textContent = frase.sub;
+  preview.addEventListener('click', () => preview.remove());
 }
 
-/* === Render del status (la pildora arriba a la derecha) === */
+/* === Status pildora === */
 function renderLionStatus() {
   const el = document.getElementById('lionStatus');
   if (!el) return;
   const cdmx = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
   const totalMin = cdmx.getHours() * 60 + cdmx.getMinutes();
   const inicio = 14 * 60 + 30;
-  const fin    = 17 * 60;
+  const fin = 17 * 60;
   const enRango = totalMin >= inicio && totalMin < fin;
   const disabled = isLionAutoDisabledToday();
 
   el.classList.remove('is-disabled', 'is-pending');
-
   if (disabled) {
     el.textContent = '⛔ Auto desactivado hoy';
     el.classList.add('is-disabled');
@@ -2550,20 +2650,68 @@ function renderLionStatus() {
   }
 }
 
-/* === Render del selector de pills de frases === */
+/* === Pills de animales === */
+function renderLionAnimalPills() {
+  const host = document.getElementById('lionAnimalSelector');
+  if (!host) return;
+  host.innerHTML = '<span class="lion-frase-label">ANIMAL:</span>';
+
+  // Pill "RANDOM"
+  const pillRandom = document.createElement('button');
+  pillRandom.className = 'lion-animal-pill';
+  if (lionAnimalSeleccionado === null) pillRandom.classList.add('is-selected');
+  pillRandom.innerHTML = `<span class="lion-animal-emoji">🎲</span><span>RANDOM</span>`;
+  pillRandom.addEventListener('click', () => {
+    lionAnimalSeleccionado = null;
+    lionFraseSeleccionada = null;
+    renderLionAnimalPills();
+    renderLionFrasePills();
+  });
+  host.appendChild(pillRandom);
+
+  ANIMAL_KEYS_PANEL.forEach(key => {
+    const animal = ANIMALES_PANEL[key];
+    const pill = document.createElement('button');
+    pill.className = 'lion-animal-pill';
+    if (lionAnimalSeleccionado === key) pill.classList.add('is-selected');
+    pill.innerHTML = `<span class="lion-animal-emoji">${animal.emoji}</span><span>${animal.nombre}</span>`;
+    pill.addEventListener('click', () => {
+      if (lionAnimalSeleccionado === key) {
+        lionAnimalSeleccionado = null;
+      } else {
+        lionAnimalSeleccionado = key;
+      }
+      lionFraseSeleccionada = null;  // reset frase al cambiar animal
+      renderLionAnimalPills();
+      renderLionFrasePills();
+    });
+    host.appendChild(pill);
+  });
+}
+
+/* === Pills de frases (filtradas por animal seleccionado) === */
 function renderLionFrasePills() {
   const host = document.getElementById('lionFraseSelector');
   if (!host) return;
-  // Conservar el label inicial
   host.innerHTML = '<span class="lion-frase-label">FRASE ESPECÍFICA:</span>';
-  FRASES_LEON_PANEL.forEach((frase, i) => {
+
+  // Si no hay animal seleccionado, mostrar mensaje
+  if (!lionAnimalSeleccionado) {
+    const span = document.createElement('span');
+    span.style.cssText = 'font-family: var(--font-mono); font-size: 10px; color: var(--color-muted); letter-spacing: 0.05em; padding: 5px 0;';
+    span.textContent = '(elige un animal arriba para ver sus frases)';
+    host.appendChild(span);
+    return;
+  }
+
+  const animal = ANIMALES_PANEL[lionAnimalSeleccionado];
+  animal.frases.forEach((frase, i) => {
     const pill = document.createElement('button');
     pill.className = 'lion-frase-pill';
     if (lionFraseSeleccionada === i) pill.classList.add('is-selected');
-    pill.textContent = frase.titulo.replace(/[¡!]/g, '').slice(0, 20) + (frase.titulo.length > 20 ? '…' : '');
+    pill.textContent = frase.titulo.replace(/[¡!]/g, '').slice(0, 22);
     pill.title = `${frase.titulo} · ${frase.sub}`;
     pill.addEventListener('click', () => {
-      // Click en pill: si es la misma, deselecciona. Si es otra, selecciona y dispara.
       if (lionFraseSeleccionada === i) {
         lionFraseSeleccionada = null;
         renderLionFrasePills();
@@ -2571,9 +2719,12 @@ function renderLionFrasePills() {
       } else {
         lionFraseSeleccionada = i;
         renderLionFrasePills();
-        // Confirma antes de lanzar
-        if (confirm(`¿Lanzar AHORA en la TV con esta frase?\n\n"${frase.titulo}"\n${frase.sub}`)) {
-          dispararLeonEnTV(i);
+        if (confirm(`¿Lanzar AHORA en la TV?
+
+${animal.emoji} ${animal.nombre.toUpperCase()}
+"${frase.titulo}"
+${frase.sub}`)) {
+          dispararLeonEnTV();
         }
       }
     });
@@ -2581,28 +2732,15 @@ function renderLionFrasePills() {
   });
 }
 
-/* === Toggle del Auto === */
+/* === Toggle Auto === */
 function toggleLionAuto() {
   const wasDisabled = isLionAutoDisabledToday();
   setLionAutoDisabled(!wasDisabled);
-  const btn = document.getElementById('lionBtnAuto');
-  const lbl = document.getElementById('lionBtnAutoLabel');
-  const dsc = document.getElementById('lionBtnAutoDesc');
-  if (!wasDisabled) {
-    btn.classList.add('is-active');
-    lbl.textContent = '⛔ AUTO DESACTIVADO';
-    dsc.textContent = 'Hoy NO se disparará automático. Click para reactivar.';
-    toast('🦁 Auto del león DESACTIVADO por hoy');
-  } else {
-    btn.classList.remove('is-active');
-    lbl.textContent = 'AUTO ACTIVO';
-    dsc.textContent = 'Click para desactivar el disparo automático de hoy.';
-    toast('🦁 Auto del león REACTIVADO');
-  }
+  syncLionAutoBtn();
   renderLionStatus();
+  toast(wasDisabled ? '🦁 Auto REACTIVADO' : '🦁 Auto DESACTIVADO por hoy');
 }
 
-/* === Sincronizar el botón Auto con el state al cargar === */
 function syncLionAutoBtn() {
   const btn = document.getElementById('lionBtnAuto');
   const lbl = document.getElementById('lionBtnAutoLabel');
@@ -2619,31 +2757,45 @@ function syncLionAutoBtn() {
   }
 }
 
-/* === Listeners de los botones === */
-document.getElementById('lionBtnAhora').addEventListener('click', () => {
-  if (lionFraseSeleccionada != null) {
-    if (confirm(`¿Lanzar AHORA con la frase seleccionada?\n\n"${FRASES_LEON_PANEL[lionFraseSeleccionada].titulo}"`)) {
-      dispararLeonEnTV(lionFraseSeleccionada);
+/* === Listeners de botones === */
+const _btnAhora = document.getElementById('lionBtnAhora');
+if (_btnAhora) _btnAhora.addEventListener('click', () => {
+  let mensaje = '¿Lanzar AHORA en la TV?\n\n';
+  if (lionAnimalSeleccionado) {
+    const a = ANIMALES_PANEL[lionAnimalSeleccionado];
+    mensaje += `${a.emoji} ${a.nombre.toUpperCase()}`;
+    if (lionFraseSeleccionada != null) {
+      mensaje += `\n"${a.frases[lionFraseSeleccionada].titulo}"`;
+    } else {
+      mensaje += '\n(frase aleatoria del animal)';
     }
   } else {
-    if (confirm('¿Lanzar el león AHORA en la TV?\n\nSe elegirá una frase aleatoria.')) {
-      dispararLeonEnTV(null);
-    }
+    mensaje += 'Animal y frase aleatorios.';
   }
+  if (confirm(mensaje)) dispararLeonEnTV();
 });
-document.getElementById('lionBtnFraseRandom').addEventListener('click', () => {
-  if (confirm('¿Lanzar león con frase ALEATORIA?\n\nNo repite las últimas 3 frases usadas.')) {
-    dispararLeonEnTV(null);
-  }
-});
-document.getElementById('lionBtnVistaPrevia').addEventListener('click', lionVistaPreviaLocal);
-document.getElementById('lionBtnAuto').addEventListener('click', toggleLionAuto);
 
-/* === Inicializar === */
+const _btnRandom = document.getElementById('lionBtnFraseRandom');
+if (_btnRandom) _btnRandom.addEventListener('click', () => {
+  if (confirm('¿Lanzar con animal y frase 100% aleatorios?\n\nNo repite los últimos usados.')) {
+    lionAnimalSeleccionado = null;
+    lionFraseSeleccionada = null;
+    dispararLeonEnTV();
+  }
+});
+
+const _btnPreview = document.getElementById('lionBtnVistaPrevia');
+if (_btnPreview) _btnPreview.addEventListener('click', lionVistaPreviaLocal);
+
+const _btnAuto = document.getElementById('lionBtnAuto');
+if (_btnAuto) _btnAuto.addEventListener('click', toggleLionAuto);
+
+/* Init */
 syncLionAutoBtn();
+renderLionAnimalPills();
 renderLionFrasePills();
 renderLionStatus();
-setInterval(renderLionStatus, 30 * 1000);  // Actualizar cada 30s
+setInterval(renderLionStatus, 30 * 1000);
 
 /* ============== Cross-tab sync con el Stratton Floor ============== */
 window.addEventListener('storage', (e) => {
