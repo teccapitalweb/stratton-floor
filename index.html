@@ -3675,6 +3675,88 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && histPanel.classList.contains('is-open')) cerrarHistorial();
 });
 
+/* ============ SYNC CROSS-TAB con el Panel admin ============
+   Triple capa de detección para que las barras se actualicen SIEMPRE:
+   1) storage event - cuando otra pestaña escribe (instantáneo)
+   2) focus / visibility - cuando regresas a esta pestaña
+   3) polling cada 500ms - red de seguridad infalible
+*/
+let lastSyncSnapshot = JSON.stringify(state.ventas || []);
+let lastBonoSnapshot = state.comision;
+
+function reSincronizarDesdeStorage() {
+  let raw;
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { return; }
+  if (!raw) return;
+
+  let parsed;
+  try { parsed = JSON.parse(raw); } catch (e) { return; }
+  if (!parsed || !Array.isArray(parsed.ventas)) return;
+
+  const nuevoSnapshot = JSON.stringify(parsed.ventas);
+  if (nuevoSnapshot === lastSyncSnapshot && parsed.comision === lastBonoSnapshot) return;
+
+  // Detectar ventas NUEVAS (las que no estaban antes)
+  const ventasAntesIds = new Set(state.ventas.map(v => `${v.vendedorId}-${v.hora}`));
+  const ventasNuevas = parsed.ventas.filter(v => !ventasAntesIds.has(`${v.vendedorId}-${v.hora}`));
+
+  // Sincronizar el state local con lo que viene del storage
+  state.ventas = parsed.ventas;
+  state.comision = parsed.comision;
+  state.ultimoCambioBono = parsed.ultimoCambioBono;
+  state.commission = parsed.commission;
+  state.fechaActual = parsed.fechaActual;
+  state.historial = parsed.historial || [];
+  state.premiumsSemana = parsed.premiumsSemana || {};
+
+  lastSyncSnapshot = nuevoSnapshot;
+  lastBonoSnapshot = parsed.comision;
+
+  // Disparar efectos visuales/sonoros para cada venta nueva
+  ventasNuevas.forEach((venta, i) => {
+    const vd = state.vendedores.find(v => v.id === venta.vendedorId);
+    if (!vd) return;
+    setTimeout(() => {
+      renderAll(true, vd.id);
+      try { getAudio().resume(); } catch (e) {}
+      chaChing();
+      if (estadioActivo) setTimeout(miniAplauso, 200);
+      lanzarConfetti(false, vd.color);
+      lanzarEmojiFloaters(vd.emoji, vd.color);
+      dispararHypePop();
+      const frase = FRASES[Math.floor(Math.random() * FRASES.length)];
+      const ventasAhora = state.ventas.filter(v => v.vendedorId === vd.id).length;
+      mostrarToast(frase, `${vd.nombre} · venta #${ventasAhora}`);
+      if (ventasAhora > 0 && ventasAhora % 10 === 0) {
+        setTimeout(() => onMilestoneVendedor(vd, ventasAhora), 600);
+      }
+    }, i * 150);
+  });
+
+  // Si no hubo ventas nuevas (reset/undo) refrescar igual
+  if (ventasNuevas.length === 0) {
+    renderAll(false);
+  }
+
+  actualizarHotStreaks();
+  actualizarAnticipoMilestone();
+  actualizarContadorEquipo(ventasNuevas.length > 0);
+  renderComisionUI();
+}
+
+// Capa 1: Storage event nativo (instantáneo cuando funciona)
+window.addEventListener('storage', (e) => {
+  if (e.key !== STORAGE_KEY) return;
+  reSincronizarDesdeStorage();
+});
+// Capa 2: Cuando regresas a la pestaña
+window.addEventListener('focus', reSincronizarDesdeStorage);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) reSincronizarDesdeStorage();
+});
+// Capa 3: Polling cada 500ms - red de seguridad infalible
+setInterval(reSincronizarDesdeStorage, 500);
+
 /* ============ Render inicial ============ */
 checkResetDiario();             // ⭐ Si cambió el día, archivar y resetear
 renderAll(false);
