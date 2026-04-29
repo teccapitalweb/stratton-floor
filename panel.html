@@ -119,6 +119,22 @@ button:focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 2px
   color: var(--color-cyan);
 }
 .btn-arena:hover { box-shadow: var(--shadow-glow-cyan); }
+
+/* Cierre de día - cyan (acción frecuente, diaria) */
+.btn-day {
+  background: linear-gradient(135deg, rgba(0,229,255,0.2), rgba(0,165,196,0.15));
+  border-color: var(--color-cyan);
+  color: var(--color-cyan);
+  box-shadow: 0 4px 14px rgba(0,229,255,0.25);
+}
+.btn-day:hover { filter: brightness(1.15); box-shadow: var(--shadow-glow-cyan); }
+.btn-day.confirm {
+  background: linear-gradient(135deg, var(--color-cyan), var(--color-cyan-dim));
+  color: #0a0118;
+  border-color: var(--color-cyan);
+}
+
+/* Cierre de semana - dorado (acción de mayor peso, semanal) */
 .btn-week {
   background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dim));
   border-color: var(--color-gold);
@@ -915,7 +931,8 @@ button:focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 2px
     </div>
     <div class="cp-actions">
       <a href="./index.html" target="_blank" class="btn-base btn-arena">▶ ABRIR ARENA</a>
-      <button class="btn-base btn-week" id="btnWeek">🏁 CERRAR DÍA</button>
+      <button class="btn-base btn-day" id="btnDay">🏁 CERRAR DÍA</button>
+      <button class="btn-base btn-week" id="btnWeek">💰 CERRAR SEMANA</button>
       <button class="btn-base btn-ghost" id="btnUndo">↩ DESHACER</button>
       <button class="btn-base btn-danger" id="btnReset">⟳ RESET</button>
     </div>
@@ -1043,15 +1060,17 @@ function makeDefaultState() {
       imgs: [s.img], color: s.color, colorDim: s.colorAlt
     })),
     ventas: [],
+    ventasSemana: [],          // Acumulado de ventas de días ya cerrados (esta semana)
     sonidoActivo: true,
     comision: 12,
     ultimoCambioBono: null,
     fechaActual: fechaCDMXHoy(),
-    historial: [],
+    historial: [],             // Resumenes de días pasados
+    semanasArchivadas: [],     // Reportes de semanas cerradas (para la contadora)
     premiumsSemana: {},
     /* Panel-specific */
     commission: {
-      byDay: {},  // { monday: { revealed, amount, premium, ts }, ... }
+      byDay: {},
       premiumUsedThisMonth: 0,
       monthKey: monthKeyCDMX()
     },
@@ -1083,6 +1102,8 @@ function loadState() {
       if (!Array.isArray(parsed.historial)) parsed.historial = [];
       if (!parsed.fechaActual) parsed.fechaActual = fechaCDMXHoy();
       if (!Array.isArray(parsed.ventas)) parsed.ventas = [];
+      if (!Array.isArray(parsed.ventasSemana)) parsed.ventasSemana = [];
+      if (!Array.isArray(parsed.semanasArchivadas)) parsed.semanasArchivadas = [];
       // Reemplazar vendedores con la lista actual de SELLERS por si cambiaron
       parsed.vendedores = SELLERS.map(s => ({
         id: s.id, nombre: s.name, avatar: s.avatar,
@@ -1488,21 +1509,30 @@ function getRanked() {
 }
 
 function getEarningsBoard() {
-  // Calcular comisión acumulada por seller usando la comisión POR DÍA
+  // Calcular comisión acumulada por seller — SUMA ventas del día actual + ventasSemana
+  // (las que la contadora aún no ha cerrado en el cierre de semana)
   const earnings = {};
   SELLERS.forEach(s => earnings[s.id] = { ...s, total: 0, earned: 0 });
 
+  // Helper: obtener la comisión asociada a una venta
+  const comisionDeVenta = (v) => {
+    if (v.dayCommission) return v.dayCommission;
+    if (v.day && state.commission?.byDay?.[v.day]?.amount) return state.commission.byDay[v.day].amount;
+    return state.comision || 12;
+  };
+
+  // 1) Ventas del día actual (aún en barras)
   state.ventas.forEach(v => {
     if (!earnings[v.vendedorId]) return;
     earnings[v.vendedorId].total += 1;
-    // Determinar comisión: por día específico si existe, si no usar la actual
-    let commisionDia = state.comision || 12;
-    if (v.day && state.commission?.byDay?.[v.day]?.amount) {
-      commisionDia = state.commission.byDay[v.day].amount;
-    } else if (v.dayCommission) {
-      commisionDia = v.dayCommission;
-    }
-    earnings[v.vendedorId].earned += commisionDia;
+    earnings[v.vendedorId].earned += comisionDeVenta(v);
+  });
+
+  // 2) Ventas acumuladas de la semana (días ya cerrados)
+  (state.ventasSemana || []).forEach(v => {
+    if (!earnings[v.vendedorId]) return;
+    earnings[v.vendedorId].total += 1;
+    earnings[v.vendedorId].earned += comisionDeVenta(v);
   });
 
   return Object.values(earnings).sort((a, b) => b.earned - a.earned);
@@ -1562,8 +1592,8 @@ function resetAll() {
 }
 
 function cerrarDia() {
-  // Archivar las ventas del día actual al historial + dejar barras a 0
-  // Las comisiones reveladas de OTROS días se conservan; solo se considera "cerrado" el día de hoy
+  // Archivar las ventas del día actual al historial + mover a ventasSemana
+  // (las comisiones siguen acumulándose para la contadora hasta el cierre de semana)
   if (state.ventas.length > 0) {
     const ranking = getRanked().filter(r => r.total > 0).slice(0, 3);
     const top3 = ranking.map(r => ({ id: r.id, nombre: r.name, count: r.total, color: r.color }));
@@ -1574,12 +1604,75 @@ function cerrarDia() {
       tipo: 'dia'
     });
     if (state.historial.length > 60) state.historial = state.historial.slice(0, 60);
+
+    // Mover ventas del día a ventasSemana (acumulado para la contadora)
+    if (!Array.isArray(state.ventasSemana)) state.ventasSemana = [];
+    state.ventas.forEach(v => {
+      // Marcar la fecha del día en que se cerró la venta (por si retroactiva)
+      state.ventasSemana.push({ ...v, diaCerrado: state.fechaActual || fechaCDMXHoy() });
+    });
   }
-  state.ventas = [];
+  state.ventas = [];        // Reset Arena (las barras vuelven a cero en la TV)
   saveState();
   Sounds.init();
   Sounds.victory();
-  toast('🏁 Día cerrado · Resumen guardado en el historial');
+  toast('🏁 Día cerrado · Comisiones siguen acumulándose para la semana');
+  renderAll();
+}
+
+function cerrarSemana() {
+  // Archiva el reporte de comisiones de la semana + resetea acumulado para empezar nueva
+  // Si todavía hay ventas del día sin cerrar, las incluye también (por si la contadora
+  // cierra la semana sin haber dado "cerrar día" antes)
+  const ventasDelDia = state.ventas || [];
+  const ventasAcumuladas = state.ventasSemana || [];
+  const todasLasVentas = [...ventasAcumuladas, ...ventasDelDia.map(v => ({
+    ...v, diaCerrado: state.fechaActual || fechaCDMXHoy()
+  }))];
+
+  if (todasLasVentas.length === 0) {
+    toast('No hay ventas para cerrar la semana');
+    return;
+  }
+
+  // Construir reporte de comisiones por consultora
+  const reporte = {};
+  SELLERS.forEach(s => reporte[s.id] = {
+    id: s.id, nombre: s.name, color: s.color,
+    totalVentas: 0, totalPagar: 0
+  });
+  todasLasVentas.forEach(v => {
+    if (!reporte[v.vendedorId]) return;
+    reporte[v.vendedorId].totalVentas += 1;
+    reporte[v.vendedorId].totalPagar += (v.dayCommission || state.comision || 12);
+  });
+
+  const reporteArr = Object.values(reporte).filter(r => r.totalVentas > 0)
+    .sort((a, b) => b.totalPagar - a.totalPagar);
+  const totalPagarSemana = reporteArr.reduce((s, r) => s + r.totalPagar, 0);
+  const totalVentasSemana = reporteArr.reduce((s, r) => s + r.totalVentas, 0);
+
+  // Guardar en archivo de semanas
+  if (!Array.isArray(state.semanasArchivadas)) state.semanasArchivadas = [];
+  const fechaCierre = fechaCDMXHoy();
+  state.semanasArchivadas.unshift({
+    fechaCierre: fechaCierre,
+    semanaKey: getISOWeekKey(new Date()),
+    totalVentas: totalVentasSemana,
+    totalPagar: totalPagarSemana,
+    reporte: reporteArr
+  });
+  if (state.semanasArchivadas.length > 24) state.semanasArchivadas = state.semanasArchivadas.slice(0, 24);
+
+  // Reset acumulado de la semana + ventas del día + comisiones por día
+  state.ventasSemana = [];
+  state.ventas = [];
+  state.commission.byDay = {};
+
+  saveState();
+  Sounds.init();
+  Sounds.victory();
+  toast(`💰 Semana cerrada · Total a pagar: $${totalPagarSemana} MXN · ${totalVentasSemana} ventas`);
   renderAll();
 }
 
@@ -1588,10 +1681,11 @@ function cerrarDia() {
    ============================================================ */
 function renderStats() {
   const ranked = getRanked();
-  const total = state.ventas.length;
+  const totalDia = state.ventas.length;
+  const totalSemana = (state.ventasSemana || []).length + totalDia;
   const leaderName = ranked[0]?.total > 0 ? ranked[0].name : '—';
 
-  // Comisión activa (último día revelado o la global)
+  // Comisión activa
   const today = (() => {
     const cdmx = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
     const idx = (cdmx.getDay() + 6) % 7;
@@ -1612,8 +1706,12 @@ function renderStats() {
 
   document.getElementById('cpStats').innerHTML = `
     <div class="stat-card" style="--accent: #00E5FF; --accent-40: #00E5FF66;">
-      <div class="label">VENTAS HOY</div>
-      <div class="value" style="color: #00E5FF;">${total}</div>
+      <div class="label">VENTAS HOY (BARRAS)</div>
+      <div class="value" style="color: #00E5FF;">${totalDia}</div>
+    </div>
+    <div class="stat-card" style="--accent: #B47CFF; --accent-40: #B47CFF66;">
+      <div class="label">VENTAS SEMANA ACUMULADAS</div>
+      <div class="value" style="color: #B47CFF;">${totalSemana}</div>
     </div>
     <div class="stat-card" style="--accent: #FFD700; --accent-40: #FFD70066;">
       <div class="label">LÍDER ACTUAL</div>
@@ -2036,24 +2134,48 @@ btnReset.addEventListener('click', () => {
   }
 });
 
+/* ===== Botón CERRAR DÍA (cyan) - resetea barras pero comisiones siguen acumulando ===== */
+let dayMode = false, dayTimer = null;
+const btnDay = document.getElementById('btnDay');
+btnDay.addEventListener('click', () => {
+  if (!dayMode) {
+    dayMode = true;
+    btnDay.classList.add('confirm');
+    btnDay.textContent = '✓ CONFIRMAR CIERRE DE DÍA';
+    if (dayTimer) clearTimeout(dayTimer);
+    dayTimer = setTimeout(() => {
+      dayMode = false;
+      btnDay.classList.remove('confirm');
+      btnDay.textContent = '🏁 CERRAR DÍA';
+    }, 4000);
+  } else {
+    cerrarDia();
+    dayMode = false;
+    btnDay.classList.remove('confirm');
+    btnDay.textContent = '🏁 CERRAR DÍA';
+    if (dayTimer) clearTimeout(dayTimer);
+  }
+});
+
+/* ===== Botón CERRAR SEMANA (dorado) - genera reporte de pagos y resetea acumulado ===== */
 let weekMode = false, weekTimer = null;
 const btnWeek = document.getElementById('btnWeek');
 btnWeek.addEventListener('click', () => {
   if (!weekMode) {
     weekMode = true;
     btnWeek.classList.add('confirm');
-    btnWeek.textContent = '✓ CONFIRMAR CIERRE DE DÍA';
+    btnWeek.textContent = '✓ CONFIRMAR CIERRE DE SEMANA';
     if (weekTimer) clearTimeout(weekTimer);
     weekTimer = setTimeout(() => {
       weekMode = false;
       btnWeek.classList.remove('confirm');
-      btnWeek.textContent = '🏁 CERRAR DÍA';
+      btnWeek.textContent = '💰 CERRAR SEMANA';
     }, 4000);
   } else {
-    cerrarDia();
+    cerrarSemana();
     weekMode = false;
     btnWeek.classList.remove('confirm');
-    btnWeek.textContent = '🏁 CERRAR DÍA';
+    btnWeek.textContent = '💰 CERRAR SEMANA';
     if (weekTimer) clearTimeout(weekTimer);
   }
 });
