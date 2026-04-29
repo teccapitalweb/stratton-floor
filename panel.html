@@ -716,125 +716,130 @@ button:focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 2px
 /* ============== Grid de consultoras ============== */
 .cp-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px;
   margin-bottom: 26px;
 }
 .seller-block {
   background: var(--color-surface);
-  border: 1.5px solid var(--accent-40, rgba(255,255,255,0.08));
-  border-radius: var(--radius);
-  padding: 16px;
+  border: 1px solid var(--accent-40, rgba(255,255,255,0.08));
+  border-radius: 10px;
+  padding: 8px 12px 8px 14px;
   position: relative;
   overflow: hidden;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
 }
 .seller-block:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px var(--accent, transparent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35), 0 0 0 1px var(--accent, transparent);
 }
 .seller-block::before {
   content: '';
   position: absolute;
   top: 0; bottom: 0; left: 0;
-  width: 4px;
+  width: 3px;
   background: linear-gradient(180deg, var(--accent), var(--accent-alt));
-  box-shadow: 0 0 14px var(--accent);
-}
-.seller-block-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  box-shadow: 0 0 10px var(--accent);
 }
 .seller-avatar {
-  width: 56px; height: 56px;
+  width: 36px; height: 36px;
   border-radius: 50%;
   background: white;
   overflow: hidden;
   flex-shrink: 0;
-  box-shadow: 0 0 0 2px var(--accent), 0 4px 14px rgba(0,0,0,0.5);
+  box-shadow: 0 0 0 1.5px var(--accent), 0 2px 8px rgba(0,0,0,0.4);
 }
 .seller-avatar img {
   width: 100%; height: 100%;
   object-fit: contain;
-  padding: 8%;
+  padding: 6%;
 }
 .seller-avatar-fallback {
   width: 100%; height: 100%;
   display: grid;
   place-items: center;
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 14px;
   color: #0A0B14;
   background: linear-gradient(135deg, var(--accent), var(--accent-alt));
 }
-.seller-block-info { flex: 1; min-width: 0; }
+.seller-block-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 .seller-block-name {
   font-family: var(--font-display);
-  font-size: 20px;
-  letter-spacing: 0.03em;
+  font-size: 15px;
+  letter-spacing: 0.04em;
   color: var(--color-text);
-  margin-bottom: 4px;
+  line-height: 1.1;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .seller-block-total {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
+  font-size: 10px;
+  letter-spacing: 0.1em;
   color: var(--color-muted);
   text-transform: uppercase;
+  margin-top: 2px;
 }
 .seller-block-total strong {
   color: var(--accent);
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12px;
 }
-.page-btns { display: flex; flex-direction: column; gap: 8px; }
+/* El botón +1 ahora es un cuadradito al lado, no un bloque grande */
 .page-btn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
+  justify-content: center;
+  padding: 0;
+  width: 44px;
+  height: 36px;
   background: rgba(255,255,255,0.03);
   border: 1px solid var(--accent-40);
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   color: var(--color-text);
-  text-align: left;
-  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
+  transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.15s ease;
 }
 .page-btn:hover {
-  background: var(--accent-15, rgba(255,255,255,0.06));
+  background: var(--accent-15, rgba(255,255,255,0.08));
   border-color: var(--accent);
-  transform: translateX(2px);
+  box-shadow: 0 0 14px var(--accent, rgba(255,255,255,0.2));
 }
-.page-btn:active { transform: scale(0.98); }
-.page-btn-name {
-  font-family: var(--font-display);
-  font-size: 18px;
-  letter-spacing: 0.04em;
-  margin-bottom: 2px;
-}
-.page-btn-count {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  color: var(--color-text-soft);
-  text-transform: uppercase;
-}
-.page-btn-count strong {
-  color: var(--accent);
-  font-weight: 700;
+.page-btn:active { transform: scale(0.92); }
+.page-btn-name, .page-btn-count {
+  /* Ocultos en versión compacta - la info ya está en seller-block-info */
+  display: none;
 }
 .page-btn-plus {
   font-family: var(--font-display);
-  font-size: 26px;
-  letter-spacing: 0.04em;
+  font-size: 22px;
+  letter-spacing: 0;
   color: var(--accent);
-  text-shadow: 0 0 12px var(--accent);
+  text-shadow: 0 0 8px var(--accent);
+  line-height: 1;
+}
+/* Si la consultora tiene más de 1 página, las muestra apiladas */
+.page-btns {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
   flex-shrink: 0;
-  margin-left: 12px;
+}
+/* En pantallas chicas, una columna por celda */
+@media (max-width: 480px) {
+  .cp-grid { grid-template-columns: 1fr; }
 }
 
 /* ============== Ranking completo ============== */
@@ -2114,22 +2119,16 @@ function renderGrid() {
     const accentVars = `--accent: ${s.color}; --accent-alt: ${s.colorAlt}; --accent-15: ${s.color}26; --accent-40: ${s.color}66; --accent-50: ${s.color}80;`;
     return `
       <div class="seller-block" style="${accentVars}">
-        <div class="seller-block-head">
-          <div class="seller-avatar">
-            <img src="${s.img}" alt="${s.name}" onerror="this.parentElement.innerHTML='<div class=\\'seller-avatar-fallback\\'>${s.avatar}</div>'">
-          </div>
-          <div class="seller-block-info">
-            <div class="seller-block-name">${s.name}</div>
-            <div class="seller-block-total">TOTAL: <strong>${total}</strong> / ${WEEK_TARGET}</div>
-          </div>
+        <div class="seller-avatar">
+          <img src="${s.img}" alt="${s.name}" onerror="this.parentElement.innerHTML='<div class=\\'seller-avatar-fallback\\'>${s.avatar}</div>'">
+        </div>
+        <div class="seller-block-info">
+          <div class="seller-block-name">${s.name}</div>
+          <div class="seller-block-total"><strong>${total}</strong> ventas / ${WEEK_TARGET}</div>
         </div>
         <div class="page-btns">
           ${s.pages.map(p => `
-            <button class="page-btn" data-page="${p}" style="${accentVars}">
-              <div>
-                <div class="page-btn-name">${p}</div>
-                <div class="page-btn-count">VENTAS: <strong>${byPageCount[p] || 0}</strong></div>
-              </div>
+            <button class="page-btn" data-page="${p}" title="+1 venta · ${p}" style="${accentVars}">
               <div class="page-btn-plus">+1</div>
             </button>
           `).join('')}
