@@ -2405,13 +2405,23 @@ function resetAll() {
 function cerrarDia() {
   // Archivar las ventas del día actual al historial + mover a ventasSemana
   // (las comisiones siguen acumulándose para la contadora hasta el cierre de semana)
+  let top3 = [];
+  let totalDia = state.ventas.length;
   if (state.ventas.length > 0) {
     const ranking = getRanked().filter(r => r.total > 0).slice(0, 3);
-    const top3 = ranking.map(r => ({ id: r.id, nombre: r.name, count: r.total, color: r.color }));
+    top3 = ranking.map(r => ({
+      id: r.id,
+      nombre: r.name,
+      count: r.total,
+      color: r.color,
+      avatar: r.avatar,
+      img: r.img,
+      colorAlt: r.colorAlt
+    }));
     state.historial.unshift({
       fecha: state.fechaActual || fechaCDMXHoy(),
       total: state.ventas.length,
-      top3: top3,
+      top3: top3.map(t => ({ id: t.id, nombre: t.nombre, count: t.count, color: t.color })),
       tipo: 'dia'
     });
     if (state.historial.length > 60) state.historial = state.historial.slice(0, 60);
@@ -2422,12 +2432,24 @@ function cerrarDia() {
       // Marcar la fecha del día en que se cerró la venta (por si retroactiva)
       state.ventasSemana.push({ ...v, diaCerrado: state.fechaActual || fechaCDMXHoy() });
     });
+
+    // 🏆 Disparar PODIO ÉPICO en la TV (alarma + animación + frase motivadora)
+    const podiumTrigger = {
+      top3: top3,
+      totalDia: totalDia,
+      ts: Date.now()
+    };
+    try { localStorage.setItem('stratton.podio.trigger', JSON.stringify(podiumTrigger)); } catch (e) {}
   }
   state.ventas = [];        // Reset Arena (las barras vuelven a cero en la TV)
   saveState();
   Sounds.init();
   Sounds.victory();
-  toast('🏁 Día cerrado · Comisiones siguen acumulándose para la semana');
+  if (top3.length > 0) {
+    toast(`🏁 Día cerrado · 🏆 Podio enviado a la TV · ${totalDia} ventas`);
+  } else {
+    toast('🏁 Día cerrado · sin ventas para el podio');
+  }
   renderAll();
 }
 

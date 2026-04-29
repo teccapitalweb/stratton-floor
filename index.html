@@ -2690,6 +2690,401 @@ body.modo-estadio .motivation-banner {
   .bebe-bubble-text { font-size: 18px; }
 }
 
+/* =========================================================
+   🏆 ALARMA + PODIO ÉPICO DE CIERRE DEL DÍA
+   3 fases: ALARMA (3s) → FRASE (4s) → PODIO (18s)
+   ========================================================= */
+.cierre-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9700;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255,69,0,0.2) 0%, transparent 60%),
+    radial-gradient(circle at 50% 100%, rgba(255,215,0,0.15) 0%, transparent 50%),
+    rgba(8,5,15,0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+  cursor: pointer;
+}
+.cierre-overlay.is-active {
+  display: flex;
+  animation: cierre-fade-in 0.5s ease forwards;
+}
+.cierre-overlay.is-closing {
+  animation: cierre-fade-out 0.6s ease forwards;
+}
+@keyframes cierre-fade-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cierre-fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+/* === Sirena giratoria roja de fondo (efecto luz de patrulla) === */
+.cierre-sirena {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 30% 50%, rgba(255,40,40,0.35) 0%, transparent 30%),
+    radial-gradient(circle at 70% 50%, rgba(255,180,40,0.3) 0%, transparent 30%);
+  filter: blur(40px);
+  animation: cierre-sirena-spin 1.2s linear infinite;
+  mix-blend-mode: screen;
+}
+@keyframes cierre-sirena-spin {
+  0%   { transform: rotate(0); opacity: 0.7; }
+  50%  { opacity: 1; }
+  100% { transform: rotate(360deg); opacity: 0.7; }
+}
+
+/* === Rayos de luz cruzados === */
+.cierre-rayos {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 200vmax; height: 200vmax;
+  transform: translate(-50%, -50%);
+  background:
+    conic-gradient(from 0deg,
+      transparent 0deg,
+      rgba(255,215,0,0.15) 12deg,
+      transparent 24deg,
+      transparent 60deg,
+      rgba(255,140,0,0.12) 72deg,
+      transparent 84deg,
+      transparent 120deg,
+      rgba(255,215,0,0.15) 132deg,
+      transparent 144deg,
+      transparent 180deg,
+      rgba(255,140,0,0.12) 192deg,
+      transparent 204deg,
+      transparent 240deg,
+      rgba(255,215,0,0.15) 252deg,
+      transparent 264deg,
+      transparent 300deg,
+      rgba(255,140,0,0.12) 312deg,
+      transparent 324deg);
+  animation: cierre-rayos-spin 18s linear infinite reverse;
+  filter: blur(8px);
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+@keyframes cierre-rayos-spin {
+  from { transform: translate(-50%, -50%) rotate(0); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* === Spotlights tipo escenario que barren === */
+.cierre-spotlights {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.cierre-spotlights::before, .cierre-spotlights::after {
+  content: '';
+  position: absolute;
+  top: -10%;
+  width: 30vw;
+  height: 130vh;
+  background: linear-gradient(180deg,
+    rgba(255,215,0,0.25) 0%,
+    rgba(255,140,0,0.15) 40%,
+    transparent 80%);
+  filter: blur(20px);
+  transform-origin: top center;
+  animation: cierre-spot-sweep 4s ease-in-out infinite alternate;
+  mix-blend-mode: screen;
+}
+.cierre-spotlights::before { left: 20%; animation-delay: 0s; }
+.cierre-spotlights::after { right: 20%; animation-delay: -2s; }
+@keyframes cierre-spot-sweep {
+  0%   { transform: rotate(-25deg); }
+  100% { transform: rotate(25deg); }
+}
+
+/* === Confetti dorado === */
+.cierre-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.cierre-confetti span {
+  position: absolute;
+  top: -30px;
+  width: 10px; height: 16px;
+  border-radius: 2px;
+  animation: cierre-confetti-fall linear infinite;
+}
+@keyframes cierre-confetti-fall {
+  0%   { transform: translateY(0) rotate(0); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.5; }
+}
+
+/* === Stage principal === */
+.cierre-stage {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 30px;
+  text-align: center;
+}
+
+/* === Las 3 fases - solo la activa se muestra === */
+.cierre-fase {
+  display: none;
+}
+.cierre-fase.is-active {
+  display: block;
+  animation: cierre-fase-in 0.6s cubic-bezier(.2,1.4,.4,1) forwards;
+}
+@keyframes cierre-fase-in {
+  0%   { opacity: 0; transform: scale(0.7); filter: blur(20px); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+/* === FASE 1: ALARMA === */
+.cierre-icon-grande {
+  font-size: clamp(120px, 20vmin, 240px);
+  line-height: 1;
+  filter:
+    drop-shadow(0 0 40px rgba(255,69,0,0.9))
+    drop-shadow(0 0 80px rgba(255,140,0,0.6));
+  animation: cierre-alarm-shake 0.18s linear infinite;
+}
+@keyframes cierre-alarm-shake {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%      { transform: translate(-4px, 2px) scale(1.04); }
+  50%      { transform: translate(4px, -2px) scale(1); }
+  75%      { transform: translate(-2px, -4px) scale(1.04); }
+}
+.cierre-titulo-grande {
+  font-family: var(--font-display);
+  font-size: clamp(60px, 9vw, 140px);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-top: 24px;
+  background: linear-gradient(180deg,
+    #FFFFFF 0%,
+    #FFE9C8 25%,
+    #FFA500 60%,
+    #FF4500 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter:
+    drop-shadow(0 0 30px rgba(255,140,0,0.8))
+    drop-shadow(0 0 60px rgba(255,69,0,0.5));
+  text-transform: uppercase;
+  animation: cierre-titulo-pulse 0.5s ease-in-out infinite;
+}
+@keyframes cierre-titulo-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+.cierre-subtitulo {
+  font-family: var(--font-mono);
+  font-size: clamp(14px, 1.6vw, 22px);
+  letter-spacing: 0.4em;
+  color: rgba(255,200,140,0.95);
+  text-transform: uppercase;
+  margin-top: 18px;
+  text-shadow: 0 0 18px rgba(255,140,0,0.7);
+  animation: cierre-sub-blink 0.8s ease-in-out infinite;
+}
+@keyframes cierre-sub-blink {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+
+/* === FASE 2: FRASE MOTIVADORA === */
+.cierre-frase-tag {
+  font-family: var(--font-mono);
+  font-size: clamp(12px, 1.3vw, 16px);
+  letter-spacing: 0.5em;
+  color: var(--color-cyan);
+  text-transform: uppercase;
+  margin-bottom: 26px;
+  text-shadow: 0 0 14px rgba(0,229,255,0.6);
+}
+.cierre-frase-grande {
+  font-family: var(--font-display);
+  font-size: clamp(54px, 7vw, 110px);
+  letter-spacing: 0.02em;
+  line-height: 1.05;
+  background: linear-gradient(180deg,
+    #FFFFFF 0%,
+    #FFD700 40%,
+    #FF8C00 80%,
+    #FF4500 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter:
+    drop-shadow(0 0 30px rgba(255,180,40,0.7))
+    drop-shadow(0 0 60px rgba(255,100,0,0.5));
+  text-transform: uppercase;
+  text-align: center;
+  max-width: 95vw;
+}
+.cierre-frase-sub {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2.4vw, 38px);
+  letter-spacing: 0.03em;
+  margin-top: 24px;
+  color: rgba(255,230,180,0.95);
+  text-shadow: 0 0 18px rgba(255,180,40,0.6);
+}
+
+/* === FASE 3: PODIO === */
+.cierre-podio-titulo {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5vw, 72px);
+  letter-spacing: 0.04em;
+  background: linear-gradient(90deg, #FFD700, #FFA500, #FFD700);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 24px rgba(255,180,40,0.7));
+  margin-bottom: 40px;
+  text-transform: uppercase;
+}
+.cierre-podio-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(16px, 3vw, 50px);
+  margin-bottom: 24px;
+}
+.cierre-podio-plat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+  width: clamp(140px, 18vw, 220px);
+  opacity: 0;
+}
+.cierre-podio-plat.is-revealed {
+  animation: podio-rise 1s cubic-bezier(.2,1.4,.4,1) forwards;
+}
+@keyframes podio-rise {
+  0%   { opacity: 0; transform: translateY(80px) scale(0.6); }
+  60%  { opacity: 1; transform: translateY(-10px) scale(1.05); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.cierre-podio-corona {
+  position: absolute;
+  top: -54px;
+  font-size: 56px;
+  filter: drop-shadow(0 0 18px rgba(255,215,0,0.9));
+  animation: corona-bounce 1.4s ease-in-out infinite;
+}
+@keyframes corona-bounce {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50%      { transform: translateY(-8px) rotate(5deg); }
+}
+.cierre-podio-medalla {
+  font-size: clamp(50px, 6vw, 80px);
+  margin-bottom: 8px;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+}
+.cierre-podio-avatar {
+  width: clamp(70px, 9vw, 110px);
+  height: clamp(70px, 9vw, 110px);
+  border-radius: 50%;
+  background: white;
+  margin-bottom: 12px;
+  box-shadow:
+    0 0 0 4px var(--podio-color, #FFD700),
+    0 12px 30px rgba(0,0,0,0.5),
+    0 0 40px var(--podio-color, rgba(255,215,0,0.5));
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.cierre-podio-avatar img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  padding: 6%;
+}
+.cierre-podio-avatar-fallback {
+  width: 100%; height: 100%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3vw, 40px);
+  color: #0A0B14;
+  background: linear-gradient(135deg, var(--podio-color), var(--podio-color-alt));
+}
+.cierre-podio-nombre {
+  font-family: var(--font-display);
+  font-size: clamp(18px, 2vw, 30px);
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+  color: var(--color-text);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cierre-podio-count {
+  font-family: var(--font-mono);
+  font-size: clamp(12px, 1.3vw, 16px);
+  letter-spacing: 0.16em;
+  color: var(--podio-color, #FFD700);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.cierre-podio-base {
+  width: 100%;
+  font-family: var(--font-display);
+  font-size: clamp(50px, 7vw, 100px);
+  letter-spacing: 0;
+  color: #0A0B14;
+  background: linear-gradient(180deg, var(--podio-color, #FFD700), var(--podio-color-alt, #DAA520));
+  display: grid;
+  place-items: center;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 0 30px var(--podio-color, rgba(255,215,0,0.5));
+  position: relative;
+  overflow: hidden;
+}
+.cierre-podio-base::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 30%);
+}
+/* Alturas de las plataformas */
+.cierre-podio-plat--1 .cierre-podio-base { height: clamp(120px, 14vw, 180px); }
+.cierre-podio-plat--2 .cierre-podio-base { height: clamp(80px, 10vw, 130px); }
+.cierre-podio-plat--3 .cierre-podio-base { height: clamp(60px, 8vw, 100px); }
+
+/* Colores específicos por puesto */
+.cierre-podio-plat--1 { --podio-color: #FFD700; --podio-color-alt: #FF8C00; }
+.cierre-podio-plat--2 { --podio-color: #C0C0C0; --podio-color-alt: #808080; }
+.cierre-podio-plat--3 { --podio-color: #CD7F32; --podio-color-alt: #8B4513; }
+
+.cierre-podio-total {
+  font-family: var(--font-mono);
+  font-size: clamp(13px, 1.4vw, 18px);
+  letter-spacing: 0.3em;
+  color: rgba(255,200,140,0.85);
+  text-transform: uppercase;
+  text-shadow: 0 0 14px rgba(255,140,0,0.5);
+}
+
+/* Responsive cierre */
+@media (max-width: 760px) {
+  .cierre-titulo-grande { font-size: clamp(40px, 12vw, 70px); }
+  .cierre-frase-grande { font-size: clamp(36px, 9vw, 60px); }
+  .cierre-podio-row { gap: 8px; }
+  .cierre-podio-plat { width: clamp(90px, 28vw, 130px); }
+}
+
 </style>
 </head>
 <body>
@@ -2935,6 +3330,71 @@ body.modo-estadio .motivation-banner {
     <div class="commission-reveal__sub" id="commissionRevealSub">CALCULANDO LA SUERTE…</div>
     <div class="commission-reveal__hype" id="commissionRevealHype">PREPÁRATE · ESTO VIENE FUERTE</div>
   </div>
+</div>
+
+<!-- 🏆 ALARMA + PODIO ÉPICO DE CIERRE DEL DÍA -->
+<div class="cierre-overlay" id="cierreOverlay" role="dialog" aria-label="Cierre del día">
+  <button class="lion-close-btn" id="cierreCloseBtn" aria-label="Cerrar">×</button>
+
+  <!-- Sirena giratoria de fondo -->
+  <div class="cierre-sirena"></div>
+  <!-- Rayos de luz cruzados -->
+  <div class="cierre-rayos"></div>
+  <!-- Spotlights animados -->
+  <div class="cierre-spotlights"></div>
+  <!-- Confetti -->
+  <div class="cierre-confetti" id="cierreConfetti"></div>
+
+  <div class="cierre-stage">
+    <!-- Etapa 1: Alarma + título -->
+    <div class="cierre-fase cierre-fase--alarma" id="cierreFaseAlarma">
+      <div class="cierre-icon-grande">🚨</div>
+      <div class="cierre-titulo-grande">CIERRE DEL DÍA</div>
+      <div class="cierre-subtitulo">¡SE ACABÓ! · CONTANDO RESULTADOS</div>
+    </div>
+
+    <!-- Etapa 2: Frase motivadora -->
+    <div class="cierre-fase cierre-fase--frase" id="cierreFaseFrase">
+      <div class="cierre-frase-tag">📣 PARA TODO EL EQUIPO</div>
+      <div class="cierre-frase-grande" id="cierreFraseGrande">¡QUÉ EQUIPAZO!</div>
+      <div class="cierre-frase-sub" id="cierreFraseSub">Hoy se sintió la garra de TEC CAPITAL</div>
+    </div>
+
+    <!-- Etapa 3: Podio con top 3 -->
+    <div class="cierre-fase cierre-fase--podio" id="cierreFasePodio">
+      <div class="cierre-podio-titulo">🏆 GANADORES DEL DÍA 🏆</div>
+      <div class="cierre-podio-row">
+        <!-- Plata #2 -->
+        <div class="cierre-podio-plat cierre-podio-plat--2" id="cierrePodioPlat2">
+          <div class="cierre-podio-medalla">🥈</div>
+          <div class="cierre-podio-avatar"></div>
+          <div class="cierre-podio-nombre"></div>
+          <div class="cierre-podio-count"></div>
+          <div class="cierre-podio-base">2</div>
+        </div>
+        <!-- Oro #1 -->
+        <div class="cierre-podio-plat cierre-podio-plat--1" id="cierrePodioPlat1">
+          <div class="cierre-podio-corona">👑</div>
+          <div class="cierre-podio-medalla">🥇</div>
+          <div class="cierre-podio-avatar"></div>
+          <div class="cierre-podio-nombre"></div>
+          <div class="cierre-podio-count"></div>
+          <div class="cierre-podio-base">1</div>
+        </div>
+        <!-- Bronce #3 -->
+        <div class="cierre-podio-plat cierre-podio-plat--3" id="cierrePodioPlat3">
+          <div class="cierre-podio-medalla">🥉</div>
+          <div class="cierre-podio-avatar"></div>
+          <div class="cierre-podio-nombre"></div>
+          <div class="cierre-podio-count"></div>
+          <div class="cierre-podio-base">3</div>
+        </div>
+      </div>
+      <div class="cierre-podio-total" id="cierrePodioTotal">Total del día: 0 ventas</div>
+    </div>
+  </div>
+
+  <div class="lion-close-hint">[ click o ESC para cerrar · cierra solo en 25s ]</div>
 </div>
 
 <!-- PODIO al cierre del día (6 PM CDMX) -->
@@ -5805,6 +6265,348 @@ try {
 // Helper de consola
 window.bebe = activarModoBebe;
 window.bebeClose = cerrarModoBebe;
+
+/* ===========================================================
+   🏆 CIERRE DEL DÍA - Alarma + Frase motivadora + Podio (25s total)
+   Disparado desde el panel admin con stratton.podio.trigger
+   =========================================================== */
+
+const FRASES_CIERRE_DIA = [
+  { titulo: '¡QUÉ EQUIPAZO!',                  sub: 'Hoy se sintió la garra de TEC CAPITAL' },
+  { titulo: 'OTRO DÍA · OTRA HISTORIA',        sub: 'Cerramos como guerreros' },
+  { titulo: 'GRACIAS POR SU TRABAJO',          sub: 'Cada venta cuenta · cada cierre suma' },
+  { titulo: '¡FUE UN DÍA DE LEYENDA!',         sub: 'Mañana redoblamos la apuesta' },
+  { titulo: 'DESCANSEN GUERREROS',             sub: 'Mañana hay que volver con todo' },
+  { titulo: '¡MISIÓN CUMPLIDA!',               sub: 'El equipo nunca falla' },
+  { titulo: 'HOY ESCRIBIMOS HISTORIA',         sub: 'TEC CAPITAL imparable' },
+  { titulo: '¡VAMOS POR MÁS MAÑANA!',          sub: 'Hoy descansamos · mañana atacamos' },
+  { titulo: 'EL ESFUERZO SIEMPRE PAGA',        sub: 'Sigan así · van por buen camino' },
+  { titulo: '¡CIERRE GLORIOSO!',               sub: 'Esto es solo el comienzo' },
+];
+
+let cierreActive = false;
+let cierreTimers = [];
+let cierreSirenaInterval = null;
+
+function setupCierreConfetti() {
+  const cont = document.getElementById('cierreConfetti');
+  if (!cont) return;
+  cont.innerHTML = '';
+  const colores = ['#FFD700', '#FFA500', '#FF4500', '#FFFFFF', '#FFC149'];
+  for (let i = 0; i < 60; i++) {
+    const c = document.createElement('span');
+    c.style.left = (Math.random() * 100) + '%';
+    c.style.background = colores[Math.floor(Math.random() * colores.length)];
+    c.style.animationDuration = (3 + Math.random() * 4) + 's';
+    c.style.animationDelay = (-Math.random() * 5) + 's';
+    cont.appendChild(c);
+  }
+}
+
+/* === SIRENA DE ALARMA (loop hasta que se apaga) === */
+function sirenaAlarma() {
+  const ac = getAudio();
+  if (!ac) return;
+  const t = ac.currentTime;
+  const dur = 1.4;
+  // Sirena oscilante de auto de patrulla / cierre de jornada
+  const o = ac.createOscillator();
+  const g = ac.createGain();
+  o.type = 'sawtooth';
+  // Alterna 880 → 440 → 880 → 440
+  o.frequency.setValueAtTime(880, t);
+  o.frequency.linearRampToValueAtTime(440, t + 0.35);
+  o.frequency.linearRampToValueAtTime(880, t + 0.7);
+  o.frequency.linearRampToValueAtTime(440, t + 1.05);
+  o.frequency.linearRampToValueAtTime(880, t + dur);
+  g.gain.setValueAtTime(0.001, t);
+  g.gain.exponentialRampToValueAtTime(0.32, t + 0.05);
+  g.gain.linearRampToValueAtTime(0.32, t + dur - 0.1);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g).connect(ac.destination);
+  o.start(t); o.stop(t + dur);
+
+  // Capa armónica para más brillo
+  const o2 = ac.createOscillator();
+  const g2 = ac.createGain();
+  o2.type = 'square';
+  o2.frequency.setValueAtTime(1320, t);
+  o2.frequency.linearRampToValueAtTime(660, t + 0.35);
+  o2.frequency.linearRampToValueAtTime(1320, t + 0.7);
+  o2.frequency.linearRampToValueAtTime(660, t + 1.05);
+  o2.frequency.linearRampToValueAtTime(1320, t + dur);
+  g2.gain.setValueAtTime(0.001, t);
+  g2.gain.exponentialRampToValueAtTime(0.12, t + 0.05);
+  g2.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o2.connect(g2).connect(ac.destination);
+  o2.start(t); o2.stop(t + dur);
+}
+
+/* === BOOM ÉPICO (impact bass para fase frase) === */
+function cierreBoomEpico() {
+  const ac = getAudio();
+  if (!ac) return;
+  const t = ac.currentTime;
+  // Sub-bass profundo
+  const o1 = ac.createOscillator();
+  const g1 = ac.createGain();
+  o1.type = 'sine';
+  o1.frequency.setValueAtTime(110, t);
+  o1.frequency.exponentialRampToValueAtTime(28, t + 1.0);
+  g1.gain.setValueAtTime(0.001, t);
+  g1.gain.exponentialRampToValueAtTime(1.0, t + 0.04);
+  g1.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
+  o1.connect(g1).connect(ac.destination);
+  o1.start(t); o1.stop(t + 1.55);
+  // Crash de plato encima
+  const buf = ac.createBuffer(1, ac.sampleRate * 1.2, ac.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+  const src = ac.createBufferSource();
+  const f = ac.createBiquadFilter();
+  const gN = ac.createGain();
+  src.buffer = buf;
+  f.type = 'highpass'; f.frequency.value = 5000;
+  gN.gain.setValueAtTime(0.4, t);
+  gN.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+  src.connect(f); f.connect(gN); gN.connect(ac.destination);
+  src.start(t); src.stop(t + 1.2);
+}
+
+/* === FANFARRIA TRIUNFAL (para podio) === */
+function cierreFanfarriaPodio() {
+  const ac = getAudio();
+  if (!ac) return;
+  const t0 = ac.currentTime;
+  // Acordes ascendentes Do mayor → Sol mayor → Do mayor alto
+  const acordes = [
+    { freqs: [523.25, 659.25, 783.99], delay: 0,    dur: 0.35 },  // Do
+    { freqs: [587.33, 739.99, 880.00], delay: 0.30, dur: 0.35 },  // Re
+    { freqs: [659.25, 830.61, 987.77], delay: 0.60, dur: 0.35 },  // Mi
+    { freqs: [783.99, 987.77, 1174.66], delay: 0.90, dur: 1.2 }, // Sol mayor extendido
+  ];
+  acordes.forEach(({ freqs, delay, dur }) => {
+    freqs.forEach(freq => {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = 'sawtooth';
+      o.frequency.value = freq;
+      const tt = t0 + delay;
+      g.gain.setValueAtTime(0.001, tt);
+      g.gain.linearRampToValueAtTime(0.16, tt + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.001, tt + dur);
+      const f = ac.createBiquadFilter();
+      f.type = 'lowpass'; f.frequency.value = 2500;
+      o.connect(f); f.connect(g); g.connect(ac.destination);
+      o.start(tt); o.stop(tt + dur + 0.05);
+    });
+  });
+}
+
+/* === Activar cierre épico === */
+function activarCierreDia(top3, totalDia) {
+  if (cierreActive) return;
+  cierreActive = true;
+
+  // Limpiar timers previos
+  cierreTimers.forEach(t => clearTimeout(t));
+  cierreTimers = [];
+
+  // Setup confetti dorado
+  setupCierreConfetti();
+
+  // Elegir frase motivadora aleatoria sin repetir
+  let ultimas = [];
+  try { ultimas = JSON.parse(localStorage.getItem('stratton.cierre.lastFrases') || '[]'); } catch (e) {}
+  const setU = new Set(ultimas);
+  const candidatas = FRASES_CIERRE_DIA.filter((_, i) => !setU.has(i));
+  const pool = candidatas.length > 0 ? candidatas : FRASES_CIERRE_DIA;
+  const fraseIdx = FRASES_CIERRE_DIA.indexOf(pool[Math.floor(Math.random() * pool.length)]);
+  const frase = FRASES_CIERRE_DIA[fraseIdx];
+  ultimas.unshift(fraseIdx);
+  ultimas = ultimas.slice(0, 3);
+  try { localStorage.setItem('stratton.cierre.lastFrases', JSON.stringify(ultimas)); } catch (e) {}
+
+  // Setear textos
+  document.getElementById('cierreFraseGrande').textContent = frase.titulo;
+  document.getElementById('cierreFraseSub').textContent = frase.sub;
+  document.getElementById('cierrePodioTotal').textContent = `Total del día: ${totalDia} ventas cerradas`;
+
+  // Reset de fases visibles
+  ['cierreFaseAlarma', 'cierreFaseFrase', 'cierreFasePodio'].forEach(id => {
+    document.getElementById(id).classList.remove('is-active');
+  });
+
+  // Reset plataformas del podio
+  ['cierrePodioPlat1', 'cierrePodioPlat2', 'cierrePodioPlat3'].forEach(id => {
+    document.getElementById(id).classList.remove('is-revealed');
+  });
+
+  // Llenar el podio con top3 (índice 0=oro, 1=plata, 2=bronce)
+  const platMap = ['cierrePodioPlat1', 'cierrePodioPlat2', 'cierrePodioPlat3'];
+  for (let i = 0; i < 3; i++) {
+    const plat = document.getElementById(platMap[i]);
+    const data = top3[i];
+    const avatarEl = plat.querySelector('.cierre-podio-avatar');
+    const nombreEl = plat.querySelector('.cierre-podio-nombre');
+    const countEl = plat.querySelector('.cierre-podio-count');
+    if (data) {
+      const colorAlt = data.colorAlt || data.color;
+      plat.style.setProperty('--podio-color', data.color);
+      plat.style.setProperty('--podio-color-alt', colorAlt);
+      avatarEl.innerHTML = `<img src="${data.img}" alt="${data.nombre}" onerror="this.parentElement.innerHTML='<div class=\\'cierre-podio-avatar-fallback\\'>${data.avatar || data.nombre.slice(0,2)}</div>'">`;
+      nombreEl.textContent = data.nombre;
+      countEl.textContent = `${data.count} ${data.count === 1 ? 'venta' : 'ventas'}`;
+      plat.style.visibility = 'visible';
+    } else {
+      // Si no hay 3, esconder los huecos
+      plat.style.visibility = 'hidden';
+    }
+  }
+
+  // Mostrar overlay
+  const overlay = document.getElementById('cierreOverlay');
+  overlay.classList.remove('is-closing');
+  overlay.classList.add('is-active');
+
+  try { getAudio().resume(); } catch (e) {}
+
+  // ===== SECUENCIA ÉPICA =====
+
+  // FASE 1 (0-3s): ALARMA con sirena loop
+  document.getElementById('cierreFaseAlarma').classList.add('is-active');
+  // Sirena cada 1.5s durante 3s
+  sirenaAlarma();
+  cierreSirenaInterval = setInterval(() => {
+    if (cierreActive) sirenaAlarma();
+  }, 1500);
+  cierreTimers.push(setTimeout(() => {
+    if (cierreSirenaInterval) {
+      clearInterval(cierreSirenaInterval);
+      cierreSirenaInterval = null;
+    }
+  }, 3000));
+
+  // FASE 2 (3-7s): FRASE MOTIVADORA
+  cierreTimers.push(setTimeout(() => {
+    document.getElementById('cierreFaseAlarma').classList.remove('is-active');
+    document.getElementById('cierreFaseFrase').classList.add('is-active');
+    cierreBoomEpico();
+  }, 3000));
+
+  // FASE 3 (7-25s): PODIO con reveal escalonado
+  cierreTimers.push(setTimeout(() => {
+    document.getElementById('cierreFaseFrase').classList.remove('is-active');
+    document.getElementById('cierreFasePodio').classList.add('is-active');
+    cierreFanfarriaPodio();
+  }, 7000));
+
+  // Reveal escalonado del podio: 3° → 2° → 1°
+  cierreTimers.push(setTimeout(() => {
+    if (top3[2]) {
+      document.getElementById('cierrePodioPlat3').classList.add('is-revealed');
+      cierreBoomEpico();
+    }
+  }, 7800));
+
+  cierreTimers.push(setTimeout(() => {
+    if (top3[1]) {
+      document.getElementById('cierrePodioPlat2').classList.add('is-revealed');
+      cierreBoomEpico();
+    }
+  }, 9600));
+
+  cierreTimers.push(setTimeout(() => {
+    if (top3[0]) {
+      document.getElementById('cierrePodioPlat1').classList.add('is-revealed');
+      cierreBoomEpico();
+      // Confetti extra cuando aparece el #1
+      try { lanzarConfetti(true, '#FFD700'); } catch (e) {}
+      setTimeout(() => { try { lanzarConfetti(true, '#FFD700'); } catch (e) {} }, 400);
+      setTimeout(() => { try { lanzarConfetti(true, '#FFA500'); } catch (e) {} }, 800);
+    }
+  }, 11400));
+
+  // Aplauso al final
+  cierreTimers.push(setTimeout(() => {
+    try { aplauso(); } catch (e) {}
+  }, 12500));
+
+  // Auto-cerrar a los 25s
+  cierreTimers.push(setTimeout(() => cerrarCierreDia(), 25000));
+}
+
+function cerrarCierreDia() {
+  if (!cierreActive) return;
+  cierreActive = false;
+  cierreTimers.forEach(t => clearTimeout(t));
+  cierreTimers = [];
+  if (cierreSirenaInterval) {
+    clearInterval(cierreSirenaInterval);
+    cierreSirenaInterval = null;
+  }
+  const overlay = document.getElementById('cierreOverlay');
+  overlay.classList.add('is-closing');
+  setTimeout(() => {
+    overlay.classList.remove('is-active');
+    overlay.classList.remove('is-closing');
+    // Reset de las fases para próxima vez
+    ['cierreFaseAlarma', 'cierreFaseFrase', 'cierreFasePodio'].forEach(id => {
+      document.getElementById(id).classList.remove('is-active');
+    });
+  }, 600);
+}
+
+/* Listeners de cierre */
+document.getElementById('cierreOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'cierreOverlay' || e.target.id === 'cierreCloseBtn' ||
+      e.target.closest('#cierreCloseBtn')) {
+    cerrarCierreDia();
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && cierreActive) cerrarCierreDia();
+});
+
+/* === Listener del trigger del Panel admin === */
+const PODIO_TRIGGER_KEY = 'stratton.podio.trigger';
+let lastPodioTriggerTs = 0;
+function checkPodioTriggerFromPanel() {
+  let raw;
+  try { raw = localStorage.getItem(PODIO_TRIGGER_KEY); } catch (e) { return; }
+  if (!raw) return;
+  let trigger;
+  try { trigger = JSON.parse(raw); } catch (e) { return; }
+  if (!trigger || !trigger.ts || trigger.ts <= lastPodioTriggerTs) return;
+  if (Date.now() - trigger.ts > 30000) return;
+  lastPodioTriggerTs = trigger.ts;
+  if (trigger.top3 && trigger.top3.length > 0) {
+    activarCierreDia(trigger.top3, trigger.totalDia || 0);
+  }
+}
+window.addEventListener('storage', (e) => {
+  if (e.key === PODIO_TRIGGER_KEY) checkPodioTriggerFromPanel();
+});
+setInterval(checkPodioTriggerFromPanel, 500);
+try {
+  const existing = JSON.parse(localStorage.getItem(PODIO_TRIGGER_KEY) || '{}');
+  if (existing.ts) lastPodioTriggerTs = existing.ts;
+} catch (e) {}
+
+// Helper consola para probar
+window.cierreDia = (ventas) => {
+  const top3Demo = state.vendedores.slice(0, 3).map((v, i) => ({
+    id: v.id,
+    nombre: v.nombre,
+    count: 12 - i * 3,
+    color: v.color,
+    colorAlt: v.colorDim,
+    avatar: v.avatar,
+    img: (v.imgs && v.imgs[0]) || ''
+  }));
+  activarCierreDia(top3Demo, ventas || 47);
+};
+window.cierreClose = cerrarCierreDia;
 
 /* ============ Render inicial ============ */
 checkResetDiario();             // ⭐ Si cambió el día, archivar y resetear
