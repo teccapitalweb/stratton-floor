@@ -344,6 +344,22 @@ input, select { font-family: inherit; }
   position: relative;
   display: flex; flex-direction: column; align-items: center;
   height: 100%; min-width: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.bar-col:hover {
+  filter: brightness(1.15);
+}
+.bar-col:hover .bar-col__avatar {
+  transform: scale(1.12);
+  box-shadow:
+    0 0 0 3px var(--bar-color, var(--color-cyan)),
+    0 8px 22px rgba(0,0,0,0.6) !important;
+}
+.bar-col:active { transform: scale(0.97); }
+.bar-col:hover .bar-col__name {
+  color: var(--bar-color, var(--color-cyan));
 }
 .bar-col__amount {
   font-family: var(--font-display); font-size: 18px;
@@ -411,13 +427,14 @@ input, select { font-family: inherit; }
 }
 .bar-col__foot { margin-top: 10px; text-align: center; width: 100%; }
 .bar-col__avatar {
-  width: 40px; height: 40px; border-radius: 50%;
+  width: 46px; height: 46px; border-radius: 50%;
   display: grid; place-items: center;
-  font-family: var(--font-display); font-size: 16px;
+  font-family: var(--font-display); font-size: 18px;
   letter-spacing: 0.04em; color: #0A0B14;
   background: var(--bar-color);
   margin: 0 auto 6px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: transform 0.18s cubic-bezier(.2,.8,.25,1.05), box-shadow 0.18s ease;
 }
 .bar-col--leader .bar-col__avatar {
   background: var(--color-gold);
@@ -613,7 +630,6 @@ input, select { font-family: inherit; }
   padding: 0;
 }
 /* Avatares un poco más grandes en el Floor para que las fotos se vean */
-.bar-col__avatar { width: 46px; height: 46px; }
 
 /* KPIs */
 .kpis {
@@ -1079,14 +1095,6 @@ input, select { font-family: inherit; }
         <line x1="17" y1="9" x2="23" y2="15"></line>
       </svg>
     </button>
-
-    <button class="btn-primary" id="btnNuevaVenta">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
-        <line x1="12" y1="5" x2="12" y2="19"></line>
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-      </svg>
-      Nueva venta
-    </button>
   </div>
 </header>
 
@@ -1126,30 +1134,6 @@ input, select { font-family: inherit; }
     <ul class="board__list" id="boardList"></ul>
   </section>
 </main>
-
-<!-- MODAL Nueva venta -->
-<div class="modal-backdrop" id="modalBackdrop">
-  <div class="modal">
-    <button class="modal__close" id="modalClose" aria-label="Cerrar">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-      </svg>
-    </button>
-    <div class="modal__title">REGISTRAR VENTA</div>
-    <div class="modal__sub">Esto va a poner a temblar el ranking — ojo. ⚡</div>
-    <form id="formVenta">
-      <div class="field">
-        <label for="selVendedor">Consultora</label>
-        <select id="selVendedor" required></select>
-      </div>
-      <div class="modal__actions">
-        <button type="button" class="btn-secondary" id="btnCancel">Cancelar</button>
-        <button type="submit" class="btn-primary">Registrar venta</button>
-      </div>
-    </form>
-  </div>
-</div>
 
 <!-- MODAL Comisión -->
 <div class="modal-backdrop" id="modalComision">
@@ -1361,17 +1345,37 @@ function avatarHasPhoto(vd) {
   return Array.isArray(vd.imgs) && vd.imgs.length > 0;
 }
 
-/* Helper: HTML del avatar - una foto, dos (split), o iniciales */
+/* Helper: HTML del avatar - una foto, dos (split), o iniciales.
+   Las imágenes tienen onerror para caer a iniciales si no cargan
+   (resiliente cuando GitHub Pages no tiene la carpeta img/) */
 function htmlAvatar(vd) {
-  if (!avatarHasPhoto(vd)) return vd.avatar; // fallback iniciales
+  if (!avatarHasPhoto(vd)) return vd.avatar; // fallback iniciales directo
+  const fbAttrs = `data-fallback="${vd.avatar}" data-color="${vd.color}" data-color-dim="${vd.colorDim}"`;
   if (vd.imgs.length === 1) {
-    return `<div class="avatar-photo avatar-photo--single"><img src="${vd.imgs[0]}" alt="${vd.nombre}"></div>`;
+    return `<div class="avatar-photo avatar-photo--single" ${fbAttrs}>
+      <img src="${vd.imgs[0]}" alt="${vd.nombre}" onerror="onAvatarError(this)">
+    </div>`;
   }
-  // 2+ imágenes: círculo partido en 2 mitades
-  return `<div class="avatar-photo avatar-photo--split">
-    <div class="avatar-photo__half"><img src="${vd.imgs[0]}" alt=""></div>
-    <div class="avatar-photo__half"><img src="${vd.imgs[1]}" alt=""></div>
+  return `<div class="avatar-photo avatar-photo--split" ${fbAttrs}>
+    <div class="avatar-photo__half"><img src="${vd.imgs[0]}" alt="" onerror="onAvatarError(this)"></div>
+    <div class="avatar-photo__half"><img src="${vd.imgs[1]}" alt="" onerror="onAvatarError(this)"></div>
   </div>`;
+}
+
+/* Si una imagen no carga, reemplazamos el .avatar-photo entero
+   por las iniciales con el color de la consultora — sin imágenes rotas en pantalla */
+function onAvatarError(img) {
+  const photoDiv = img.closest('.avatar-photo');
+  if (!photoDiv) return;
+  const initials = photoDiv.dataset.fallback;
+  const color    = photoDiv.dataset.color;
+  const colorDim = photoDiv.dataset.colorDim;
+  const parent = photoDiv.parentElement; // bar-col__avatar o row__avatar
+  if (!parent) return;
+  parent.classList.remove('has-photo');
+  parent.style.background = `linear-gradient(135deg, ${color}, ${colorDim})`;
+  parent.style.color = '#0A0B14';
+  parent.innerHTML = initials;
 }
 
 const fmt = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 0 });
@@ -1591,17 +1595,6 @@ function calcularRacha(vendedorId) {
     else break;
   }
   return racha;
-}
-
-function renderSelectVendedores() {
-  const sel = document.getElementById('selVendedor');
-  sel.innerHTML = '<option value="">— Elegir consultora —</option>';
-  state.vendedores.forEach(vd => {
-    const o = document.createElement('option');
-    o.value = vd.id;
-    o.textContent = vd.nombre;
-    sel.appendChild(o);
-  });
 }
 
 function renderComisionUI() {
