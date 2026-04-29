@@ -7,6 +7,31 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<!-- Firebase Realtime Database para sync remoto entre PCs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+  // ↓↓↓ PEGA AQUÍ TU CONFIG DE FIREBASE PARA SYNC ENTRE COMPUTADORAS ↓↓↓
+  const firebaseConfig = {
+    apiKey: "",
+    authDomain: "",
+    databaseURL: "",
+    projectId: "",
+  };
+  // ↑↑↑ Si dejas vacío: funciona local entre pestañas. Si lo llenas: sincroniza entre PCs ↑↑↑
+
+  if (firebaseConfig.databaseURL) {
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.__firebase = { db, ref, set, onValue, get };
+    console.log('[Firebase] Conectado para sync remoto entre PCs');
+  } else {
+    console.log('[Firebase] No configurado - funcionando solo local (mismo PC)');
+  }
+</script>
+
 <style>
 :root {
   --color-bg:        #0A0B14;
@@ -1651,6 +1676,22 @@ function loadState() {
 
 function saveState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  // Sync remoto Firebase si está configurado
+  if (window.__firebase) {
+    try {
+      const { db, ref, set } = window.__firebase;
+      set(ref(db, 'stratton/state'), { ...state, _ts: Date.now() });
+    } catch (e) {}
+  }
+}
+
+/* === Triggers remotos via Firebase (lion, bebe, coach, podio, reveal) === */
+function pushTriggerRemoto(tipo, data) {
+  if (!window.__firebase) return;
+  try {
+    const { db, ref, set } = window.__firebase;
+    set(ref(db, `stratton/triggers/${tipo}`), { ...data, ts: Date.now() });
+  } catch (e) {}
 }
 
 let state = loadState();
@@ -1663,40 +1704,41 @@ const SOUND_PACKS = {
     label: 'SONIDO DE VENTA',
     description: 'Cuando se registra una venta nueva.',
     options: {
-      'cha-ching':  { label: 'Cha-Ching', description: 'Caja registradora clásica (3 notas).' },
-      'beep':       { label: 'Beep digital', description: 'Tono corto, agudo, neutral.' },
-      'pop':        { label: 'Pop suave', description: 'Burbuja electrónica, discreto.' },
-      'explosion':  { label: '💥 EXPLOSIÓN ÉPICA', description: 'Boom + onda expansiva + cha-ching (intenso).' },
-      'thunder':    { label: '⚡ TRUENO con ECO', description: 'Rayo + trueno largo con reverb.' },
+      'leon':   { label: '🦁 Rugido de León',    description: 'Rugido corto y potente.' },
+      'tigre':  { label: '🐅 Rugido de Tigre',   description: 'Snarl agresivo y agudo.' },
+      'lobo':   { label: '🐺 Aullido de Lobo',   description: 'Aullido corto que sube.' },
+      'aguila': { label: '🦅 Chirrido de Águila', description: 'Chirrido agudo cortante.' },
+      'gorila': { label: '🦍 Golpe de Gorila',   description: 'Hooting + golpe de pecho.' },
     }
   },
   reveal: {
     label: 'REVEAL DE COMISIÓN',
     description: 'Cuando se revela el bono del día.',
     options: {
-      'casino':     { label: 'Casino slot', description: 'Tics rápidos + impacto bass al final.' },
-      'drumroll':   { label: 'Redoble', description: 'Tambor que crece + golpe final.' },
-      'squid':      { label: 'Suspenso', description: 'Drone tenso + revelación dramática.' },
-      'bassdrop':   { label: '🔊 BASS DROP épico', description: 'Build-up + drop subwoofer brutal (largo).' },
-      'epic-alarm': { label: '🚨 ALARMA ÉPICA', description: 'Sirena + boom + crash de plato.' },
+      'leon':   { label: '🦁 León épico',     description: 'Rugido grande y sostenido.' },
+      'tigre':  { label: '🐅 Tigre épico',    description: 'Snarl largo y agresivo.' },
+      'oso':    { label: '🐻 Oso épico',      description: 'Gruñido grave profundo.' },
+      'jaguar': { label: '🐆 Jaguar épico',   description: 'Rugido salvaje cortante.' },
+      'toro':   { label: '🐃 Toro épico',     description: 'Bramido grave imponente.' },
     }
   },
   victory: {
     label: 'CIERRE DE SEMANA',
     description: 'Sonido al cerrar la semana.',
     options: {
-      'fanfare':     { label: 'Fanfarria triunfal', description: 'Arpegio Do mayor ascendente.' },
-      'classical':   { label: 'Clásico solemne', description: 'Acordes mayores en reposo.' },
-      'celebration': { label: 'Celebración fiesta', description: 'Aplausos + cha-chings múltiples.' },
-      'mega-victory':{ label: '🏆 MEGA VICTORIA', description: 'Fanfarria + explosión + aplauso estadio.' },
-      'champion':    { label: '🥇 CAMPEÓN épico', description: 'Coro orquestal + truenos + fuegos artificiales.' },
+      'manada-leones': { label: '🦁 Manada de Leones',  description: '3 rugidos coordinados de leones.' },
+      'manada-lobos':  { label: '🐺 Manada de Lobos',   description: '3 aullidos en armonía.' },
+      'jungla':        { label: '🌴 Jungla completa',   description: 'León + tigre + águila juntos.' },
+      'safari':        { label: '🦓 Safari triunfal',   description: 'Toro + león + gorila celebrando.' },
     }
   }
 };
 
 const Sounds = {
   ctx: null,
-  active: { sale: 'cha-ching', reveal: 'casino', victory: 'fanfare' },
+  active: { sale: 'leon', reveal: 'leon', victory: 'manada-leones' },
+  buffers: {},  // cache de archivos mp3 si existen
+  filesChecked: false,
   init() {
     if (!this.ctx) {
       try {
@@ -1705,6 +1747,10 @@ const Sounds = {
     }
     if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
     this.active = { ...this.active, ...(state.sonidos || {}) };
+    if (!this.filesChecked) {
+      this.filesChecked = true;
+      this._loadAnimalFiles();
+    }
   },
   setPack(category, packId) {
     state.sonidos = state.sonidos || {};
@@ -1712,240 +1758,45 @@ const Sounds = {
     this.active[category] = packId;
     saveState();
   },
-  // ===== Sonidos de venta =====
-  sale() {
-    if (!state.sonidoActivo) return;
-    const which = this.active.sale;
-    if (which === 'beep')      return this._sale_beep();
-    if (which === 'pop')       return this._sale_pop();
-    if (which === 'explosion') return this._sale_explosion();
-    if (which === 'thunder')   return this._sale_thunder();
-    return this._sale_chaching();
-  },
-  _sale_chaching() {
+  /* === Carga opcional de archivos mp3 reales (si existen en audio/) === */
+  async _loadAnimalFiles() {
     if (!this.ctx) return;
-    const ac = this.ctx;
-    const t0 = ac.currentTime;
-    [880, 1175, 1568].forEach((freq, i) => {
-      const o = ac.createOscillator();
-      const g = ac.createGain();
-      o.type = 'triangle';
-      o.frequency.value = freq;
-      g.gain.setValueAtTime(0.0001, t0 + i * 0.07);
-      g.gain.exponentialRampToValueAtTime(0.32, t0 + i * 0.07 + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, t0 + i * 0.07 + 0.25);
-      o.connect(g).connect(ac.destination);
-      o.start(t0 + i * 0.07);
-      o.stop(t0 + i * 0.07 + 0.28);
-    });
-  },
-  _sale_beep() {
-    if (!this.ctx) return;
-    const ac = this.ctx;
-    const t = ac.currentTime;
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = 'sine';
-    o.frequency.setValueAtTime(1320, t);
-    g.gain.setValueAtTime(0.25, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-    o.connect(g).connect(ac.destination);
-    o.start(t); o.stop(t + 0.2);
-  },
-  _sale_pop() {
-    if (!this.ctx) return;
-    const ac = this.ctx;
-    const t = ac.currentTime;
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = 'sine';
-    o.frequency.setValueAtTime(420, t);
-    o.frequency.exponentialRampToValueAtTime(880, t + 0.08);
-    g.gain.setValueAtTime(0.3, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-    o.connect(g).connect(ac.destination);
-    o.start(t); o.stop(t + 0.18);
-  },
-  // ===== Reveal =====
-  reveal(premium) {
-    if (!state.sonidoActivo) return;
-    const which = this.active.reveal;
-    if (which === 'drumroll')    return this._reveal_drumroll(premium);
-    if (which === 'squid')       return this._reveal_squid(premium);
-    if (which === 'bassdrop')    return this._reveal_bassdrop(premium);
-    if (which === 'epic-alarm')  return this._reveal_epic_alarm(premium);
-    return this._reveal_casino(premium);
-  },
-  _reveal_casino(premium) {
-    if (!this.ctx) return;
-    const ac = this.ctx;
-    // Build-up de 5s
-    const dur = 5;
-    const t = ac.currentTime;
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    const f = ac.createBiquadFilter();
-    f.type = 'lowpass';
-    f.frequency.setValueAtTime(400, t);
-    f.frequency.exponentialRampToValueAtTime(3000, t + dur);
-    o.type = 'sawtooth';
-    o.frequency.setValueAtTime(70, t);
-    o.frequency.exponentialRampToValueAtTime(280, t + dur);
-    g.gain.setValueAtTime(0.001, t);
-    g.gain.exponentialRampToValueAtTime(0.22, t + dur * 0.95);
-    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    o.connect(f); f.connect(g); g.connect(ac.destination);
-    o.start(t); o.stop(t + dur + 0.05);
-    // Tics
-    const ticks = setInterval(() => this._tick(), 80);
-    setTimeout(() => clearInterval(ticks), 5000);
-    // Boom + cha-ching al final
-    setTimeout(() => { this._boom(); this._sale_chaching(); }, 5500);
-    if (premium) setTimeout(() => this._fanfare(), 5800);
-  },
-  _reveal_drumroll(premium) {
-    if (!this.ctx) return;
-    const ac = this.ctx;
-    const t = ac.currentTime;
-    const buf = ac.createBuffer(1, ac.sampleRate * 4.5, ac.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) {
-      data[i] = (Math.random() * 2 - 1) * (i / data.length);
+    const animales = ['leon', 'tigre', 'lobo', 'aguila', 'oso', 'gorila', 'jaguar', 'toro'];
+    for (const a of animales) {
+      try {
+        const resp = await fetch(`audio/${a}.mp3`);
+        if (resp.ok) {
+          const arr = await resp.arrayBuffer();
+          this.buffers[a] = await this.ctx.decodeAudioData(arr);
+        }
+      } catch (e) {}
     }
-    const src = ac.createBufferSource();
-    const f = ac.createBiquadFilter();
-    const g = ac.createGain();
-    f.type = 'bandpass'; f.frequency.value = 250; f.Q.value = 1.2;
-    g.gain.setValueAtTime(0.15, t);
-    src.buffer = buf;
-    src.connect(f); f.connect(g); g.connect(ac.destination);
-    src.start(t);
-    setTimeout(() => { this._boom(); this._sale_chaching(); }, 4500);
-    if (premium) setTimeout(() => this._fanfare(), 4800);
   },
-  _reveal_squid(premium) {
-    if (!this.ctx) return;
-    const ac = this.ctx;
-    const t = ac.currentTime;
-    // Drone tenso
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = 'sine';
-    o.frequency.setValueAtTime(110, t);
-    g.gain.setValueAtTime(0.2, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 5);
-    o.connect(g).connect(ac.destination);
-    o.start(t); o.stop(t + 5);
-    setTimeout(() => { this._boom(); this._fanfare(); }, 5000);
-    if (premium) setTimeout(() => this._aplauso(), 5400);
+  _playBuffer(animal, vol) {
+    if (!this.ctx || !this.buffers[animal]) return false;
+    const src = this.ctx.createBufferSource();
+    const g = this.ctx.createGain();
+    g.gain.value = vol || 0.85;
+    src.buffer = this.buffers[animal];
+    src.connect(g).connect(this.ctx.destination);
+    src.start();
+    return true;
   },
-  _tick() {
-    if (!this.ctx) return;
+  /* === RUIDO HELPERS === */
+  _ruidoBrowniano(dur) {
+    if (!this.ctx) return null;
     const ac = this.ctx;
-    const t = ac.currentTime;
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = 'square';
-    o.frequency.value = 1400;
-    g.gain.setValueAtTime(0.08, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-    o.connect(g).connect(ac.destination);
-    o.start(t); o.stop(t + 0.06);
-  },
-  _boom() {
-    if (!this.ctx) return;
-    const ac = this.ctx;
-    const t = ac.currentTime;
-    const o1 = ac.createOscillator();
-    const g1 = ac.createGain();
-    o1.type = 'sine';
-    o1.frequency.setValueAtTime(80, t);
-    o1.frequency.exponentialRampToValueAtTime(35, t + 0.7);
-    g1.gain.setValueAtTime(0.85, t);
-    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
-    o1.connect(g1); g1.connect(ac.destination);
-    o1.start(t); o1.stop(t + 0.95);
-  },
-  _fanfare() {
-    if (!this.ctx) return;
-    const ac = this.ctx;
-    const t0 = ac.currentTime;
-    [
-      [523.25, 0.00, 0.18],
-      [659.25, 0.10, 0.18],
-      [783.99, 0.20, 0.20],
-      [1046.50, 0.32, 0.55],
-    ].forEach(([freq, delay, dur]) => {
-      const o = ac.createOscillator();
-      const g = ac.createGain();
-      o.type = 'sawtooth';
-      o.frequency.value = freq;
-      g.gain.setValueAtTime(0.001, t0 + delay);
-      g.gain.linearRampToValueAtTime(0.18, t0 + delay + 0.03);
-      g.gain.exponentialRampToValueAtTime(0.001, t0 + delay + dur);
-      o.connect(g); g.connect(ac.destination);
-      o.start(t0 + delay); o.stop(t0 + delay + dur + 0.05);
-    });
-  },
-  _aplauso() {
-    if (!this.ctx) return;
-    const ac = this.ctx;
-    const t = ac.currentTime;
-    const buf = ac.createBuffer(1, ac.sampleRate * 1.5, ac.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ac.sampleRate * 0.4));
+    const buf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+    const d = buf.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < d.length; i++) {
+      const w = Math.random() * 2 - 1;
+      last = (last + 0.02 * w) / 1.02;
+      d[i] = last * 3.5;
     }
-    const src = ac.createBufferSource();
-    const f = ac.createBiquadFilter();
-    const g = ac.createGain();
-    f.type = 'bandpass'; f.frequency.value = 2000; f.Q.value = 0.7;
-    g.gain.setValueAtTime(0.18, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
-    src.buffer = buf;
-    src.connect(f); f.connect(g); g.connect(ac.destination);
-    src.start(t);
+    return buf;
   },
-  // ===== Victory =====
-  victory() {
-    if (!state.sonidoActivo) return;
-    const which = this.active.victory;
-    if (which === 'classical')    return this._victory_classical();
-    if (which === 'celebration')  return this._victory_celebration();
-    if (which === 'mega-victory') return this._victory_mega();
-    if (which === 'champion')     return this._victory_champion();
-    return this._fanfare();
-  },
-  _victory_classical() {
-    if (!this.ctx) return;
-    const ac = this.ctx;
-    const t0 = ac.currentTime;
-    [261.63, 329.63, 392.00, 523.25].forEach((freq, i) => {
-      const o = ac.createOscillator();
-      const g = ac.createGain();
-      o.type = 'sine';
-      o.frequency.value = freq;
-      g.gain.setValueAtTime(0.001, t0 + i * 0.4);
-      g.gain.linearRampToValueAtTime(0.18, t0 + i * 0.4 + 0.05);
-      g.gain.exponentialRampToValueAtTime(0.001, t0 + i * 0.4 + 0.7);
-      o.connect(g); g.connect(ac.destination);
-      o.start(t0 + i * 0.4); o.stop(t0 + i * 0.4 + 0.75);
-    });
-  },
-  _victory_celebration() {
-    this._fanfare();
-    setTimeout(() => this._aplauso(), 400);
-    setTimeout(() => this._sale_chaching(), 800);
-    setTimeout(() => this._sale_chaching(), 1100);
-    setTimeout(() => this._sale_chaching(), 1400);
-  },
-
-  /* ============================================================
-     🔥 SONIDOS NUEVOS INTENSOS — explosiones, truenos, drops
-     ============================================================ */
-
-  /* Helper: ruido blanco */
-  _ruidoBlanco(dur, gainVal) {
+  _ruidoBlanco(dur) {
     if (!this.ctx) return null;
     const ac = this.ctx;
     const buf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
@@ -1954,280 +1805,439 @@ const Sounds = {
     return buf;
   },
 
-  /* === EXPLOSIÓN ÉPICA (1.2s) === */
-  _sale_explosion() {
+  /* ===== SONIDOS ANIMALES (mejorados con formant filters) ===== */
+
+  _animal_leon(corto) {
     if (!this.ctx) return;
+    if (this._playBuffer('leon')) return;
     const ac = this.ctx;
     const t = ac.currentTime;
+    const dur = corto ? 1.4 : 2.6;
 
-    // Capa 1: Sub-bass profundo cayendo (BOOM grave)
+    // Sub-bass cayendo
     const o1 = ac.createOscillator();
     const g1 = ac.createGain();
     o1.type = 'sine';
-    o1.frequency.setValueAtTime(120, t);
-    o1.frequency.exponentialRampToValueAtTime(30, t + 0.8);
+    o1.frequency.setValueAtTime(95, t);
+    o1.frequency.exponentialRampToValueAtTime(45, t + dur * 0.5);
+    o1.frequency.exponentialRampToValueAtTime(28, t + dur);
     g1.gain.setValueAtTime(0.001, t);
-    g1.gain.exponentialRampToValueAtTime(1.0, t + 0.04);
-    g1.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+    g1.gain.exponentialRampToValueAtTime(0.9, t + 0.18);
+    g1.gain.linearRampToValueAtTime(0.5, t + dur * 0.7);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + dur);
     o1.connect(g1).connect(ac.destination);
-    o1.start(t); o1.stop(t + 1.25);
+    o1.start(t); o1.stop(t + dur + 0.1);
 
-    // Capa 2: Ruido blanco filtrado (la explosión)
-    const buf = this._ruidoBlanco(1.0);
-    const src = ac.createBufferSource();
-    const f = ac.createBiquadFilter();
-    const gN = ac.createGain();
-    src.buffer = buf;
-    f.type = 'lowpass';
-    f.frequency.setValueAtTime(2500, t);
-    f.frequency.exponentialRampToValueAtTime(200, t + 1.0);
-    f.Q.value = 2;
-    gN.gain.setValueAtTime(0.6, t);
-    gN.gain.exponentialRampToValueAtTime(0.001, t + 1.0);
-    src.connect(f); f.connect(gN); gN.connect(ac.destination);
-    src.start(t); src.stop(t + 1.0);
+    // Sawtooth con vibrato + formant filter (resonancia gutural)
+    const o2 = ac.createOscillator();
+    const lfo = ac.createOscillator();
+    const lfoGain = ac.createGain();
+    const g2 = ac.createGain();
+    const formant1 = ac.createBiquadFilter();
+    const formant2 = ac.createBiquadFilter();
+    o2.type = 'sawtooth';
+    o2.frequency.setValueAtTime(180, t);
+    o2.frequency.exponentialRampToValueAtTime(90, t + dur * 0.6);
+    o2.frequency.exponentialRampToValueAtTime(55, t + dur);
+    lfo.type = 'sine';
+    lfo.frequency.setValueAtTime(20, t);
+    lfo.frequency.linearRampToValueAtTime(14, t + dur);
+    lfoGain.gain.value = 22;
+    lfo.connect(lfoGain).connect(o2.frequency);
+    formant1.type = 'bandpass';
+    formant1.frequency.value = 700;
+    formant1.Q.value = 8;
+    formant2.type = 'bandpass';
+    formant2.frequency.value = 1200;
+    formant2.Q.value = 6;
+    g2.gain.setValueAtTime(0.001, t);
+    g2.gain.exponentialRampToValueAtTime(0.42, t + 0.2);
+    g2.gain.linearRampToValueAtTime(0.25, t + dur * 0.7);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o2.connect(formant1); formant1.connect(formant2); formant2.connect(g2); g2.connect(ac.destination);
+    o2.start(t); o2.stop(t + dur + 0.1);
+    lfo.start(t); lfo.stop(t + dur + 0.1);
 
-    // Capa 3: Cha-ching encima a los 0.4s
-    setTimeout(() => this._sale_chaching(), 400);
-  },
-
-  /* === TRUENO con ECO (1.8s) === */
-  _sale_thunder() {
-    if (!this.ctx) return;
-    const ac = this.ctx;
-    const t = ac.currentTime;
-
-    // Pre-relámpago corto (chasquido agudo)
-    const oP = ac.createOscillator();
-    const gP = ac.createGain();
-    oP.type = 'sawtooth';
-    oP.frequency.setValueAtTime(2800, t);
-    oP.frequency.exponentialRampToValueAtTime(1200, t + 0.08);
-    gP.gain.setValueAtTime(0.001, t);
-    gP.gain.exponentialRampToValueAtTime(0.4, t + 0.01);
-    gP.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-    oP.connect(gP).connect(ac.destination);
-    oP.start(t); oP.stop(t + 0.12);
-
-    // Trueno grave largo (con eco simulado)
-    [0.15, 0.25, 0.45, 0.75, 1.1].forEach((delay, i) => {
-      const tt = t + delay;
-      const dur = 0.8 - i * 0.1;
-      const o = ac.createOscillator();
-      const g = ac.createGain();
-      const f = ac.createBiquadFilter();
-      o.type = 'sawtooth';
-      o.frequency.setValueAtTime(70 + i * 5, tt);
-      o.frequency.exponentialRampToValueAtTime(35, tt + dur);
-      f.type = 'lowpass';
-      f.frequency.value = 250;
-      f.Q.value = 1.5;
-      const vol = 0.7 - i * 0.13;
-      g.gain.setValueAtTime(0.001, tt);
-      g.gain.exponentialRampToValueAtTime(vol, tt + 0.1);
-      g.gain.exponentialRampToValueAtTime(0.001, tt + dur);
-      o.connect(f); f.connect(g); g.connect(ac.destination);
-      o.start(tt); o.stop(tt + dur);
-
-      // Capa de ruido grave para textura
-      const buf = this._ruidoBlanco(dur);
+    // Textura gutural (ruido browniano filtrado)
+    const buf = this._ruidoBrowniano(dur);
+    if (buf) {
       const src = ac.createBufferSource();
-      const fN = ac.createBiquadFilter();
+      const f = ac.createBiquadFilter();
       const gN = ac.createGain();
       src.buffer = buf;
-      fN.type = 'lowpass'; fN.frequency.value = 200;
-      gN.gain.setValueAtTime(vol * 0.5, tt);
-      gN.gain.exponentialRampToValueAtTime(0.001, tt + dur);
-      src.connect(fN); fN.connect(gN); gN.connect(ac.destination);
-      src.start(tt); src.stop(tt + dur);
-    });
+      f.type = 'bandpass';
+      f.frequency.setValueAtTime(450, t);
+      f.frequency.exponentialRampToValueAtTime(220, t + dur);
+      f.Q.value = 3;
+      gN.gain.setValueAtTime(0.001, t);
+      gN.gain.exponentialRampToValueAtTime(0.5, t + 0.2);
+      gN.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      src.connect(f); f.connect(gN); gN.connect(ac.destination);
+      src.start(t); src.stop(t + dur);
+    }
   },
 
-  /* === BASS DROP épico (8s build-up + drop) === */
-  _reveal_bassdrop(premium) {
+  _animal_tigre(corto) {
     if (!this.ctx) return;
+    if (this._playBuffer('tigre')) return;
     const ac = this.ctx;
     const t = ac.currentTime;
-    const buildDur = 7.5;
+    const dur = corto ? 1.0 : 1.8;
 
-    // Build-up: sweep agudo subiendo + bajando filtro
+    // Bass triangle
     const o1 = ac.createOscillator();
     const g1 = ac.createGain();
-    const f1 = ac.createBiquadFilter();
-    o1.type = 'sawtooth';
-    o1.frequency.setValueAtTime(200, t);
-    o1.frequency.exponentialRampToValueAtTime(2400, t + buildDur);
-    f1.type = 'highpass';
-    f1.frequency.setValueAtTime(150, t);
-    f1.frequency.exponentialRampToValueAtTime(1800, t + buildDur);
-    f1.Q.value = 8;
+    o1.type = 'triangle';
+    o1.frequency.setValueAtTime(130, t);
+    o1.frequency.exponentialRampToValueAtTime(65, t + dur);
     g1.gain.setValueAtTime(0.001, t);
-    g1.gain.exponentialRampToValueAtTime(0.32, t + buildDur);
-    g1.gain.exponentialRampToValueAtTime(0.001, t + buildDur + 0.05);
-    o1.connect(f1); f1.connect(g1); g1.connect(ac.destination);
-    o1.start(t); o1.stop(t + buildDur + 0.1);
+    g1.gain.exponentialRampToValueAtTime(0.75, t + 0.1);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o1.connect(g1).connect(ac.destination);
+    o1.start(t); o1.stop(t + dur + 0.05);
 
-    // Snare risers (ruido blanco subiendo)
-    for (let i = 0; i < 8; i++) {
-      const tt = t + (buildDur * (i / 8));
-      const buf = this._ruidoBlanco(0.4);
+    // Snarl con vibrato cuadrado agresivo
+    const o2 = ac.createOscillator();
+    const lfo = ac.createOscillator();
+    const lfoGain = ac.createGain();
+    const g2 = ac.createGain();
+    const formant = ac.createBiquadFilter();
+    o2.type = 'sawtooth';
+    o2.frequency.setValueAtTime(290, t);
+    o2.frequency.exponentialRampToValueAtTime(150, t + dur);
+    lfo.type = 'square';
+    lfo.frequency.value = 32;
+    lfoGain.gain.value = 28;
+    lfo.connect(lfoGain).connect(o2.frequency);
+    formant.type = 'bandpass';
+    formant.frequency.value = 850;
+    formant.Q.value = 6;
+    g2.gain.setValueAtTime(0.001, t);
+    g2.gain.exponentialRampToValueAtTime(0.32, t + 0.15);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o2.connect(formant); formant.connect(g2); g2.connect(ac.destination);
+    o2.start(t); o2.stop(t + dur);
+    lfo.start(t); lfo.stop(t + dur);
+
+    // Hiss textura
+    const buf = this._ruidoBrowniano(dur);
+    if (buf) {
       const src = ac.createBufferSource();
       const fN = ac.createBiquadFilter();
       const gN = ac.createGain();
       src.buffer = buf;
-      fN.type = 'highpass';
-      fN.frequency.value = 800 + i * 200;
-      gN.gain.setValueAtTime(0.001, tt);
-      gN.gain.exponentialRampToValueAtTime(0.18 + i * 0.015, tt + 0.05);
-      gN.gain.exponentialRampToValueAtTime(0.001, tt + 0.4);
+      fN.type = 'bandpass'; fN.frequency.value = 650; fN.Q.value = 2.5;
+      gN.gain.setValueAtTime(0.001, t);
+      gN.gain.exponentialRampToValueAtTime(0.4, t + 0.15);
+      gN.gain.exponentialRampToValueAtTime(0.001, t + dur);
       src.connect(fN); fN.connect(gN); gN.connect(ac.destination);
-      src.start(tt); src.stop(tt + 0.4);
+      src.start(t); src.stop(t + dur);
     }
-
-    // === EL DROP a los 7.5s ===
-    setTimeout(() => {
-      const ac2 = getAudio();
-      if (!ac2) return;
-      const td = ac2.currentTime;
-
-      // Sub-bass MASIVO (sine 40Hz)
-      const oD = ac2.createOscillator();
-      const gD = ac2.createGain();
-      oD.type = 'sine';
-      oD.frequency.setValueAtTime(60, td);
-      oD.frequency.exponentialRampToValueAtTime(35, td + 1.0);
-      oD.frequency.linearRampToValueAtTime(40, td + 2.0);
-      gD.gain.setValueAtTime(0.001, td);
-      gD.gain.exponentialRampToValueAtTime(1.0, td + 0.04);
-      gD.gain.linearRampToValueAtTime(0.7, td + 1.5);
-      gD.gain.exponentialRampToValueAtTime(0.001, td + 2.5);
-      oD.connect(gD).connect(ac2.destination);
-      oD.start(td); oD.stop(td + 2.6);
-
-      // Wobble bass encima (sawtooth con LFO)
-      const oW = ac2.createOscillator();
-      const lfo = ac2.createOscillator();
-      const lfoGain = ac2.createGain();
-      const gW = ac2.createGain();
-      const fW = ac2.createBiquadFilter();
-      oW.type = 'sawtooth';
-      oW.frequency.value = 80;
-      lfo.type = 'sine';
-      lfo.frequency.value = 4; // wobble lento
-      lfoGain.gain.value = 600;
-      lfo.connect(lfoGain).connect(fW.frequency);
-      fW.type = 'lowpass';
-      fW.frequency.value = 1200;
-      fW.Q.value = 8;
-      gW.gain.setValueAtTime(0.4, td);
-      gW.gain.exponentialRampToValueAtTime(0.001, td + 2.5);
-      oW.connect(fW); fW.connect(gW); gW.connect(ac2.destination);
-      oW.start(td); oW.stop(td + 2.5);
-      lfo.start(td); lfo.stop(td + 2.5);
-
-      // Crash de plato encima
-      const buf = this._ruidoBlanco(1.5);
-      const src = ac2.createBufferSource();
-      const fC = ac2.createBiquadFilter();
-      const gC = ac2.createGain();
-      src.buffer = buf;
-      fC.type = 'highpass'; fC.frequency.value = 4000;
-      gC.gain.setValueAtTime(0.45, td);
-      gC.gain.exponentialRampToValueAtTime(0.001, td + 1.5);
-      src.connect(fC); fC.connect(gC); gC.connect(ac2.destination);
-      src.start(td); src.stop(td + 1.5);
-    }, buildDur * 1000);
   },
 
-  /* === ALARMA ÉPICA (sirena + boom + crash) === */
-  _reveal_epic_alarm(premium) {
+  _animal_lobo(corto) {
     if (!this.ctx) return;
+    if (this._playBuffer('lobo')) return;
     const ac = this.ctx;
     const t = ac.currentTime;
+    const dur = corto ? 1.6 : 3.2;
 
-    // Sirena oscilante 6s
+    // Aullido: frecuencia sube y baja
     const o = ac.createOscillator();
     const g = ac.createGain();
+    const f = ac.createBiquadFilter();
     o.type = 'sawtooth';
-    // Sirena alterna entre 880 y 440 Hz
-    for (let i = 0; i < 12; i++) {
-      const freq = i % 2 === 0 ? 880 : 440;
-      o.frequency.setValueAtTime(freq, t + i * 0.5);
-    }
+    o.frequency.setValueAtTime(280, t);
+    o.frequency.linearRampToValueAtTime(520, t + dur * 0.2);
+    o.frequency.linearRampToValueAtTime(680, t + dur * 0.5);
+    o.frequency.linearRampToValueAtTime(620, t + dur * 0.75);
+    o.frequency.exponentialRampToValueAtTime(180, t + dur);
+    f.type = 'bandpass';
+    f.frequency.value = 900;
+    f.Q.value = 4;
     g.gain.setValueAtTime(0.001, t);
-    g.gain.exponentialRampToValueAtTime(0.28, t + 0.2);
-    g.gain.linearRampToValueAtTime(0.28, t + 5.5);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 6.0);
-    o.connect(g).connect(ac.destination);
-    o.start(t); o.stop(t + 6.1);
+    g.gain.exponentialRampToValueAtTime(0.3, t + dur * 0.15);
+    g.gain.linearRampToValueAtTime(0.35, t + dur * 0.5);
+    g.gain.linearRampToValueAtTime(0.22, t + dur * 0.85);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(f); f.connect(g); g.connect(ac.destination);
+    o.start(t); o.stop(t + dur + 0.05);
 
-    // Booms graves intermitentes
-    [1.0, 2.5, 4.0, 5.5].forEach(delay => {
-      setTimeout(() => this._boom(), delay * 1000);
-    });
-
-    // Crash final + cha-ching
-    setTimeout(() => {
-      this._sale_explosion();
-      setTimeout(() => this._sale_chaching(), 300);
-    }, 6000);
+    // Bass de apoyo
+    const o2 = ac.createOscillator();
+    const g2 = ac.createGain();
+    o2.type = 'sine';
+    o2.frequency.setValueAtTime(140, t);
+    o2.frequency.linearRampToValueAtTime(260, t + dur * 0.5);
+    o2.frequency.exponentialRampToValueAtTime(80, t + dur);
+    g2.gain.setValueAtTime(0.001, t);
+    g2.gain.exponentialRampToValueAtTime(0.4, t + 0.5);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o2.connect(g2).connect(ac.destination);
+    o2.start(t); o2.stop(t + dur);
   },
 
-  /* === MEGA VICTORIA (fanfarria + explosión + aplauso estadio) === */
-  _victory_mega() {
-    this._fanfare();
-    setTimeout(() => this._sale_explosion(), 300);
-    setTimeout(() => this._aplauso(), 800);
-    setTimeout(() => this._sale_chaching(), 1100);
-    setTimeout(() => this._sale_chaching(), 1300);
-    setTimeout(() => this._sale_chaching(), 1500);
-    setTimeout(() => this._sale_explosion(), 1800);
-    setTimeout(() => this._aplauso(), 2200);
-    setTimeout(() => this._fanfare(), 2400);
-  },
-
-  /* === CAMPEÓN ÉPICO (coro orquestal + truenos + fuegos artificiales) === */
-  _victory_champion() {
+  _animal_aguila(corto) {
     if (!this.ctx) return;
+    if (this._playBuffer('aguila')) return;
     const ac = this.ctx;
     const t = ac.currentTime;
 
-    // Coro orquestal (5 notas largas en armonía)
-    const acordes = [
-      { freqs: [261.63, 329.63, 392.00], delay: 0,    dur: 1.5 },  // Do mayor
-      { freqs: [293.66, 369.99, 440.00], delay: 1.0,  dur: 1.5 },  // Re mayor
-      { freqs: [349.23, 440.00, 523.25], delay: 2.0,  dur: 1.5 },  // Fa mayor
-      { freqs: [392.00, 493.88, 587.33], delay: 3.0,  dur: 2.0 },  // Sol mayor
-      { freqs: [523.25, 659.25, 783.99], delay: 4.0,  dur: 3.0 },  // Do mayor alto
-    ];
-    acordes.forEach(({ freqs, delay, dur }) => {
-      freqs.forEach(freq => {
-        const o = ac.createOscillator();
-        const g = ac.createGain();
-        o.type = 'sawtooth';
-        o.frequency.value = freq;
-        const tt = t + delay;
-        g.gain.setValueAtTime(0.001, tt);
-        g.gain.linearRampToValueAtTime(0.10, tt + 0.15);
-        g.gain.linearRampToValueAtTime(0.08, tt + dur * 0.7);
-        g.gain.exponentialRampToValueAtTime(0.001, tt + dur);
-        const f = ac.createBiquadFilter();
-        f.type = 'lowpass';
-        f.frequency.value = 2000;
-        o.connect(f); f.connect(g); g.connect(ac.destination);
-        o.start(tt); o.stop(tt + dur + 0.05);
-      });
-    });
+    // Chirrido con multiple chirps escalonados
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    const lfo = ac.createOscillator();
+    const lfoGain = ac.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(2400, t);
+    o.frequency.exponentialRampToValueAtTime(1500, t + 0.25);
+    o.frequency.exponentialRampToValueAtTime(2100, t + 0.5);
+    o.frequency.exponentialRampToValueAtTime(1300, t + 0.75);
+    o.frequency.exponentialRampToValueAtTime(1900, t + 1.0);
+    o.frequency.exponentialRampToValueAtTime(900, t + 1.3);
+    lfo.type = 'sine';
+    lfo.frequency.value = 38;
+    lfoGain.gain.value = 130;
+    lfo.connect(lfoGain).connect(o.frequency);
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.exponentialRampToValueAtTime(0.18, t + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 1.4);
+    o.connect(g).connect(ac.destination);
+    o.start(t); o.stop(t + 1.45);
+    lfo.start(t); lfo.stop(t + 1.45);
 
-    // Trueno al inicio
-    setTimeout(() => this._sale_thunder(), 500);
-    // Fuegos artificiales (3 explosiones agudas)
-    setTimeout(() => this._sale_explosion(), 2500);
-    setTimeout(() => this._sale_explosion(), 3500);
-    setTimeout(() => this._sale_explosion(), 4500);
-    // Aplauso final
-    setTimeout(() => this._aplauso(), 5500);
-    setTimeout(() => this._fanfare(), 6000);
+    if (!corto) {
+      // Chirp final más agudo
+      setTimeout(() => {
+        if (!this.ctx) return;
+        const t2 = this.ctx.currentTime;
+        const o2 = this.ctx.createOscillator();
+        const g2 = this.ctx.createGain();
+        o2.type = 'square';
+        o2.frequency.setValueAtTime(3200, t2);
+        o2.frequency.exponentialRampToValueAtTime(2000, t2 + 0.15);
+        g2.gain.setValueAtTime(0.001, t2);
+        g2.gain.exponentialRampToValueAtTime(0.15, t2 + 0.02);
+        g2.gain.exponentialRampToValueAtTime(0.001, t2 + 0.18);
+        o2.connect(g2).connect(this.ctx.destination);
+        o2.start(t2); o2.stop(t2 + 0.2);
+      }, 1450);
+    }
+  },
+
+  _animal_oso(corto) {
+    if (!this.ctx) return;
+    if (this._playBuffer('oso')) return;
+    const ac = this.ctx;
+    const t = ac.currentTime;
+    const dur = corto ? 1.2 : 2.0;
+
+    const o1 = ac.createOscillator();
+    const g1 = ac.createGain();
+    o1.type = 'sine';
+    o1.frequency.setValueAtTime(70, t);
+    o1.frequency.linearRampToValueAtTime(55, t + dur * 0.5);
+    o1.frequency.exponentialRampToValueAtTime(40, t + dur);
+    g1.gain.setValueAtTime(0.001, t);
+    g1.gain.exponentialRampToValueAtTime(1.0, t + 0.15);
+    g1.gain.linearRampToValueAtTime(0.7, t + dur * 0.7);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o1.connect(g1).connect(ac.destination);
+    o1.start(t); o1.stop(t + dur);
+
+    const o2 = ac.createOscillator();
+    const lfo = ac.createOscillator();
+    const lfoGain = ac.createGain();
+    const g2 = ac.createGain();
+    const formant = ac.createBiquadFilter();
+    o2.type = 'sawtooth';
+    o2.frequency.setValueAtTime(110, t);
+    o2.frequency.exponentialRampToValueAtTime(75, t + dur);
+    lfo.type = 'sine'; lfo.frequency.value = 11;
+    lfoGain.gain.value = 9;
+    lfo.connect(lfoGain).connect(o2.frequency);
+    formant.type = 'lowpass'; formant.frequency.value = 480; formant.Q.value = 5;
+    g2.gain.setValueAtTime(0.001, t);
+    g2.gain.exponentialRampToValueAtTime(0.45, t + 0.2);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o2.connect(formant); formant.connect(g2); g2.connect(ac.destination);
+    o2.start(t); o2.stop(t + dur);
+    lfo.start(t); lfo.stop(t + dur);
+
+    const buf = this._ruidoBrowniano(dur);
+    if (buf) {
+      const src = ac.createBufferSource();
+      const fN = ac.createBiquadFilter();
+      const gN = ac.createGain();
+      src.buffer = buf;
+      fN.type = 'lowpass'; fN.frequency.value = 350;
+      gN.gain.setValueAtTime(0.001, t);
+      gN.gain.exponentialRampToValueAtTime(0.32, t + 0.2);
+      gN.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      src.connect(fN); fN.connect(gN); gN.connect(ac.destination);
+      src.start(t); src.stop(t + dur);
+    }
+  },
+
+  _animal_gorila(corto) {
+    if (!this.ctx) return;
+    if (this._playBuffer('gorila')) return;
+    const ac = this.ctx;
+    const t = ac.currentTime;
+
+    // Hooting
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(160, t);
+    o.frequency.linearRampToValueAtTime(240, t + 0.4);
+    o.frequency.linearRampToValueAtTime(180, t + 0.8);
+    o.frequency.exponentialRampToValueAtTime(110, t + 1.4);
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.exponentialRampToValueAtTime(0.32, t + 0.2);
+    g.gain.linearRampToValueAtTime(0.25, t + 1.0);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
+    o.connect(g).connect(ac.destination);
+    o.start(t); o.stop(t + 1.5);
+
+    if (!corto) {
+      // 3 golpes de pecho
+      [1.6, 1.85, 2.1].forEach(delay => {
+        const tt = ac.currentTime + delay;
+        const oT = ac.createOscillator();
+        const gT = ac.createGain();
+        oT.type = 'sine';
+        oT.frequency.setValueAtTime(80, tt);
+        oT.frequency.exponentialRampToValueAtTime(35, tt + 0.15);
+        gT.gain.setValueAtTime(0.7, tt);
+        gT.gain.exponentialRampToValueAtTime(0.001, tt + 0.18);
+        oT.connect(gT).connect(ac.destination);
+        oT.start(tt); oT.stop(tt + 0.2);
+      });
+    }
+  },
+
+  _animal_jaguar(corto) {
+    if (!this.ctx) return;
+    if (this._playBuffer('jaguar')) return;
+    const ac = this.ctx;
+    const t = ac.currentTime;
+    const dur = corto ? 0.9 : 1.4;
+
+    const o1 = ac.createOscillator();
+    const g1 = ac.createGain();
+    const lfo = ac.createOscillator();
+    const lfoGain = ac.createGain();
+    const f1 = ac.createBiquadFilter();
+    o1.type = 'sawtooth';
+    o1.frequency.setValueAtTime(220, t);
+    o1.frequency.exponentialRampToValueAtTime(380, t + 0.3);
+    o1.frequency.exponentialRampToValueAtTime(140, t + dur);
+    lfo.type = 'square'; lfo.frequency.value = 36;
+    lfoGain.gain.value = 32;
+    lfo.connect(lfoGain).connect(o1.frequency);
+    f1.type = 'bandpass'; f1.frequency.value = 750; f1.Q.value = 6;
+    g1.gain.setValueAtTime(0.001, t);
+    g1.gain.exponentialRampToValueAtTime(0.48, t + 0.1);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o1.connect(f1); f1.connect(g1); g1.connect(ac.destination);
+    o1.start(t); o1.stop(t + dur);
+    lfo.start(t); lfo.stop(t + dur);
+
+    const buf = this._ruidoBlanco(dur);
+    if (buf) {
+      const src = ac.createBufferSource();
+      const fN = ac.createBiquadFilter();
+      const gN = ac.createGain();
+      src.buffer = buf;
+      fN.type = 'bandpass'; fN.frequency.value = 2500; fN.Q.value = 3;
+      gN.gain.setValueAtTime(0.001, t);
+      gN.gain.exponentialRampToValueAtTime(0.18, t + 0.1);
+      gN.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      src.connect(fN); fN.connect(gN); gN.connect(ac.destination);
+      src.start(t); src.stop(t + dur);
+    }
+  },
+
+  _animal_toro(corto) {
+    if (!this.ctx) return;
+    if (this._playBuffer('toro')) return;
+    const ac = this.ctx;
+    const t = ac.currentTime;
+    const dur = corto ? 1.0 : 1.8;
+
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    const f = ac.createBiquadFilter();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(150, t);
+    o.frequency.linearRampToValueAtTime(180, t + 0.3);
+    o.frequency.linearRampToValueAtTime(160, t + 1.0);
+    o.frequency.exponentialRampToValueAtTime(85, t + dur);
+    f.type = 'lowpass'; f.frequency.value = 600; f.Q.value = 7;
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.exponentialRampToValueAtTime(0.5, t + 0.15);
+    g.gain.linearRampToValueAtTime(0.45, t + 1.0);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(f); f.connect(g); g.connect(ac.destination);
+    o.start(t); o.stop(t + dur);
+
+    const o2 = ac.createOscillator();
+    const g2 = ac.createGain();
+    o2.type = 'sine';
+    o2.frequency.setValueAtTime(60, t);
+    o2.frequency.exponentialRampToValueAtTime(40, t + dur);
+    g2.gain.setValueAtTime(0.001, t);
+    g2.gain.exponentialRampToValueAtTime(0.75, t + 0.15);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o2.connect(g2).connect(ac.destination);
+    o2.start(t); o2.stop(t + dur);
+  },
+
+  /* ===== DISPATCHERS ===== */
+  sale() {
+    if (!state.sonidoActivo) return;
+    const which = this.active.sale || 'leon';
+    if (which === 'tigre')   return this._animal_tigre(true);
+    if (which === 'lobo')    return this._animal_lobo(true);
+    if (which === 'aguila')  return this._animal_aguila(true);
+    if (which === 'gorila')  return this._animal_gorila(true);
+    return this._animal_leon(true);
+  },
+  reveal(premium) {
+    if (!state.sonidoActivo) return;
+    const which = this.active.reveal || 'leon';
+    if (which === 'tigre')  return this._animal_tigre(false);
+    if (which === 'oso')    return this._animal_oso(false);
+    if (which === 'jaguar') return this._animal_jaguar(false);
+    if (which === 'toro')   return this._animal_toro(false);
+    return this._animal_leon(false);
+  },
+  victory() {
+    if (!state.sonidoActivo) return;
+    const which = this.active.victory || 'manada-leones';
+    if (which === 'manada-lobos') {
+      this._animal_lobo(false);
+      setTimeout(() => this._animal_lobo(false), 600);
+      setTimeout(() => this._animal_lobo(false), 1200);
+      return;
+    }
+    if (which === 'jungla') {
+      this._animal_leon(false);
+      setTimeout(() => this._animal_aguila(false), 800);
+      setTimeout(() => this._animal_tigre(false), 1600);
+      return;
+    }
+    if (which === 'safari') {
+      this._animal_toro(false);
+      setTimeout(() => this._animal_leon(false), 700);
+      setTimeout(() => this._animal_gorila(false), 1500);
+      return;
+    }
+    // manada-leones (default)
+    this._animal_leon(false);
+    setTimeout(() => this._animal_leon(false), 700);
+    setTimeout(() => this._animal_leon(false), 1400);
   }
 };
 
@@ -2298,6 +2308,7 @@ function showCommissionReveal(data) {
   try {
     localStorage.setItem('stratton.reveal.trigger', JSON.stringify(trigger));
   } catch (e) {}
+  pushTriggerRemoto('reveal', trigger);
   // Toast de confirmación al admin
   toast(`📡 Reveal enviado al Floor · ${data.dayLabel} · $${data.amount}${data.premium ? ' ★' : ''}`);
 }
@@ -2440,6 +2451,7 @@ function cerrarDia() {
       ts: Date.now()
     };
     try { localStorage.setItem('stratton.podio.trigger', JSON.stringify(podiumTrigger)); } catch (e) {}
+    pushTriggerRemoto('podio', podiumTrigger);
   }
   state.ventas = [];        // Reset Arena (las barras vuelven a cero en la TV)
   saveState();
@@ -2799,21 +2811,9 @@ function renderSoundSettings() {
       const cat = btn.dataset.category, packId = btn.dataset.pack;
       const prev = Sounds.active[cat];
       Sounds.active[cat] = packId;
-      if (cat === 'sale') Sounds.sale();
-      else if (cat === 'reveal') {
-        if (packId === 'drumroll') Sounds._reveal_drumroll(false);
-        else if (packId === 'squid') Sounds._reveal_squid(false);
-        else if (packId === 'bassdrop') Sounds._reveal_bassdrop(false);
-        else if (packId === 'epic-alarm') Sounds._reveal_epic_alarm(false);
-        else Sounds._reveal_casino(false);
-      }
-      else if (cat === 'victory') {
-        if (packId === 'classical') Sounds._victory_classical();
-        else if (packId === 'celebration') Sounds._victory_celebration();
-        else if (packId === 'mega-victory') Sounds._victory_mega();
-        else if (packId === 'champion') Sounds._victory_champion();
-        else Sounds._fanfare();
-      }
+      if (cat === 'sale')         Sounds.sale();
+      else if (cat === 'reveal')  Sounds.reveal(false);
+      else if (cat === 'victory') Sounds.victory();
       Sounds.active[cat] = prev;
     });
   });
@@ -3126,6 +3126,7 @@ function dispararLeonEnTV() {
     ts: Date.now()
   };
   try { localStorage.setItem(LION_TRIGGER_KEY, JSON.stringify(trigger)); } catch (e) {}
+  pushTriggerRemoto('lion', trigger);
 
   toast(`${animal.emoji} ${animal.nombre} lanzado · "${frase.titulo}"`);
   lionAnimalSeleccionado = null;
@@ -3361,6 +3362,7 @@ const BEBE_TRIGGER_KEY = 'stratton.bebe.trigger';
 function dispararBebeEnTV() {
   const trigger = { ts: Date.now() };
   try { localStorage.setItem(BEBE_TRIGGER_KEY, JSON.stringify(trigger)); } catch (e) {}
+  pushTriggerRemoto('bebe', trigger);
   toast('👶 Bebé motivador lanzado en la TV · 30 segundos');
 }
 
@@ -3444,6 +3446,7 @@ function transmitirCoachATV(texto) {
   const txt = texto.trim().slice(0, 120);
   const trigger = { texto: txt, ts: Date.now() };
   try { localStorage.setItem(COACH_TRIGGER_KEY, JSON.stringify(trigger)); } catch (e) {}
+  pushTriggerRemoto('coach', trigger);
   toast(`📡 Mensaje enviado al equipo · "${txt.slice(0, 30)}${txt.length > 30 ? '…' : ''}"`);
   // Limpiar input
   const input = document.getElementById('coachInputPanel');
