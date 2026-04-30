@@ -1471,7 +1471,7 @@ button:focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 2px
     </div>
     <div class="lion-panel-info">
       Si entre <strong>2:30 PM y 5:00 PM CDMX</strong> el equipo está sin energía, el despertador se dispara
-      automáticamente <strong>una vez al día</strong> con un animal aleatorio (león, tigre, águila, lobo, oso, gorila o jaguar).
+      automáticamente <strong>una vez al día</strong> con un animal aleatorio (león, tigre, águila, lobo o oso).
       Tú decides si lo lanzas manual antes, eliges qué animal, o lo desactivas.
     </div>
 
@@ -1781,7 +1781,7 @@ const Sounds = {
   /* === Carga opcional de archivos mp3 reales (si existen en audio/) === */
   async _loadAnimalFiles() {
     if (!this.ctx) return;
-    const animales = ['leon', 'tigre', 'lobo', 'aguila', 'oso', 'gorila', 'jaguar', 'toro'];
+    const animales = ['leon', 'tigre', 'lobo', 'aguila', 'oso'];
     for (const a of animales) {
       try {
         const resp = await fetch(`audio/${a}.mp3`);
@@ -3574,24 +3574,6 @@ const ANIMALES_PANEL = {
     { titulo: 'TERRITORIO PROPIO',           sub: 'DEFIENDE LO QUE ES TUYO' },
     { titulo: 'RESISTENCIA INFINITA',        sub: 'SIGUE ADELANTE' },
     { titulo: 'EL OSO NO PIDE PERMISO',      sub: 'TÚ TAMPOCO' },
-  ]},
-  gorila: { emoji: '🦍', nombre: 'Gorila', frases: [
-    { titulo: 'GOLPEA EL PECHO',             sub: 'MUESTRA TU PODER' },
-    { titulo: 'KING KONG MODE',              sub: 'NADA TE PUEDE PARAR' },
-    { titulo: 'INDESTRUCTIBLE',              sub: 'CIERRA CON FUERZA' },
-    { titulo: 'EL JEFE DE LA SELVA',         sub: 'ESE ERES TÚ' },
-  ]},
-  jaguar: { emoji: '🐆', nombre: 'Jaguar', frases: [
-    { titulo: 'VELOCIDAD MORTAL',            sub: 'CIERRA ANTES QUE OTROS PIENSEN' },
-    { titulo: 'SALTO DE FE',                 sub: 'ARRIESGA · GANA · REPITE' },
-    { titulo: 'JAGUAR DEPREDADOR',           sub: 'UN GOLPE · UN CIERRE' },
-    { titulo: 'AGILIDAD ÚNICA',              sub: 'NADIE TE ALCANZA' },
-  ]},
-  toro:   { emoji: '🐃', nombre: 'Toro',   frases: [
-    { titulo: 'EMBISTE SIN MIEDO',           sub: 'EL ÉXITO NO ESPERA' },
-    { titulo: 'CUERNOS AL VIENTO',           sub: 'CARGA CON TODO' },
-    { titulo: 'BULL MARKET MENTALITY',       sub: 'COMPRA · VENDE · GANA' },
-    { titulo: 'IMPARABLE',                   sub: 'EL TORO NO RETROCEDE' },
   ]},
 };
 const ANIMAL_KEYS_PANEL = Object.keys(ANIMALES_PANEL);

@@ -4099,7 +4099,7 @@ function _loadAnimalFiles() {
   if (animalFilesChecked) return;
   animalFilesChecked = true;
   const ac = getAudio();
-  ['leon','tigre','lobo','aguila','oso','gorila','jaguar','toro'].forEach(async (a) => {
+  ['leon','tigre','lobo','aguila','oso'].forEach(async (a) => {
     try {
       const resp = await fetch(`audio/${a}.mp3`);
       if (resp.ok) {
@@ -6250,39 +6250,6 @@ const ANIMALES = {
       { titulo: 'RESISTENCIA INFINITA',        sub: 'SIGUE ADELANTE' },
       { titulo: 'EL OSO NO PIDE PERMISO',      sub: 'TÚ TAMPOCO' },
     ]
-  },
-  gorila: {
-    emoji: '🦍',
-    nombre: 'Gorila',
-    cssClass: 'is-gorila',
-    frases: [
-      { titulo: 'GOLPEA EL PECHO',             sub: 'MUESTRA TU PODER' },
-      { titulo: 'KING KONG MODE',              sub: 'NADA TE PUEDE PARAR' },
-      { titulo: 'INDESTRUCTIBLE',              sub: 'CIERRA CON FUERZA' },
-      { titulo: 'EL JEFE DE LA SELVA',         sub: 'ESE ERES TÚ' },
-    ]
-  },
-  jaguar: {
-    emoji: '🐆',
-    nombre: 'Jaguar',
-    cssClass: 'is-jaguar',
-    frases: [
-      { titulo: 'VELOCIDAD MORTAL',            sub: 'CIERRA ANTES QUE OTROS PIENSEN' },
-      { titulo: 'SALTO DE FE',                 sub: 'ARRIESGA · GANA · REPITE' },
-      { titulo: 'JAGUAR DEPREDADOR',           sub: 'UN GOLPE · UN CIERRE' },
-      { titulo: 'AGILIDAD ÚNICA',              sub: 'NADIE TE ALCANZA' },
-    ]
-  },
-  toro: {
-    emoji: '🐃',
-    nombre: 'Toro',
-    cssClass: 'is-toro',
-    frases: [
-      { titulo: 'EMBISTE SIN MIEDO',           sub: 'EL ÉXITO NO ESPERA' },
-      { titulo: 'CUERNOS AL VIENTO',           sub: 'CARGA CON TODO' },
-      { titulo: 'BULL MARKET MENTALITY',       sub: 'COMPRA · VENDE · GANA' },
-      { titulo: 'IMPARABLE',                   sub: 'EL TORO NO RETROCEDE' },
-    ]
   }
 };
 
@@ -6336,9 +6303,6 @@ const SONIDOS_ANIMAL = {
   aguila: sonidoAguila,
   lobo:   sonidoLobo,
   oso:    sonidoOso,
-  gorila: sonidoGorila,
-  jaguar: sonidoJaguar,
-  toro:   sonidoToro,
 };
 
 /* =============================================================
@@ -6514,9 +6478,6 @@ window.tigre = () => activarModoLeon({ animalKey: 'tigre' });
 window.aguila = () => activarModoLeon({ animalKey: 'aguila' });
 window.lobo = () => activarModoLeon({ animalKey: 'lobo' });
 window.oso = () => activarModoLeon({ animalKey: 'oso' });
-window.gorila = () => activarModoLeon({ animalKey: 'gorila' });
-window.jaguar = () => activarModoLeon({ animalKey: 'jaguar' });
-window.toro = () => activarModoLeon({ animalKey: 'toro' });
 
 /* ===========================================================
    👶 MODO BEBÉ MOTIVADOR — Saludo de inicio del día (30 segundos)
