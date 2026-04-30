@@ -4483,12 +4483,88 @@ function getActiveSonido(categoria, fallback) {
 // Sonido de VENTA
 function reproducirSonidoVenta() {
   if (!state.sonidoActivo) return;
-  const which = getActiveSonido('sale', 'leon');
+  const which = getActiveSonido('sale', 'beep-game');
+  if (which === 'beep-game') return gameBeep();
+  if (which === 'coin')      return gameCoin();
+  if (which === 'powerup')   return gamePowerup();
   if (which === 'tigre')   return rugidoTigre(true);
   if (which === 'lobo')    return aullidoLobo(true);
   if (which === 'aguila')  return chirridoAguila(true);
   if (which === 'gorila')  return golpeGorila(true);
-  return rugidoLeon(true);
+  if (which === 'leon')    return rugidoLeon(true);
+  return gameBeep();  // default
+}
+
+/* === SONIDOS 8-BIT === */
+function gameBeep() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const o1 = ac.createOscillator();
+    const g1 = ac.createGain();
+    o1.type = 'square';
+    o1.frequency.setValueAtTime(1320, t);
+    g1.gain.setValueAtTime(0.001, t);
+    g1.gain.exponentialRampToValueAtTime(0.25, t + 0.01);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+    o1.connect(g1).connect(ac.destination);
+    o1.start(t); o1.stop(t + 0.1);
+    const o2 = ac.createOscillator();
+    const g2 = ac.createGain();
+    o2.type = 'square';
+    o2.frequency.setValueAtTime(1760, t + 0.08);
+    g2.gain.setValueAtTime(0.001, t + 0.08);
+    g2.gain.exponentialRampToValueAtTime(0.28, t + 0.09);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+    o2.connect(g2).connect(ac.destination);
+    o2.start(t + 0.08); o2.stop(t + 0.2);
+  } catch (e) {}
+}
+function gameCoin() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const o1 = ac.createOscillator();
+    const g1 = ac.createGain();
+    o1.type = 'square';
+    o1.frequency.setValueAtTime(988, t);
+    g1.gain.setValueAtTime(0.001, t);
+    g1.gain.exponentialRampToValueAtTime(0.22, t + 0.01);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+    o1.connect(g1).connect(ac.destination);
+    o1.start(t); o1.stop(t + 0.1);
+    const o2 = ac.createOscillator();
+    const g2 = ac.createGain();
+    o2.type = 'square';
+    o2.frequency.setValueAtTime(1319, t + 0.09);
+    g2.gain.setValueAtTime(0.001, t + 0.09);
+    g2.gain.exponentialRampToValueAtTime(0.25, t + 0.1);
+    g2.gain.linearRampToValueAtTime(0.18, t + 0.35);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+    o2.connect(g2).connect(ac.destination);
+    o2.start(t + 0.09); o2.stop(t + 0.5);
+  } catch (e) {}
+}
+function gamePowerup() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const notas = [523, 659, 784, 1047, 1319, 1568];
+    notas.forEach((freq, i) => {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = 'square';
+      o.frequency.setValueAtTime(freq, t + i * 0.06);
+      g.gain.setValueAtTime(0.001, t + i * 0.06);
+      g.gain.exponentialRampToValueAtTime(0.22, t + i * 0.06 + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.07);
+      o.connect(g).connect(ac.destination);
+      o.start(t + i * 0.06); o.stop(t + i * 0.06 + 0.08);
+    });
+  } catch (e) {}
 }
 
 // Sonido de REVEAL clímax (ya no hay buildup separado, todo es animal)

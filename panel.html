@@ -1707,11 +1707,14 @@ const SOUND_PACKS = {
     label: 'SONIDO DE VENTA',
     description: 'Cuando se registra una venta nueva.',
     options: {
-      'leon':   { label: '🦁 Rugido de León',    description: 'Rugido corto y potente.' },
-      'tigre':  { label: '🐅 Rugido de Tigre',   description: 'Snarl agresivo y agudo.' },
-      'lobo':   { label: '🐺 Aullido de Lobo',   description: 'Aullido corto que sube.' },
-      'aguila': { label: '🦅 Chirrido de Águila', description: 'Chirrido agudo cortante.' },
-      'gorila': { label: '🦍 Golpe de Gorila',   description: 'Hooting + golpe de pecho.' },
+      'beep-game':   { label: '🎮 Beep de Videojuego', description: 'Beep clásico 8-bit estilo arcade.' },
+      'coin':        { label: '🪙 Moneda de Mario',    description: 'Recogida de moneda estilo Nintendo.' },
+      'powerup':     { label: '⚡ Power-Up',           description: 'Subida de nivel arcade.' },
+      'leon':        { label: '🦁 Rugido de León',     description: 'Rugido corto y potente.' },
+      'tigre':       { label: '🐅 Rugido de Tigre',    description: 'Snarl agresivo y agudo.' },
+      'lobo':        { label: '🐺 Aullido de Lobo',    description: 'Aullido corto que sube.' },
+      'aguila':      { label: '🦅 Chirrido de Águila', description: 'Chirrido agudo cortante.' },
+      'gorila':      { label: '🦍 Golpe de Gorila',    description: 'Hooting + golpe de pecho.' },
     }
   },
   reveal: {
@@ -1739,7 +1742,7 @@ const SOUND_PACKS = {
 
 const Sounds = {
   ctx: null,
-  active: { sale: 'leon', reveal: 'leon', victory: 'manada-leones' },
+  active: { sale: 'beep-game', reveal: 'leon', victory: 'manada-leones' },
   buffers: {},  // cache de archivos mp3 si existen
   filesChecked: false,
   init() {
@@ -2200,13 +2203,95 @@ const Sounds = {
   /* ===== DISPATCHERS ===== */
   sale() {
     if (!state.sonidoActivo) return;
-    const which = this.active.sale || 'leon';
+    const which = this.active.sale || 'beep-game';
+    if (which === 'beep-game')  return this._game_beep();
+    if (which === 'coin')       return this._game_coin();
+    if (which === 'powerup')    return this._game_powerup();
     if (which === 'tigre')   return this._animal_tigre(true);
     if (which === 'lobo')    return this._animal_lobo(true);
     if (which === 'aguila')  return this._animal_aguila(true);
     if (which === 'gorila')  return this._animal_gorila(true);
-    return this._animal_leon(true);
+    if (which === 'leon')    return this._animal_leon(true);
+    return this._game_beep();  // default
   },
+
+  /* ===== SONIDOS 8-BIT DE VIDEOJUEGO ===== */
+
+  // Beep clásico arcade tipo "punto recogido" (corto y agudo)
+  _game_beep() {
+    if (!this.ctx) return;
+    const ac = this.ctx;
+    const t = ac.currentTime;
+    // Tono 1: Mi alto
+    const o1 = ac.createOscillator();
+    const g1 = ac.createGain();
+    o1.type = 'square';
+    o1.frequency.setValueAtTime(1320, t);
+    g1.gain.setValueAtTime(0.001, t);
+    g1.gain.exponentialRampToValueAtTime(0.25, t + 0.01);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+    o1.connect(g1).connect(ac.destination);
+    o1.start(t); o1.stop(t + 0.1);
+    // Tono 2: Sol más alto (un escalón arriba)
+    const o2 = ac.createOscillator();
+    const g2 = ac.createGain();
+    o2.type = 'square';
+    o2.frequency.setValueAtTime(1760, t + 0.08);
+    g2.gain.setValueAtTime(0.001, t + 0.08);
+    g2.gain.exponentialRampToValueAtTime(0.28, t + 0.09);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+    o2.connect(g2).connect(ac.destination);
+    o2.start(t + 0.08); o2.stop(t + 0.2);
+  },
+
+  // Moneda de Mario (2 notas rápidas: si → mi alto)
+  _game_coin() {
+    if (!this.ctx) return;
+    const ac = this.ctx;
+    const t = ac.currentTime;
+    // Si4 (corto)
+    const o1 = ac.createOscillator();
+    const g1 = ac.createGain();
+    o1.type = 'square';
+    o1.frequency.setValueAtTime(988, t);
+    g1.gain.setValueAtTime(0.001, t);
+    g1.gain.exponentialRampToValueAtTime(0.22, t + 0.01);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+    o1.connect(g1).connect(ac.destination);
+    o1.start(t); o1.stop(t + 0.1);
+    // Mi5 (sostenido)
+    const o2 = ac.createOscillator();
+    const g2 = ac.createGain();
+    o2.type = 'square';
+    o2.frequency.setValueAtTime(1319, t + 0.09);
+    g2.gain.setValueAtTime(0.001, t + 0.09);
+    g2.gain.exponentialRampToValueAtTime(0.25, t + 0.1);
+    g2.gain.linearRampToValueAtTime(0.18, t + 0.35);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+    o2.connect(g2).connect(ac.destination);
+    o2.start(t + 0.09); o2.stop(t + 0.5);
+  },
+
+  // Power-up arcade (escalera ascendente rápida)
+  _game_powerup() {
+    if (!this.ctx) return;
+    const ac = this.ctx;
+    const t = ac.currentTime;
+    // 6 notas subiendo en escala pentatónica
+    const notas = [523, 659, 784, 1047, 1319, 1568];
+    notas.forEach((freq, i) => {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = 'square';
+      o.frequency.setValueAtTime(freq, t + i * 0.06);
+      g.gain.setValueAtTime(0.001, t + i * 0.06);
+      g.gain.exponentialRampToValueAtTime(0.22, t + i * 0.06 + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.07);
+      o.connect(g).connect(ac.destination);
+      o.start(t + i * 0.06); o.stop(t + i * 0.06 + 0.08);
+    });
+  },
+
   reveal(premium) {
     if (!state.sonidoActivo) return;
     const which = this.active.reveal || 'leon';
