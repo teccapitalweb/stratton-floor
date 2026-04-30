@@ -6603,33 +6603,72 @@ async function setupBebeImagen() {
   }
 }
 
-/* === Voz TTS (Text-to-Speech del navegador) === */
+/* === Voz del bebé: usa audio/bebe.mp3 (voz Mateo de ElevenLabs) === */
+let bebeAudioElement = null;
 function hablarBebe(texto) {
+  // Detener audio previo si está sonando
+  if (bebeAudioElement) {
+    try {
+      bebeAudioElement.pause();
+      bebeAudioElement.currentTime = 0;
+    } catch (e) {}
+  }
+
+  // Reanudar AudioContext si está suspendido
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  }
+
+  try {
+    bebeAudioElement = new Audio('audio/bebe.mp3');
+    bebeAudioElement.volume = 0.95;
+    bebeAudioElement.play().then(() => {
+      console.log('[Audio] Reproduciendo bebe.mp3');
+    }).catch((err) => {
+      console.warn('[Audio] No se pudo reproducir bebe.mp3, usando TTS:', err.message);
+      _hablarBebeTTS(texto);
+    });
+  } catch (e) {
+    _hablarBebeTTS(texto);
+  }
+}
+
+// Función para detener el audio del bebé (usada al cerrar el overlay)
+function detenerBebe() {
+  if (bebeAudioElement) {
+    try {
+      bebeAudioElement.pause();
+      bebeAudioElement.currentTime = 0;
+    } catch (e) {}
+  }
+  if ('speechSynthesis' in window) {
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+  }
+}
+
+/* === FALLBACK TTS si bebe.mp3 no está disponible === */
+function _hablarBebeTTS(texto) {
   if (!('speechSynthesis' in window)) {
     console.warn('TTS no soportado en este navegador');
     return;
   }
-  // Cancelar cualquier voz previa
   window.speechSynthesis.cancel();
 
-  // Esperar a que carguen las voces
   function _hablar() {
     const voces = window.speechSynthesis.getVoices();
-    // Preferir voz infantil/femenina en español MX, ES o cualquier es-*
     const preferidas = [
-      'Microsoft Sabina',         // Windows MX
-      'Microsoft Helena',         // Windows ES
+      'Microsoft Sabina',
+      'Microsoft Helena',
       'Google español de Estados Unidos',
       'Google español',
-      'Paulina',                  // macOS MX
-      'Mónica',                   // macOS ES
+      'Paulina',
+      'Mónica',
     ];
     let vozElegida = null;
     for (const nombre of preferidas) {
       vozElegida = voces.find(v => v.name.includes(nombre));
       if (vozElegida) break;
     }
-    // Fallback: cualquier voz en español
     if (!vozElegida) {
       vozElegida = voces.find(v => v.lang && v.lang.startsWith('es'));
     }
@@ -6637,16 +6676,15 @@ function hablarBebe(texto) {
     bebeUtterance = new SpeechSynthesisUtterance(texto);
     if (vozElegida) bebeUtterance.voice = vozElegida;
     bebeUtterance.lang = 'es-MX';
-    bebeUtterance.rate = 0.95;     // un poco más lento (suena tierno)
-    bebeUtterance.pitch = 1.4;     // pitch alto (voz infantil)
+    bebeUtterance.rate = 0.95;
+    bebeUtterance.pitch = 1.4;
     bebeUtterance.volume = 1.0;
     window.speechSynthesis.speak(bebeUtterance);
   }
 
-  // Si las voces aún no están cargadas, esperar el evento
   if (window.speechSynthesis.getVoices().length === 0) {
     window.speechSynthesis.addEventListener('voiceschanged', _hablar, { once: true });
-    setTimeout(_hablar, 100);  // fallback por si el evento no dispara
+    setTimeout(_hablar, 100);
   } else {
     _hablar();
   }
@@ -6762,10 +6800,8 @@ function cerrarModoBebe() {
   bebeActive = false;
   bebeTimers.forEach(t => clearTimeout(t));
   bebeTimers = [];
-  // Cancelar voz TTS
-  if ('speechSynthesis' in window) {
-    try { window.speechSynthesis.cancel(); } catch (e) {}
-  }
+  // Detener audio del bebé (MP3 + TTS fallback)
+  detenerBebe();
   const overlay = document.getElementById('bebeOverlay');
   overlay.classList.add('is-closing');
   setTimeout(() => {
