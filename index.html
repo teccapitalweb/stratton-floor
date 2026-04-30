@@ -4657,64 +4657,152 @@ function reproducirSonidoRevealClimax(esPremium) {
   if (which === 'chime')    return revealChime();
   return revealSparkle();
 }
-function reproducirSonidoRevealBuildup(durMs) { /* sin buildup separado */ }
 
-/* === REVEAL: BRILLO CRISTALINO === */
+// Build-up SUENA durante la slot animation (7s) con redoble de tambor que crece
+function reproducirSonidoRevealBuildup(durMs) {
+  if (!state.sonidoActivo) return;
+  const which = getActiveSonido('reveal', 'sparkle');
+  // Redoble universal para todos los reveal — limpio sin saturación
+  redobleSubiendo(durMs);
+}
+
+// Redoble de tambor que sube de volumen durante el buildup (NO saturado)
+function redobleSubiendo(durMs) {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const dur = durMs / 1000;
+    const golpes = Math.floor(dur / 0.07); // ~14 golpes/segundo
+    for (let i = 0; i < golpes; i++) {
+      const tt = t + i * 0.07;
+      const progreso = i / golpes;
+      // Volumen sube progresivamente de 0.04 a 0.18 (limpio, no satura)
+      const vol = 0.04 + progreso * 0.14;
+      // Tambor real: sine que cae rápido + ruido browniano filtrado
+      const o = ac.createOscillator();
+      const gO = ac.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(180, tt);
+      o.frequency.exponentialRampToValueAtTime(60, tt + 0.05);
+      gO.gain.setValueAtTime(vol, tt);
+      gO.gain.exponentialRampToValueAtTime(0.001, tt + 0.06);
+      o.connect(gO).connect(ac.destination);
+      o.start(tt); o.stop(tt + 0.07);
+      // Capa de "snare" suave (ruido filtrado)
+      const buf = ac.createBuffer(1, ac.sampleRate * 0.04, ac.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let j = 0; j < d.length; j++) d[j] = (Math.random() * 2 - 1);
+      const src = ac.createBufferSource();
+      const f = ac.createBiquadFilter();
+      const gN = ac.createGain();
+      src.buffer = buf;
+      f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = 1.2;
+      gN.gain.setValueAtTime(vol * 0.5, tt);
+      gN.gain.exponentialRampToValueAtTime(0.001, tt + 0.04);
+      src.connect(f); f.connect(gN); gN.connect(ac.destination);
+      src.start(tt); src.stop(tt + 0.04);
+    }
+  } catch (e) {}
+}
+
+// Aplauso de estadio (limpio, sin saturación)
+function aplausoLargo(durSec) {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const dur = durSec || 3;
+    const buf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+    const d = buf.getChannelData(0);
+    // Generar ruido tipo aplauso (random con peaks)
+    for (let i = 0; i < d.length; i++) {
+      d[i] = (Math.random() * 2 - 1) * (0.5 + Math.random() * 0.5);
+    }
+    const src = ac.createBufferSource();
+    const f = ac.createBiquadFilter();
+    const g = ac.createGain();
+    src.buffer = buf;
+    f.type = 'bandpass';
+    f.frequency.value = 2400;
+    f.Q.value = 0.5;  // Q bajo = no satura
+    // Envelope con ataque rápido y caída suave
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.linearRampToValueAtTime(0.22, t + 0.15);
+    g.gain.linearRampToValueAtTime(0.20, t + dur * 0.6);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    src.connect(f); f.connect(g); g.connect(ac.destination);
+    src.start(t);
+  } catch (e) {}
+}
+
+/* === REVEAL: BRILLO CRISTALINO (5s) — campanitas + aplauso === */
 function revealSparkle() {
   if (!state.sonidoActivo) return;
   try {
     const ac = getAudio();
     const t = ac.currentTime;
-    const notas = [1047, 1319, 1568, 1976, 2349, 2637];
+    // Capa 1: 8 campanitas ascendentes durante 4s
+    const notas = [1047, 1319, 1568, 1976, 2349, 2637, 3136, 3520];
     notas.forEach((freq, i) => {
       const o = ac.createOscillator();
       const g = ac.createGain();
       o.type = 'sine';
       o.frequency.value = freq;
-      const tt = t + i * 0.18;
+      const tt = t + i * 0.4;
       g.gain.setValueAtTime(0.001, tt);
-      g.gain.exponentialRampToValueAtTime(0.18, tt + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.001, tt + 0.6);
+      g.gain.exponentialRampToValueAtTime(0.16, tt + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.001, tt + 1.2);
       o.connect(g).connect(ac.destination);
-      o.start(tt); o.stop(tt + 0.65);
+      o.start(tt); o.stop(tt + 1.3);
+      // Octava arriba sutil
       const o2 = ac.createOscillator();
       const g2 = ac.createGain();
       o2.type = 'sine';
       o2.frequency.value = freq * 2;
       g2.gain.setValueAtTime(0.001, tt);
-      g2.gain.exponentialRampToValueAtTime(0.06, tt + 0.02);
-      g2.gain.exponentialRampToValueAtTime(0.001, tt + 0.4);
+      g2.gain.exponentialRampToValueAtTime(0.05, tt + 0.03);
+      g2.gain.exponentialRampToValueAtTime(0.001, tt + 0.8);
       o2.connect(g2).connect(ac.destination);
-      o2.start(tt); o2.stop(tt + 0.45);
+      o2.start(tt); o2.stop(tt + 0.85);
     });
+    // Capa 2: Aplauso de fondo durante todo el reveal
+    aplausoLargo(5);
+    // Capa 3: Acorde final glorioso a los 3.5s
     setTimeout(() => {
       try {
         const ac2 = getAudio();
         const tF = ac2.currentTime;
-        [2093, 2637, 3136].forEach(freq => {
+        [1046.50, 1318.51, 1567.98, 2093.00, 2637.02].forEach(freq => {
           const o = ac2.createOscillator();
           const g = ac2.createGain();
           o.type = 'sine';
           o.frequency.value = freq;
           g.gain.setValueAtTime(0.001, tF);
-          g.gain.exponentialRampToValueAtTime(0.15, tF + 0.03);
-          g.gain.linearRampToValueAtTime(0.08, tF + 0.6);
-          g.gain.exponentialRampToValueAtTime(0.001, tF + 1.4);
+          g.gain.exponentialRampToValueAtTime(0.13, tF + 0.05);
+          g.gain.linearRampToValueAtTime(0.10, tF + 1.2);
+          g.gain.exponentialRampToValueAtTime(0.001, tF + 2.5);
           o.connect(g).connect(ac2.destination);
-          o.start(tF); o.stop(tF + 1.5);
+          o.start(tF); o.stop(tF + 2.6);
         });
       } catch (e) {}
-    }, 1200);
+    }, 3500);
   } catch (e) {}
 }
 
-/* === REVEAL: ARPEGIO MÁGICO === */
+/* === REVEAL: ARPEGIO MÁGICO (5s) — piano + aplauso === */
 function revealArpeggio() {
   if (!state.sonidoActivo) return;
   try {
     const ac = getAudio();
     const t = ac.currentTime;
-    const notas = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50, 1318.51];
+    // Arpegio largo Do mayor en 3 octavas (16 notas en 4s)
+    const notas = [
+      261.63, 329.63, 392.00, 523.25,
+      659.25, 783.99, 1046.50, 1318.51,
+      1567.98, 2093.00, 1318.51, 1046.50,
+      783.99, 659.25, 523.25, 1046.50
+    ];
     notas.forEach((freq, i) => {
       const o = ac.createOscillator();
       const g = ac.createGain();
@@ -4723,18 +4811,21 @@ function revealArpeggio() {
       o.frequency.value = freq;
       f.type = 'lowpass';
       f.frequency.value = 3500;
-      const tt = t + i * 0.13;
+      const tt = t + i * 0.25;
       g.gain.setValueAtTime(0.001, tt);
-      g.gain.exponentialRampToValueAtTime(0.22, tt + 0.015);
-      g.gain.exponentialRampToValueAtTime(0.001, tt + 0.5);
+      g.gain.exponentialRampToValueAtTime(0.20, tt + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, tt + 0.7);
       o.connect(f); f.connect(g); g.connect(ac.destination);
-      o.start(tt); o.stop(tt + 0.55);
+      o.start(tt); o.stop(tt + 0.75);
     });
+    // Aplauso de fondo
+    aplausoLargo(5);
+    // Acorde final mayor extendido
     setTimeout(() => {
       try {
         const ac2 = getAudio();
         const tF = ac2.currentTime;
-        [523.25, 659.25, 783.99, 1046.50].forEach(freq => {
+        [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50].forEach(freq => {
           const o = ac2.createOscillator();
           const g = ac2.createGain();
           const f = ac2.createBiquadFilter();
@@ -4742,149 +4833,136 @@ function revealArpeggio() {
           o.frequency.value = freq;
           f.type = 'lowpass'; f.frequency.value = 3000;
           g.gain.setValueAtTime(0.001, tF);
-          g.gain.exponentialRampToValueAtTime(0.16, tF + 0.04);
-          g.gain.linearRampToValueAtTime(0.12, tF + 0.8);
-          g.gain.exponentialRampToValueAtTime(0.001, tF + 1.8);
+          g.gain.exponentialRampToValueAtTime(0.13, tF + 0.06);
+          g.gain.linearRampToValueAtTime(0.10, tF + 1.5);
+          g.gain.exponentialRampToValueAtTime(0.001, tF + 2.5);
           o.connect(f); f.connect(g); g.connect(ac2.destination);
-          o.start(tF); o.stop(tF + 1.9);
+          o.start(tF); o.stop(tF + 2.6);
         });
       } catch (e) {}
-    }, 1100);
+    }, 3700);
   } catch (e) {}
 }
 
-/* === REVEAL: CELESTA DORADA === */
+/* === REVEAL: CELESTA DORADA (5s) — fanfarria heroica + aplauso === */
 function revealCelesta() {
   if (!state.sonidoActivo) return;
   try {
     const ac = getAudio();
     const t = ac.currentTime;
+    // Melodía heroica estilo "victoria de Zelda" extendida
     const melodia = [
-      { f: 523.25, d: 0.0,  l: 0.15 },
-      { f: 659.25, d: 0.15, l: 0.15 },
-      { f: 783.99, d: 0.30, l: 0.15 },
-      { f: 1046.50,d: 0.45, l: 0.15 },
-      { f: 1318.51,d: 0.60, l: 0.4 },
+      { f: 523.25, d: 0.0,  l: 0.3 },
+      { f: 659.25, d: 0.3,  l: 0.3 },
+      { f: 783.99, d: 0.6,  l: 0.3 },
+      { f: 1046.50,d: 0.9,  l: 0.5 },
+      { f: 783.99, d: 1.5,  l: 0.3 },
+      { f: 1046.50,d: 1.8,  l: 0.3 },
+      { f: 1318.51,d: 2.1,  l: 0.5 },
+      { f: 1567.98,d: 2.7,  l: 0.7 },
+      { f: 2093.00,d: 3.5,  l: 1.5 },  // Nota final sostenida
     ];
     melodia.forEach(({f, d, l}) => {
       const tt = t + d;
+      // Tono fundamental
       const o = ac.createOscillator();
       const g = ac.createGain();
       o.type = 'sine';
       o.frequency.value = f;
       g.gain.setValueAtTime(0.001, tt);
-      g.gain.exponentialRampToValueAtTime(0.2, tt + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.20, tt + 0.04);
+      g.gain.linearRampToValueAtTime(0.15, tt + l * 0.6);
       g.gain.exponentialRampToValueAtTime(0.001, tt + l);
       o.connect(g).connect(ac.destination);
       o.start(tt); o.stop(tt + l + 0.05);
+      // Octava brillante
       const o2 = ac.createOscillator();
       const g2 = ac.createGain();
       o2.type = 'sine';
       o2.frequency.value = f * 2;
       g2.gain.setValueAtTime(0.001, tt);
-      g2.gain.exponentialRampToValueAtTime(0.07, tt + 0.02);
+      g2.gain.exponentialRampToValueAtTime(0.06, tt + 0.04);
       g2.gain.exponentialRampToValueAtTime(0.001, tt + l * 0.7);
       o2.connect(g2).connect(ac.destination);
       o2.start(tt); o2.stop(tt + l);
     });
-    setTimeout(() => {
-      try {
-        const ac2 = getAudio();
-        const tF = ac2.currentTime;
-        [1046.50, 1318.51, 1567.98].forEach(freq => {
-          const o = ac2.createOscillator();
-          const g = ac2.createGain();
-          o.type = 'sine';
-          o.frequency.value = freq;
-          g.gain.setValueAtTime(0.001, tF);
-          g.gain.exponentialRampToValueAtTime(0.14, tF + 0.04);
-          g.gain.linearRampToValueAtTime(0.10, tF + 0.8);
-          g.gain.exponentialRampToValueAtTime(0.001, tF + 1.6);
-          o.connect(g).connect(ac2.destination);
-          o.start(tF); o.stop(tF + 1.7);
-        });
-      } catch (e) {}
-    }, 1100);
+    // Aplauso de fondo
+    aplausoLargo(5);
   } catch (e) {}
 }
 
-/* === REVEAL: GAME SHOW === */
+/* === REVEAL: GAME SHOW (5s) — redoble + aplauso de show === */
 function revealGameshow() {
   if (!state.sonidoActivo) return;
   try {
     const ac = getAudio();
     const t = ac.currentTime;
-    for (let i = 0; i < 16; i++) {
-      const o = ac.createOscillator();
-      const g = ac.createGain();
-      o.type = 'sine';
-      o.frequency.value = 1200;
-      const tt = t + i * 0.18;
-      g.gain.setValueAtTime(0.001, tt);
-      g.gain.exponentialRampToValueAtTime(0.15, tt + 0.005);
-      g.gain.exponentialRampToValueAtTime(0.001, tt + 0.08);
-      o.connect(g).connect(ac.destination);
-      o.start(tt); o.stop(tt + 0.1);
-    }
+    // Redoble que crece durante 3.5s
+    redobleSubiendo(3500);
+    // Aplauso de estadio durante todo
+    aplausoLargo(5);
+    // Ding-Dong glorioso después del redoble
     setTimeout(() => {
       try {
         const ac2 = getAudio();
         const tF = ac2.currentTime;
-        const o1 = ac2.createOscillator();
-        const g1 = ac2.createGain();
-        o1.type = 'sine';
-        o1.frequency.value = 1568;
-        g1.gain.setValueAtTime(0.001, tF);
-        g1.gain.exponentialRampToValueAtTime(0.25, tF + 0.02);
-        g1.gain.exponentialRampToValueAtTime(0.001, tF + 0.8);
-        o1.connect(g1).connect(ac2.destination);
-        o1.start(tF); o1.stop(tF + 0.85);
-        const o2 = ac2.createOscillator();
-        const g2 = ac2.createGain();
-        o2.type = 'sine';
-        o2.frequency.value = 1046.50;
-        g2.gain.setValueAtTime(0.001, tF + 0.3);
-        g2.gain.exponentialRampToValueAtTime(0.22, tF + 0.32);
-        g2.gain.exponentialRampToValueAtTime(0.001, tF + 1.4);
-        o2.connect(g2).connect(ac2.destination);
-        o2.start(tF + 0.3); o2.stop(tF + 1.5);
+        // Acorde mayor brillante (Do-Mi-Sol-Do alto)
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+          const o = ac2.createOscillator();
+          const g = ac2.createGain();
+          o.type = 'sine';
+          o.frequency.value = freq;
+          g.gain.setValueAtTime(0.001, tF);
+          g.gain.exponentialRampToValueAtTime(0.18, tF + 0.04);
+          g.gain.linearRampToValueAtTime(0.14, tF + 1);
+          g.gain.exponentialRampToValueAtTime(0.001, tF + 1.8);
+          o.connect(g).connect(ac2.destination);
+          o.start(tF); o.stop(tF + 1.9);
+        });
       } catch (e) {}
-    }, 3000);
+    }, 3500);
   } catch (e) {}
 }
 
-/* === REVEAL: CAMPANA ZEN === */
+/* === REVEAL: CAMPANA ZEN (5s) — campanas + aplauso suave === */
 function revealChime() {
   if (!state.sonidoActivo) return;
   try {
     const ac = getAudio();
     const t = ac.currentTime;
+    // 5 campanas escalonadas en escala mayor, cada una con sustain de 4s
     const notas = [
       { f: 1046.50, d: 0.0 },
-      { f: 1318.51, d: 0.6 },
-      { f: 1567.98, d: 1.2 },
+      { f: 1318.51, d: 0.7 },
+      { f: 1567.98, d: 1.4 },
+      { f: 2093.00, d: 2.1 },
+      { f: 2637.02, d: 3.0 },
     ];
     notas.forEach(({f, d}) => {
       const tt = t + d;
+      // Tono fundamental con sustain LARGO
       const o1 = ac.createOscillator();
       const g1 = ac.createGain();
       o1.type = 'sine';
       o1.frequency.value = f;
       g1.gain.setValueAtTime(0.001, tt);
-      g1.gain.exponentialRampToValueAtTime(0.25, tt + 0.02);
-      g1.gain.exponentialRampToValueAtTime(0.001, tt + 2.5);
+      g1.gain.exponentialRampToValueAtTime(0.22, tt + 0.03);
+      g1.gain.exponentialRampToValueAtTime(0.001, tt + 4);
       o1.connect(g1).connect(ac.destination);
-      o1.start(tt); o1.stop(tt + 2.6);
+      o1.start(tt); o1.stop(tt + 4.1);
+      // Armónico (1.5x = 5ta arriba)
       const o2 = ac.createOscillator();
       const g2 = ac.createGain();
       o2.type = 'sine';
       o2.frequency.value = f * 1.5;
       g2.gain.setValueAtTime(0.001, tt);
-      g2.gain.exponentialRampToValueAtTime(0.08, tt + 0.04);
-      g2.gain.exponentialRampToValueAtTime(0.001, tt + 1.5);
+      g2.gain.exponentialRampToValueAtTime(0.07, tt + 0.05);
+      g2.gain.exponentialRampToValueAtTime(0.001, tt + 2.5);
       o2.connect(g2).connect(ac.destination);
-      o2.start(tt); o2.stop(tt + 1.6);
+      o2.start(tt); o2.stop(tt + 2.6);
     });
+    // Aplauso suave de fondo
+    aplausoLargo(5);
   } catch (e) {}
 }
 
