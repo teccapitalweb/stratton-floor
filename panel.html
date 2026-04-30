@@ -1779,28 +1779,28 @@ const Sounds = {
     saveState();
   },
   /* === Carga opcional de archivos mp3 reales (si existen en audio/) === */
-  async _loadAnimalFiles() {
-    if (!this.ctx) return;
+  _loadAnimalFiles() {
     const animales = ['leon', 'tigre', 'lobo', 'aguila', 'oso'];
     for (const a of animales) {
       try {
-        const resp = await fetch(`audio/${a}.mp3`);
-        if (resp.ok) {
-          const arr = await resp.arrayBuffer();
-          this.buffers[a] = await this.ctx.decodeAudioData(arr);
-        }
+        const audio = new Audio(`audio/${a}.mp3`);
+        audio.preload = 'auto';
+        audio.load();
+        this.buffers[a] = audio;
       } catch (e) {}
     }
   },
   _playBuffer(animal, vol) {
-    if (!this.ctx || !this.buffers[animal]) return false;
-    const src = this.ctx.createBufferSource();
-    const g = this.ctx.createGain();
-    g.gain.value = vol || 0.85;
-    src.buffer = this.buffers[animal];
-    src.connect(g).connect(this.ctx.destination);
-    src.start();
-    return true;
+    if (!this.buffers[animal]) return false;
+    try {
+      if (this.ctx && this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {});
+      }
+      const audio = this.buffers[animal].cloneNode();
+      audio.volume = vol || 0.9;
+      audio.play().catch(() => {});
+      return true;
+    } catch (e) { return false; }
   },
   /* === RUIDO HELPERS === */
   _ruidoBrowniano(dur) {
