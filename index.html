@@ -3464,11 +3464,11 @@ body.modo-estadio .motivation-banner {
 
 <!-- Modal del COACH eliminado del Floor — ahora se controla desde el panel admin -->
 
-<!-- Overlay BROADCAST del coach (cuando manda mensaje) -->
+<!-- Overlay BROADCAST del mensaje al equipo -->
 <div class="coach-broadcast" id="coachBroadcast">
   <div class="coach-broadcast__inner">
     <div class="coach-broadcast__icon">📣</div>
-    <div class="coach-broadcast__label">EL COACH DICE</div>
+    <div class="coach-broadcast__label">MENSAJE PARA EL EQUIPO</div>
     <div class="coach-broadcast__text" id="coachBroadcastText"></div>
   </div>
 </div>
@@ -5211,99 +5211,43 @@ function cierreFanfarriaPodio() {
 
 // Silbato del coach - ahora es chirrido de águila (animal real más cercano a un silbato)
 function silbatoArbitro() {
-  // AIR HORN épico estilo DJ/MC/Mortal Kombat
-  // El "BAAAAH" clásico de hype máximo + boom grave de impacto
+  // Silbato real desde audio/silbato.mp3
+  if (!state.sonidoActivo) return;
+  try {
+    const audio = new Audio('audio/silbato.mp3');
+    audio.volume = 0.85;
+    audio.play().catch(() => {
+      // Si no se puede reproducir el mp3, fallback al silbato sintético
+      _silbatoSintetico();
+    });
+  } catch (e) {
+    _silbatoSintetico();
+  }
+}
+
+// Fallback sintético si falla la carga del mp3
+function _silbatoSintetico() {
   if (!state.sonidoActivo) return;
   try {
     const ac = getAudio();
     const t = ac.currentTime;
-
-    // ===== AIR HORN: 3 horns en armonía (Do-Mi-Sol) =====
-    // Cada horn es un sawtooth grave con vibrato, simulando bocina de barco/estadio
-    const hornFreqs = [220, 277.18, 329.63]; // La3, Do#4, Mi4 — acorde mayor poderoso
-    hornFreqs.forEach(freq => {
-      // Sawtooth grueso (cuerpo de la bocina)
-      const o = ac.createOscillator();
-      const g = ac.createGain();
-      const f = ac.createBiquadFilter();
-      const lfo = ac.createOscillator();
-      const lfoGain = ac.createGain();
-
-      o.type = 'sawtooth';
-      o.frequency.setValueAtTime(freq, t);
-      // Bend ascendente al inicio (típico de air horn)
-      o.frequency.setValueAtTime(freq * 0.95, t);
-      o.frequency.linearRampToValueAtTime(freq, t + 0.08);
-
-      // Vibrato sutil (le da realismo)
-      lfo.type = 'sine';
-      lfo.frequency.value = 6;
-      lfoGain.gain.value = 4;
-      lfo.connect(lfoGain).connect(o.frequency);
-
-      // Filtro lowpass (quita aspereza, NO satura)
-      f.type = 'lowpass';
-      f.frequency.value = 2200;
-      f.Q.value = 2;
-
-      // Envelope: ataque rápido, sostenido fuerte 0.9s, caída
-      g.gain.setValueAtTime(0.001, t);
-      g.gain.exponentialRampToValueAtTime(0.18, t + 0.04);
-      g.gain.linearRampToValueAtTime(0.16, t + 0.85);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 1.1);
-
-      o.connect(f); f.connect(g); g.connect(ac.destination);
-      o.start(t); o.stop(t + 1.15);
-      lfo.start(t); lfo.stop(t + 1.15);
-    });
-
-    // ===== Capa armónica brillante (octava arriba) — da el "filo" del horn =====
-    [440, 554.37, 659.25].forEach(freq => {
-      const o = ac.createOscillator();
-      const g = ac.createGain();
-      const f = ac.createBiquadFilter();
-      o.type = 'sawtooth';
-      o.frequency.value = freq;
-      f.type = 'bandpass';
-      f.frequency.value = 1500;
-      f.Q.value = 2;
-      g.gain.setValueAtTime(0.001, t);
-      g.gain.exponentialRampToValueAtTime(0.06, t + 0.04);
-      g.gain.linearRampToValueAtTime(0.05, t + 0.85);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 1.1);
-      o.connect(f); f.connect(g); g.connect(ac.destination);
-      o.start(t); o.stop(t + 1.15);
-    });
-
-    // ===== Soplido/aire sutil (textura realista del horn) =====
-    const buf = ac.createBuffer(1, ac.sampleRate * 1.0, ac.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
-    const src = ac.createBufferSource();
-    const fN = ac.createBiquadFilter();
-    const gN = ac.createGain();
-    src.buffer = buf;
-    fN.type = 'bandpass';
-    fN.frequency.value = 800;
-    fN.Q.value = 1.5;
-    gN.gain.setValueAtTime(0.001, t);
-    gN.gain.exponentialRampToValueAtTime(0.05, t + 0.04);
-    gN.gain.exponentialRampToValueAtTime(0.001, t + 1);
-    src.connect(fN); fN.connect(gN); gN.connect(ac.destination);
-    src.start(t); src.stop(t + 1);
-
-    // ===== BOOM grave inicial (impacto del "BAH") =====
-    const oB = ac.createOscillator();
-    const gB = ac.createGain();
-    oB.type = 'sine';
-    oB.frequency.setValueAtTime(80, t);
-    oB.frequency.exponentialRampToValueAtTime(40, t + 0.3);
-    gB.gain.setValueAtTime(0.001, t);
-    gB.gain.exponentialRampToValueAtTime(0.4, t + 0.02);
-    gB.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
-    oB.connect(gB).connect(ac.destination);
-    oB.start(t); oB.stop(t + 0.5);
-
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    const lfo = ac.createOscillator();
+    const lfoGain = ac.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(2400, t);
+    lfo.type = 'sine';
+    lfo.frequency.value = 18;
+    lfoGain.gain.value = 180;
+    lfo.connect(lfoGain).connect(o.frequency);
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.exponentialRampToValueAtTime(0.45, t + 0.03);
+    g.gain.linearRampToValueAtTime(0.42, t + 0.7);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.85);
+    o.connect(g).connect(ac.destination);
+    o.start(t); o.stop(t + 0.9);
+    lfo.start(t); lfo.stop(t + 0.9);
   } catch (e) {}
 }
 
