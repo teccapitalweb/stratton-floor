@@ -6760,9 +6760,9 @@ async function activarModoBebe() {
 
   try { getAudio().resume(); } catch (e) {}
 
-  // === Secuencia de 30 segundos ===
+  // === Secuencia de 30 segundos (audio bebé 7s + silbato + reposo) ===
 
-  // 0s - Campanita inicial
+  // 0s - Campanita inicial (bebé entrando)
   bebeTimers.push(setTimeout(() => campanaSuave(), 200));
 
   // 4s - El bebé llegó al centro, cambia a animación de saludo
@@ -6770,26 +6770,11 @@ async function activarModoBebe() {
     if (fotoWrap) fotoWrap.classList.add('is-llegado');
   }, 4000));
 
-  // 4.5s - Risa del bebé
-  bebeTimers.push(setTimeout(() => risaBebeSintetica(), 4500));
-
-  // 5s - Voz TTS dice la frase completa
+  // 5s - VOZ DEL BEBÉ (Mateo) - SOLO UNA VEZ, dura 7 seg
   bebeTimers.push(setTimeout(() => hablarBebe(BEBE_FRASE), 5000));
 
-  // 14s - Risa del bebé otra vez
-  bebeTimers.push(setTimeout(() => risaBebeSintetica(), 14000));
-
-  // 15s - Repite la frase para reforzar
-  bebeTimers.push(setTimeout(() => hablarBebe('¡A COMENZAR el día, paps!'), 16000));
-
-  // 22s - Campanita final
-  bebeTimers.push(setTimeout(() => campanaSuave(), 22000));
-
-  // 25s - Risa final + tercera frase
-  bebeTimers.push(setTimeout(() => {
-    risaBebeSintetica();
-    hablarBebe('¡Confío en ustedes!');
-  }, 25000));
+  // 13s - SILBATO al terminar el mensaje del bebé
+  bebeTimers.push(setTimeout(() => silbatoArbitro(), 13000));
 
   // 30s - Auto cerrar
   bebeTimers.push(setTimeout(() => cerrarModoBebe(), 30000));
