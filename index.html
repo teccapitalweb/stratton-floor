@@ -4476,7 +4476,7 @@ function bramidoToro(corto) {
 // Lista blanca de sonidos válidos por categoría (debe coincidir con el panel)
 const SONIDOS_VALIDOS = {
   sale:    ['beep-game', 'coin', 'powerup', 'cha-ching', 'beep', 'pop'],
-  reveal:  ['casino', 'drumroll', 'suspense', 'bassdrop', 'epic-alarm'],
+  reveal:  ['sparkle', 'arpeggio', 'celesta', 'gameshow', 'chime'],
   victory: ['fanfare', 'classical', 'celebration', 'mega', 'champion'],
 };
 
@@ -4650,132 +4650,241 @@ function impactBoomNew() {
 /* Sonido REVEAL CLÍMAX */
 function reproducirSonidoRevealClimax(esPremium) {
   if (!state.sonidoActivo) return;
-  const which = getActiveSonido('reveal', 'casino');
-  if (which === 'drumroll')   return revealDrumroll();
-  if (which === 'suspense')   return revealSuspense();
-  if (which === 'bassdrop')   return revealBassdrop();
-  if (which === 'epic-alarm') return revealEpicAlarm();
-  return revealCasino();
+  const which = getActiveSonido('reveal', 'sparkle');
+  if (which === 'arpeggio') return revealArpeggio();
+  if (which === 'celesta')  return revealCelesta();
+  if (which === 'gameshow') return revealGameshow();
+  if (which === 'chime')    return revealChime();
+  return revealSparkle();
 }
 function reproducirSonidoRevealBuildup(durMs) { /* sin buildup separado */ }
 
-function revealCasino() {
+/* === REVEAL: BRILLO CRISTALINO === */
+function revealSparkle() {
   if (!state.sonidoActivo) return;
   try {
     const ac = getAudio();
     const t = ac.currentTime;
-    for (let i = 0; i < 30; i++) {
+    const notas = [1047, 1319, 1568, 1976, 2349, 2637];
+    notas.forEach((freq, i) => {
       const o = ac.createOscillator();
       const g = ac.createGain();
-      o.type = 'square';
-      o.frequency.setValueAtTime(1800 - i * 20, t + i * 0.1);
-      g.gain.setValueAtTime(0.12, t + i * 0.1);
-      g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.1 + 0.05);
+      o.type = 'sine';
+      o.frequency.value = freq;
+      const tt = t + i * 0.18;
+      g.gain.setValueAtTime(0.001, tt);
+      g.gain.exponentialRampToValueAtTime(0.18, tt + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, tt + 0.6);
       o.connect(g).connect(ac.destination);
-      o.start(t + i * 0.1); o.stop(t + i * 0.1 + 0.06);
-    }
-    setTimeout(impactBoomNew, 3100);
-  } catch (e) {}
-}
-function revealDrumroll() {
-  if (!state.sonidoActivo) return;
-  try {
-    const ac = getAudio();
-    const t = ac.currentTime;
-    for (let i = 0; i < 50; i++) {
-      const dur = 0.04;
-      const buf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
-      const d = buf.getChannelData(0);
-      for (let j = 0; j < d.length; j++) d[j] = (Math.random() * 2 - 1);
-      const src = ac.createBufferSource();
-      const f = ac.createBiquadFilter();
-      const g = ac.createGain();
-      src.buffer = buf;
-      f.type = 'bandpass'; f.frequency.value = 200;
-      const vol = 0.05 + (i / 50) * 0.25;
-      g.gain.setValueAtTime(vol, t + i * 0.06);
-      g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.04);
-      src.connect(f); f.connect(g); g.connect(ac.destination);
-      src.start(t + i * 0.06); src.stop(t + i * 0.06 + 0.04);
-    }
-    setTimeout(impactBoomNew, 3200);
-  } catch (e) {}
-}
-function revealSuspense() {
-  if (!state.sonidoActivo) return;
-  try {
-    const ac = getAudio();
-    const t = ac.currentTime;
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = 'sawtooth';
-    o.frequency.setValueAtTime(80, t);
-    o.frequency.exponentialRampToValueAtTime(440, t + 4);
-    g.gain.setValueAtTime(0.001, t);
-    g.gain.exponentialRampToValueAtTime(0.2, t + 1);
-    g.gain.linearRampToValueAtTime(0.3, t + 4);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 4.3);
-    o.connect(g).connect(ac.destination);
-    o.start(t); o.stop(t + 4.4);
-    setTimeout(impactBoomNew, 4100);
-  } catch (e) {}
-}
-function revealBassdrop() {
-  if (!state.sonidoActivo) return;
-  try {
-    const ac = getAudio();
-    const t = ac.currentTime;
-    const buildDur = 4;
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    const f = ac.createBiquadFilter();
-    o.type = 'sawtooth';
-    o.frequency.setValueAtTime(200, t);
-    o.frequency.exponentialRampToValueAtTime(2400, t + buildDur);
-    f.type = 'highpass';
-    f.frequency.setValueAtTime(150, t);
-    f.frequency.exponentialRampToValueAtTime(1800, t + buildDur);
-    g.gain.setValueAtTime(0.001, t);
-    g.gain.exponentialRampToValueAtTime(0.3, t + buildDur);
-    g.gain.exponentialRampToValueAtTime(0.001, t + buildDur + 0.1);
-    o.connect(f); f.connect(g); g.connect(ac.destination);
-    o.start(t); o.stop(t + buildDur + 0.15);
+      o.start(tt); o.stop(tt + 0.65);
+      const o2 = ac.createOscillator();
+      const g2 = ac.createGain();
+      o2.type = 'sine';
+      o2.frequency.value = freq * 2;
+      g2.gain.setValueAtTime(0.001, tt);
+      g2.gain.exponentialRampToValueAtTime(0.06, tt + 0.02);
+      g2.gain.exponentialRampToValueAtTime(0.001, tt + 0.4);
+      o2.connect(g2).connect(ac.destination);
+      o2.start(tt); o2.stop(tt + 0.45);
+    });
     setTimeout(() => {
       try {
         const ac2 = getAudio();
-        const td = ac2.currentTime;
-        const oD = ac2.createOscillator();
-        const gD = ac2.createGain();
-        oD.type = 'sine';
-        oD.frequency.setValueAtTime(60, td);
-        oD.frequency.exponentialRampToValueAtTime(35, td + 1);
-        gD.gain.setValueAtTime(0.001, td);
-        gD.gain.exponentialRampToValueAtTime(0.9, td + 0.04);
-        gD.gain.exponentialRampToValueAtTime(0.001, td + 2);
-        oD.connect(gD).connect(ac2.destination);
-        oD.start(td); oD.stop(td + 2.1);
+        const tF = ac2.currentTime;
+        [2093, 2637, 3136].forEach(freq => {
+          const o = ac2.createOscillator();
+          const g = ac2.createGain();
+          o.type = 'sine';
+          o.frequency.value = freq;
+          g.gain.setValueAtTime(0.001, tF);
+          g.gain.exponentialRampToValueAtTime(0.15, tF + 0.03);
+          g.gain.linearRampToValueAtTime(0.08, tF + 0.6);
+          g.gain.exponentialRampToValueAtTime(0.001, tF + 1.4);
+          o.connect(g).connect(ac2.destination);
+          o.start(tF); o.stop(tF + 1.5);
+        });
       } catch (e) {}
-    }, buildDur * 1000);
+    }, 1200);
   } catch (e) {}
 }
-function revealEpicAlarm() {
+
+/* === REVEAL: ARPEGIO MÁGICO === */
+function revealArpeggio() {
   if (!state.sonidoActivo) return;
   try {
     const ac = getAudio();
     const t = ac.currentTime;
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = 'sawtooth';
-    for (let i = 0; i < 8; i++) {
-      o.frequency.setValueAtTime(i % 2 === 0 ? 880 : 440, t + i * 0.5);
+    const notas = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50, 1318.51];
+    notas.forEach((freq, i) => {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      const f = ac.createBiquadFilter();
+      o.type = 'triangle';
+      o.frequency.value = freq;
+      f.type = 'lowpass';
+      f.frequency.value = 3500;
+      const tt = t + i * 0.13;
+      g.gain.setValueAtTime(0.001, tt);
+      g.gain.exponentialRampToValueAtTime(0.22, tt + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.001, tt + 0.5);
+      o.connect(f); f.connect(g); g.connect(ac.destination);
+      o.start(tt); o.stop(tt + 0.55);
+    });
+    setTimeout(() => {
+      try {
+        const ac2 = getAudio();
+        const tF = ac2.currentTime;
+        [523.25, 659.25, 783.99, 1046.50].forEach(freq => {
+          const o = ac2.createOscillator();
+          const g = ac2.createGain();
+          const f = ac2.createBiquadFilter();
+          o.type = 'triangle';
+          o.frequency.value = freq;
+          f.type = 'lowpass'; f.frequency.value = 3000;
+          g.gain.setValueAtTime(0.001, tF);
+          g.gain.exponentialRampToValueAtTime(0.16, tF + 0.04);
+          g.gain.linearRampToValueAtTime(0.12, tF + 0.8);
+          g.gain.exponentialRampToValueAtTime(0.001, tF + 1.8);
+          o.connect(f); f.connect(g); g.connect(ac2.destination);
+          o.start(tF); o.stop(tF + 1.9);
+        });
+      } catch (e) {}
+    }, 1100);
+  } catch (e) {}
+}
+
+/* === REVEAL: CELESTA DORADA === */
+function revealCelesta() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const melodia = [
+      { f: 523.25, d: 0.0,  l: 0.15 },
+      { f: 659.25, d: 0.15, l: 0.15 },
+      { f: 783.99, d: 0.30, l: 0.15 },
+      { f: 1046.50,d: 0.45, l: 0.15 },
+      { f: 1318.51,d: 0.60, l: 0.4 },
+    ];
+    melodia.forEach(({f, d, l}) => {
+      const tt = t + d;
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = 'sine';
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0.001, tt);
+      g.gain.exponentialRampToValueAtTime(0.2, tt + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, tt + l);
+      o.connect(g).connect(ac.destination);
+      o.start(tt); o.stop(tt + l + 0.05);
+      const o2 = ac.createOscillator();
+      const g2 = ac.createGain();
+      o2.type = 'sine';
+      o2.frequency.value = f * 2;
+      g2.gain.setValueAtTime(0.001, tt);
+      g2.gain.exponentialRampToValueAtTime(0.07, tt + 0.02);
+      g2.gain.exponentialRampToValueAtTime(0.001, tt + l * 0.7);
+      o2.connect(g2).connect(ac.destination);
+      o2.start(tt); o2.stop(tt + l);
+    });
+    setTimeout(() => {
+      try {
+        const ac2 = getAudio();
+        const tF = ac2.currentTime;
+        [1046.50, 1318.51, 1567.98].forEach(freq => {
+          const o = ac2.createOscillator();
+          const g = ac2.createGain();
+          o.type = 'sine';
+          o.frequency.value = freq;
+          g.gain.setValueAtTime(0.001, tF);
+          g.gain.exponentialRampToValueAtTime(0.14, tF + 0.04);
+          g.gain.linearRampToValueAtTime(0.10, tF + 0.8);
+          g.gain.exponentialRampToValueAtTime(0.001, tF + 1.6);
+          o.connect(g).connect(ac2.destination);
+          o.start(tF); o.stop(tF + 1.7);
+        });
+      } catch (e) {}
+    }, 1100);
+  } catch (e) {}
+}
+
+/* === REVEAL: GAME SHOW === */
+function revealGameshow() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    for (let i = 0; i < 16; i++) {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = 'sine';
+      o.frequency.value = 1200;
+      const tt = t + i * 0.18;
+      g.gain.setValueAtTime(0.001, tt);
+      g.gain.exponentialRampToValueAtTime(0.15, tt + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.001, tt + 0.08);
+      o.connect(g).connect(ac.destination);
+      o.start(tt); o.stop(tt + 0.1);
     }
-    g.gain.setValueAtTime(0.001, t);
-    g.gain.exponentialRampToValueAtTime(0.28, t + 0.2);
-    g.gain.linearRampToValueAtTime(0.28, t + 3.5);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 4);
-    o.connect(g).connect(ac.destination);
-    o.start(t); o.stop(t + 4.1);
-    [1, 2, 3].forEach(d => setTimeout(impactBoomNew, d * 1000));
+    setTimeout(() => {
+      try {
+        const ac2 = getAudio();
+        const tF = ac2.currentTime;
+        const o1 = ac2.createOscillator();
+        const g1 = ac2.createGain();
+        o1.type = 'sine';
+        o1.frequency.value = 1568;
+        g1.gain.setValueAtTime(0.001, tF);
+        g1.gain.exponentialRampToValueAtTime(0.25, tF + 0.02);
+        g1.gain.exponentialRampToValueAtTime(0.001, tF + 0.8);
+        o1.connect(g1).connect(ac2.destination);
+        o1.start(tF); o1.stop(tF + 0.85);
+        const o2 = ac2.createOscillator();
+        const g2 = ac2.createGain();
+        o2.type = 'sine';
+        o2.frequency.value = 1046.50;
+        g2.gain.setValueAtTime(0.001, tF + 0.3);
+        g2.gain.exponentialRampToValueAtTime(0.22, tF + 0.32);
+        g2.gain.exponentialRampToValueAtTime(0.001, tF + 1.4);
+        o2.connect(g2).connect(ac2.destination);
+        o2.start(tF + 0.3); o2.stop(tF + 1.5);
+      } catch (e) {}
+    }, 3000);
+  } catch (e) {}
+}
+
+/* === REVEAL: CAMPANA ZEN === */
+function revealChime() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const notas = [
+      { f: 1046.50, d: 0.0 },
+      { f: 1318.51, d: 0.6 },
+      { f: 1567.98, d: 1.2 },
+    ];
+    notas.forEach(({f, d}) => {
+      const tt = t + d;
+      const o1 = ac.createOscillator();
+      const g1 = ac.createGain();
+      o1.type = 'sine';
+      o1.frequency.value = f;
+      g1.gain.setValueAtTime(0.001, tt);
+      g1.gain.exponentialRampToValueAtTime(0.25, tt + 0.02);
+      g1.gain.exponentialRampToValueAtTime(0.001, tt + 2.5);
+      o1.connect(g1).connect(ac.destination);
+      o1.start(tt); o1.stop(tt + 2.6);
+      const o2 = ac.createOscillator();
+      const g2 = ac.createGain();
+      o2.type = 'sine';
+      o2.frequency.value = f * 1.5;
+      g2.gain.setValueAtTime(0.001, tt);
+      g2.gain.exponentialRampToValueAtTime(0.08, tt + 0.04);
+      g2.gain.exponentialRampToValueAtTime(0.001, tt + 1.5);
+      o2.connect(g2).connect(ac.destination);
+      o2.start(tt); o2.stop(tt + 1.6);
+    });
   } catch (e) {}
 }
 

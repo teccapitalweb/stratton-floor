@@ -1719,11 +1719,11 @@ const SOUND_PACKS = {
     label: 'REVEAL DE COMISIÓN',
     description: 'Cuando se revela el bono del día.',
     options: {
-      'casino':     { label: '🎰 Casino slot',     description: 'Tics rápidos + impacto bass al final.' },
-      'drumroll':   { label: '🥁 Redoble',         description: 'Tambor que crece + golpe final.' },
-      'suspense':   { label: '🎬 Suspenso',        description: 'Drone tenso + revelación dramática.' },
-      'bassdrop':   { label: '🔊 Bass Drop',       description: 'Build-up + drop subwoofer.' },
-      'epic-alarm': { label: '🚨 Alarma épica',    description: 'Sirena + boom + crash.' },
+      'sparkle':    { label: '✨ Brillo Cristalino',  description: 'Campanitas ascendentes + chispa mágica al final.' },
+      'arpeggio':   { label: '🎹 Arpegio Mágico',     description: 'Notas de piano subiendo + acorde final suave.' },
+      'celesta':    { label: '🎼 Celesta Dorada',     description: 'Sonido tipo música de cofre del tesoro.' },
+      'gameshow':   { label: '📺 Game Show',          description: 'Tics de programa de TV + ding final.' },
+      'chime':      { label: '🔔 Campana Zen',        description: 'Campana cristalina larga + reverb suave.' },
     }
   },
   victory: {
@@ -1741,7 +1741,7 @@ const SOUND_PACKS = {
 
 const Sounds = {
   ctx: null,
-  active: { sale: 'beep-game', reveal: 'casino', victory: 'fanfare' },
+  active: { sale: 'beep-game', reveal: 'sparkle', victory: 'fanfare' },
   buffers: {},  // cache de archivos mp3 si existen
   filesChecked: false,
   init() {
@@ -2341,128 +2341,239 @@ const Sounds = {
   /* ===== REVEAL DE COMISIÓN ===== */
   reveal(premium) {
     if (!state.sonidoActivo) return;
-    const which = this.active.reveal || 'casino';
-    if (which === 'drumroll')   return this._reveal_drumroll();
-    if (which === 'suspense')   return this._reveal_suspense();
-    if (which === 'bassdrop')   return this._reveal_bassdrop();
-    if (which === 'epic-alarm') return this._reveal_epic_alarm();
-    return this._reveal_casino();
+    const which = this.active.reveal || 'sparkle';
+    if (which === 'arpeggio') return this._reveal_arpeggio();
+    if (which === 'celesta')  return this._reveal_celesta();
+    if (which === 'gameshow') return this._reveal_gameshow();
+    if (which === 'chime')    return this._reveal_chime();
+    return this._reveal_sparkle();
   },
-  _reveal_casino() {
+
+  /* ===== REVEAL: BRILLO CRISTALINO ===== */
+  // Campanitas ascendentes + chispa al final (limpio, alegre, sin saturación)
+  _reveal_sparkle() {
     if (!this.ctx) return;
     const ac = this.ctx;
     const t = ac.currentTime;
-    // Tics rápidos (slot machine)
-    for (let i = 0; i < 30; i++) {
+    // Escala ascendente de campanitas (notas de glockenspiel)
+    const notas = [1047, 1319, 1568, 1976, 2349, 2637]; // Do6 → Mi6 → Sol6 → Si6 → Re7 → Mi7
+    notas.forEach((freq, i) => {
       const o = ac.createOscillator();
       const g = ac.createGain();
-      o.type = 'square';
-      o.frequency.setValueAtTime(1800 - i * 20, t + i * 0.1);
-      g.gain.setValueAtTime(0.12, t + i * 0.1);
-      g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.1 + 0.05);
+      o.type = 'sine';
+      o.frequency.value = freq;
+      const tt = t + i * 0.18;
+      g.gain.setValueAtTime(0.001, tt);
+      g.gain.exponentialRampToValueAtTime(0.18, tt + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, tt + 0.6);
       o.connect(g).connect(ac.destination);
-      o.start(t + i * 0.1); o.stop(t + i * 0.1 + 0.06);
-    }
-    // Boom final
-    setTimeout(() => this._impact_boom(), 3100);
-  },
-  _reveal_drumroll() {
-    if (!this.ctx) return;
-    const ac = this.ctx;
-    const t = ac.currentTime;
-    // Redoble que crece
-    for (let i = 0; i < 50; i++) {
-      const dur = 0.04;
-      const buf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
-      const d = buf.getChannelData(0);
-      for (let j = 0; j < d.length; j++) d[j] = (Math.random() * 2 - 1);
-      const src = ac.createBufferSource();
-      const f = ac.createBiquadFilter();
-      const g = ac.createGain();
-      src.buffer = buf;
-      f.type = 'bandpass'; f.frequency.value = 200;
-      const vol = 0.05 + (i / 50) * 0.25;
-      g.gain.setValueAtTime(vol, t + i * 0.06);
-      g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.04);
-      src.connect(f); f.connect(g); g.connect(ac.destination);
-      src.start(t + i * 0.06); src.stop(t + i * 0.06 + 0.04);
-    }
-    setTimeout(() => this._impact_boom(), 3200);
-  },
-  _reveal_suspense() {
-    if (!this.ctx) return;
-    const ac = this.ctx;
-    const t = ac.currentTime;
-    // Drone tenso ascendente
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = 'sawtooth';
-    o.frequency.setValueAtTime(80, t);
-    o.frequency.exponentialRampToValueAtTime(440, t + 4);
-    g.gain.setValueAtTime(0.001, t);
-    g.gain.exponentialRampToValueAtTime(0.2, t + 1);
-    g.gain.linearRampToValueAtTime(0.3, t + 4);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 4.3);
-    o.connect(g).connect(ac.destination);
-    o.start(t); o.stop(t + 4.4);
-    setTimeout(() => this._impact_boom(), 4100);
-  },
-  _reveal_bassdrop() {
-    if (!this.ctx) return;
-    const ac = this.ctx;
-    const t = ac.currentTime;
-    const buildDur = 4;
-    // Build-up
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    const f = ac.createBiquadFilter();
-    o.type = 'sawtooth';
-    o.frequency.setValueAtTime(200, t);
-    o.frequency.exponentialRampToValueAtTime(2400, t + buildDur);
-    f.type = 'highpass';
-    f.frequency.setValueAtTime(150, t);
-    f.frequency.exponentialRampToValueAtTime(1800, t + buildDur);
-    g.gain.setValueAtTime(0.001, t);
-    g.gain.exponentialRampToValueAtTime(0.3, t + buildDur);
-    g.gain.exponentialRampToValueAtTime(0.001, t + buildDur + 0.1);
-    o.connect(f); f.connect(g); g.connect(ac.destination);
-    o.start(t); o.stop(t + buildDur + 0.15);
-    // Drop
+      o.start(tt); o.stop(tt + 0.65);
+      // Capa armónica suave (octava arriba, mas tenue)
+      const o2 = ac.createOscillator();
+      const g2 = ac.createGain();
+      o2.type = 'sine';
+      o2.frequency.value = freq * 2;
+      g2.gain.setValueAtTime(0.001, tt);
+      g2.gain.exponentialRampToValueAtTime(0.06, tt + 0.02);
+      g2.gain.exponentialRampToValueAtTime(0.001, tt + 0.4);
+      o2.connect(g2).connect(ac.destination);
+      o2.start(tt); o2.stop(tt + 0.45);
+    });
+    // Chispa final cristalina (acorde mayor brillante)
     setTimeout(() => {
-      try {
-        const ac2 = this.ctx;
-        const td = ac2.currentTime;
-        const oD = ac2.createOscillator();
-        const gD = ac2.createGain();
-        oD.type = 'sine';
-        oD.frequency.setValueAtTime(60, td);
-        oD.frequency.exponentialRampToValueAtTime(35, td + 1);
-        gD.gain.setValueAtTime(0.001, td);
-        gD.gain.exponentialRampToValueAtTime(0.9, td + 0.04);
-        gD.gain.exponentialRampToValueAtTime(0.001, td + 2);
-        oD.connect(gD).connect(ac2.destination);
-        oD.start(td); oD.stop(td + 2.1);
-      } catch (e) {}
-    }, buildDur * 1000);
+      const tF = ac.currentTime;
+      [2093, 2637, 3136].forEach((freq, i) => {
+        const o = ac.createOscillator();
+        const g = ac.createGain();
+        o.type = 'sine';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0.001, tF);
+        g.gain.exponentialRampToValueAtTime(0.15, tF + 0.03);
+        g.gain.linearRampToValueAtTime(0.08, tF + 0.6);
+        g.gain.exponentialRampToValueAtTime(0.001, tF + 1.4);
+        o.connect(g).connect(ac.destination);
+        o.start(tF); o.stop(tF + 1.5);
+      });
+    }, 1200);
   },
-  _reveal_epic_alarm() {
+
+  /* ===== REVEAL: ARPEGIO MÁGICO ===== */
+  // Notas de piano subiendo + acorde final suave (estilo "fairy tale")
+  _reveal_arpeggio() {
     if (!this.ctx) return;
     const ac = this.ctx;
     const t = ac.currentTime;
-    // Sirena oscilante 4s
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = 'sawtooth';
-    for (let i = 0; i < 8; i++) {
-      o.frequency.setValueAtTime(i % 2 === 0 ? 880 : 440, t + i * 0.5);
+    // Arpegio Do mayor en 2 octavas
+    const notas = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50, 1318.51];
+    notas.forEach((freq, i) => {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      const f = ac.createBiquadFilter();
+      o.type = 'triangle';  // Triangle = piano suave sin saturación
+      o.frequency.value = freq;
+      f.type = 'lowpass';
+      f.frequency.value = 3500;
+      const tt = t + i * 0.13;
+      g.gain.setValueAtTime(0.001, tt);
+      g.gain.exponentialRampToValueAtTime(0.22, tt + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.001, tt + 0.5);
+      o.connect(f); f.connect(g); g.connect(ac.destination);
+      o.start(tt); o.stop(tt + 0.55);
+    });
+    // Acorde final mayor (Do-Mi-Sol-Do alto)
+    setTimeout(() => {
+      const tF = ac.currentTime;
+      [523.25, 659.25, 783.99, 1046.50].forEach(freq => {
+        const o = ac.createOscillator();
+        const g = ac.createGain();
+        const f = ac.createBiquadFilter();
+        o.type = 'triangle';
+        o.frequency.value = freq;
+        f.type = 'lowpass'; f.frequency.value = 3000;
+        g.gain.setValueAtTime(0.001, tF);
+        g.gain.exponentialRampToValueAtTime(0.16, tF + 0.04);
+        g.gain.linearRampToValueAtTime(0.12, tF + 0.8);
+        g.gain.exponentialRampToValueAtTime(0.001, tF + 1.8);
+        o.connect(f); f.connect(g); g.connect(ac.destination);
+        o.start(tF); o.stop(tF + 1.9);
+      });
+    }, 1100);
+  },
+
+  /* ===== REVEAL: CELESTA DORADA ===== */
+  // Tipo música de cofre del tesoro de videojuego (Zelda style)
+  _reveal_celesta() {
+    if (!this.ctx) return;
+    const ac = this.ctx;
+    const t = ac.currentTime;
+    // Melodía corta tipo "tesoro encontrado"
+    const melodia = [
+      { f: 523.25, d: 0.0,  l: 0.15 },  // Do
+      { f: 659.25, d: 0.15, l: 0.15 },  // Mi
+      { f: 783.99, d: 0.30, l: 0.15 },  // Sol
+      { f: 1046.50,d: 0.45, l: 0.15 },  // Do alto
+      { f: 1318.51,d: 0.60, l: 0.4 },   // Mi alto sostenido
+    ];
+    melodia.forEach(({f, d, l}) => {
+      const tt = t + d;
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = 'sine';
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0.001, tt);
+      g.gain.exponentialRampToValueAtTime(0.2, tt + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, tt + l);
+      o.connect(g).connect(ac.destination);
+      o.start(tt); o.stop(tt + l + 0.05);
+      // Octava brillante
+      const o2 = ac.createOscillator();
+      const g2 = ac.createGain();
+      o2.type = 'sine';
+      o2.frequency.value = f * 2;
+      g2.gain.setValueAtTime(0.001, tt);
+      g2.gain.exponentialRampToValueAtTime(0.07, tt + 0.02);
+      g2.gain.exponentialRampToValueAtTime(0.001, tt + l * 0.7);
+      o2.connect(g2).connect(ac.destination);
+      o2.start(tt); o2.stop(tt + l);
+    });
+    // Acorde dorado final
+    setTimeout(() => {
+      const tF = ac.currentTime;
+      [1046.50, 1318.51, 1567.98].forEach(freq => {
+        const o = ac.createOscillator();
+        const g = ac.createGain();
+        o.type = 'sine';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0.001, tF);
+        g.gain.exponentialRampToValueAtTime(0.14, tF + 0.04);
+        g.gain.linearRampToValueAtTime(0.10, tF + 0.8);
+        g.gain.exponentialRampToValueAtTime(0.001, tF + 1.6);
+        o.connect(g).connect(ac.destination);
+        o.start(tF); o.stop(tF + 1.7);
+      });
+    }, 1100);
+  },
+
+  /* ===== REVEAL: GAME SHOW ===== */
+  // Estilo programa de TV con tics + ding final agradable
+  _reveal_gameshow() {
+    if (!this.ctx) return;
+    const ac = this.ctx;
+    const t = ac.currentTime;
+    // Tics de cuenta regresiva (más suaves que el casino)
+    for (let i = 0; i < 16; i++) {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = 'sine';  // Sine no satura
+      o.frequency.value = 1200;
+      const tt = t + i * 0.18;
+      g.gain.setValueAtTime(0.001, tt);
+      g.gain.exponentialRampToValueAtTime(0.15, tt + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.001, tt + 0.08);
+      o.connect(g).connect(ac.destination);
+      o.start(tt); o.stop(tt + 0.1);
     }
-    g.gain.setValueAtTime(0.001, t);
-    g.gain.exponentialRampToValueAtTime(0.28, t + 0.2);
-    g.gain.linearRampToValueAtTime(0.28, t + 3.5);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 4);
-    o.connect(g).connect(ac.destination);
-    o.start(t); o.stop(t + 4.1);
-    [1, 2, 3].forEach(d => setTimeout(() => this._impact_boom(), d * 1000));
+    // Ding-Dong final estilo Family Feud
+    setTimeout(() => {
+      const tF = ac.currentTime;
+      // Ding (alto)
+      const o1 = ac.createOscillator();
+      const g1 = ac.createGain();
+      o1.type = 'sine';
+      o1.frequency.value = 1568; // Sol agudo
+      g1.gain.setValueAtTime(0.001, tF);
+      g1.gain.exponentialRampToValueAtTime(0.25, tF + 0.02);
+      g1.gain.exponentialRampToValueAtTime(0.001, tF + 0.8);
+      o1.connect(g1).connect(ac.destination);
+      o1.start(tF); o1.stop(tF + 0.85);
+      // Dong (más grave, después)
+      const o2 = ac.createOscillator();
+      const g2 = ac.createGain();
+      o2.type = 'sine';
+      o2.frequency.value = 1046.50; // Do
+      g2.gain.setValueAtTime(0.001, tF + 0.3);
+      g2.gain.exponentialRampToValueAtTime(0.22, tF + 0.32);
+      g2.gain.exponentialRampToValueAtTime(0.001, tF + 1.4);
+      o2.connect(g2).connect(ac.destination);
+      o2.start(tF + 0.3); o2.stop(tF + 1.5);
+    }, 3000);
+  },
+
+  /* ===== REVEAL: CAMPANA ZEN ===== */
+  // Una campana cristalina larga con reverb suave (lo más limpio de todos)
+  _reveal_chime() {
+    if (!this.ctx) return;
+    const ac = this.ctx;
+    const t = ac.currentTime;
+    // 3 campanas en escala mayor con sustain largo
+    const notas = [
+      { f: 1046.50, d: 0.0 }, // Do alto
+      { f: 1318.51, d: 0.6 }, // Mi alto
+      { f: 1567.98, d: 1.2 }, // Sol alto
+    ];
+    notas.forEach(({f, d}) => {
+      const tt = t + d;
+      // Tono fundamental
+      const o1 = ac.createOscillator();
+      const g1 = ac.createGain();
+      o1.type = 'sine';
+      o1.frequency.value = f;
+      g1.gain.setValueAtTime(0.001, tt);
+      g1.gain.exponentialRampToValueAtTime(0.25, tt + 0.02);
+      g1.gain.exponentialRampToValueAtTime(0.001, tt + 2.5);
+      o1.connect(g1).connect(ac.destination);
+      o1.start(tt); o1.stop(tt + 2.6);
+      // Armónico (3era arriba, da brillo a la campana)
+      const o2 = ac.createOscillator();
+      const g2 = ac.createGain();
+      o2.type = 'sine';
+      o2.frequency.value = f * 1.5;
+      g2.gain.setValueAtTime(0.001, tt);
+      g2.gain.exponentialRampToValueAtTime(0.08, tt + 0.04);
+      g2.gain.exponentialRampToValueAtTime(0.001, tt + 1.5);
+      o2.connect(g2).connect(ac.destination);
+      o2.start(tt); o2.stop(tt + 1.6);
+    });
   },
 
   /* ===== VICTORY (CIERRE SEMANA) ===== */
