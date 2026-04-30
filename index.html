@@ -3586,6 +3586,7 @@ function cargarEstado() {
         if (typeof parsed.comision !== 'number') parsed.comision = 12;
         if (!parsed.ultimoCambioBono) parsed.ultimoCambioBono = null;
         if (!Array.isArray(parsed.historial)) parsed.historial = [];
+        if (!Array.isArray(parsed.ventas)) parsed.ventas = [];  // 🔧 FIX: ventas siempre array
         if (!parsed.fechaActual) parsed.fechaActual = fechaCDMXHoy();
         // 🔧 FIX: Siempre actualizar imgs/color/emoji desde el código nuevo (por si hay cache viejo)
         parsed.vendedores = parsed.vendedores.map((v, i) => {
@@ -3670,9 +3671,12 @@ let state = cargarEstado();
 
 /* ============ Cálculos ============ */
 function totalVendidoHoy() {
+  if (!Array.isArray(state.ventas)) state.ventas = [];
   return state.ventas.reduce((s, v) => s + (v.monto || 0), 0);
 }
 function ventasPorVendedor() {
+  if (!Array.isArray(state.vendedores)) state.vendedores = VENDEDORES_INICIAL;
+  if (!Array.isArray(state.ventas)) state.ventas = [];
   const map = {};
   state.vendedores.forEach(vd => map[vd.id] = { ...vd, total: 0, count: 0 });
   state.ventas.forEach(v => {
@@ -3687,7 +3691,7 @@ function rankingVendedores() {
   return ventasPorVendedor().sort((a, b) => b.count - a.count);
 }
 function mejorVenta() {
-  if (!state.ventas.length) return null;
+  if (!Array.isArray(state.ventas) || !state.ventas.length) return null;
   return state.ventas.reduce((max, v) => v.monto > max.monto ? v : max, state.ventas[0]);
 }
 function comisionDe(monto) { return monto * (state.comision / 100); }
