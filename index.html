@@ -4473,10 +4473,22 @@ function bramidoToro(corto) {
 
 /* ============ DISPATCHERS — leen state.sonidos[cat] del panel ============ */
 
+// Lista blanca de sonidos válidos por categoría (debe coincidir con el panel)
+const SONIDOS_VALIDOS = {
+  sale:    ['beep-game', 'coin', 'powerup', 'cha-ching', 'beep', 'pop'],
+  reveal:  ['casino', 'drumroll', 'suspense', 'bassdrop', 'epic-alarm'],
+  victory: ['fanfare', 'classical', 'celebration', 'mega', 'champion'],
+};
+
 function getActiveSonido(categoria, fallback) {
   try {
     const s = state.sonidos || {};
-    return s[categoria] || fallback;
+    const val = s[categoria];
+    // Validar que el valor guardado sea uno de los permitidos (no animal viejo)
+    if (val && SONIDOS_VALIDOS[categoria] && SONIDOS_VALIDOS[categoria].indexOf(val) !== -1) {
+      return val;
+    }
+    return fallback;
   } catch (e) { return fallback; }
 }
 
@@ -4487,12 +4499,10 @@ function reproducirSonidoVenta() {
   if (which === 'beep-game') return gameBeep();
   if (which === 'coin')      return gameCoin();
   if (which === 'powerup')   return gamePowerup();
-  if (which === 'tigre')   return rugidoTigre(true);
-  if (which === 'lobo')    return aullidoLobo(true);
-  if (which === 'aguila')  return chirridoAguila(true);
-  if (which === 'gorila')  return golpeGorila(true);
-  if (which === 'leon')    return rugidoLeon(true);
-  return gameBeep();  // default
+  if (which === 'cha-ching') return saleChaching();
+  if (which === 'beep')      return saleBeep();
+  if (which === 'pop')       return salePop();
+  return gameBeep();
 }
 
 /* === SONIDOS 8-BIT === */
@@ -4567,48 +4577,327 @@ function gamePowerup() {
   } catch (e) {}
 }
 
-// Sonido de REVEAL clímax (ya no hay buildup separado, todo es animal)
+/* === SONIDOS DE VENTA CLÁSICOS === */
+function saleChaching() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    [880, 1175, 1568].forEach((freq, i) => {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = 'sine';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.001, t + i * 0.08);
+      g.gain.exponentialRampToValueAtTime(0.22, t + i * 0.08 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.08 + 0.4);
+      o.connect(g).connect(ac.destination);
+      o.start(t + i * 0.08); o.stop(t + i * 0.08 + 0.45);
+    });
+  } catch (e) {}
+}
+function saleBeep() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(1320, t);
+    g.gain.setValueAtTime(0.25, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+    o.connect(g).connect(ac.destination);
+    o.start(t); o.stop(t + 0.2);
+  } catch (e) {}
+}
+function salePop() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(420, t);
+    o.frequency.exponentialRampToValueAtTime(880, t + 0.08);
+    g.gain.setValueAtTime(0.3, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+    o.connect(g).connect(ac.destination);
+    o.start(t); o.stop(t + 0.18);
+  } catch (e) {}
+}
+
+/* === HELPERS DE REVEAL Y VICTORY === */
+function impactBoomNew() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(110, t);
+    o.frequency.exponentialRampToValueAtTime(35, t + 0.7);
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.exponentialRampToValueAtTime(0.85, t + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+    o.connect(g).connect(ac.destination);
+    o.start(t); o.stop(t + 0.95);
+  } catch (e) {}
+}
+
+/* Sonido REVEAL CLÍMAX */
 function reproducirSonidoRevealClimax(esPremium) {
   if (!state.sonidoActivo) return;
-  const which = getActiveSonido('reveal', 'leon');
-  if (which === 'tigre')   return rugidoTigre(false);
-  if (which === 'oso')     return gruñidoOso(false);
-  if (which === 'jaguar')  return rugidoJaguar(false);
-  if (which === 'toro')    return bramidoToro(false);
-  return rugidoLeon(false);
+  const which = getActiveSonido('reveal', 'casino');
+  if (which === 'drumroll')   return revealDrumroll();
+  if (which === 'suspense')   return revealSuspense();
+  if (which === 'bassdrop')   return revealBassdrop();
+  if (which === 'epic-alarm') return revealEpicAlarm();
+  return revealCasino();
+}
+function reproducirSonidoRevealBuildup(durMs) { /* sin buildup separado */ }
+
+function revealCasino() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    for (let i = 0; i < 30; i++) {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = 'square';
+      o.frequency.setValueAtTime(1800 - i * 20, t + i * 0.1);
+      g.gain.setValueAtTime(0.12, t + i * 0.1);
+      g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.1 + 0.05);
+      o.connect(g).connect(ac.destination);
+      o.start(t + i * 0.1); o.stop(t + i * 0.1 + 0.06);
+    }
+    setTimeout(impactBoomNew, 3100);
+  } catch (e) {}
+}
+function revealDrumroll() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    for (let i = 0; i < 50; i++) {
+      const dur = 0.04;
+      const buf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let j = 0; j < d.length; j++) d[j] = (Math.random() * 2 - 1);
+      const src = ac.createBufferSource();
+      const f = ac.createBiquadFilter();
+      const g = ac.createGain();
+      src.buffer = buf;
+      f.type = 'bandpass'; f.frequency.value = 200;
+      const vol = 0.05 + (i / 50) * 0.25;
+      g.gain.setValueAtTime(vol, t + i * 0.06);
+      g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.04);
+      src.connect(f); f.connect(g); g.connect(ac.destination);
+      src.start(t + i * 0.06); src.stop(t + i * 0.06 + 0.04);
+    }
+    setTimeout(impactBoomNew, 3200);
+  } catch (e) {}
+}
+function revealSuspense() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(80, t);
+    o.frequency.exponentialRampToValueAtTime(440, t + 4);
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.exponentialRampToValueAtTime(0.2, t + 1);
+    g.gain.linearRampToValueAtTime(0.3, t + 4);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 4.3);
+    o.connect(g).connect(ac.destination);
+    o.start(t); o.stop(t + 4.4);
+    setTimeout(impactBoomNew, 4100);
+  } catch (e) {}
+}
+function revealBassdrop() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const buildDur = 4;
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    const f = ac.createBiquadFilter();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(200, t);
+    o.frequency.exponentialRampToValueAtTime(2400, t + buildDur);
+    f.type = 'highpass';
+    f.frequency.setValueAtTime(150, t);
+    f.frequency.exponentialRampToValueAtTime(1800, t + buildDur);
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.exponentialRampToValueAtTime(0.3, t + buildDur);
+    g.gain.exponentialRampToValueAtTime(0.001, t + buildDur + 0.1);
+    o.connect(f); f.connect(g); g.connect(ac.destination);
+    o.start(t); o.stop(t + buildDur + 0.15);
+    setTimeout(() => {
+      try {
+        const ac2 = getAudio();
+        const td = ac2.currentTime;
+        const oD = ac2.createOscillator();
+        const gD = ac2.createGain();
+        oD.type = 'sine';
+        oD.frequency.setValueAtTime(60, td);
+        oD.frequency.exponentialRampToValueAtTime(35, td + 1);
+        gD.gain.setValueAtTime(0.001, td);
+        gD.gain.exponentialRampToValueAtTime(0.9, td + 0.04);
+        gD.gain.exponentialRampToValueAtTime(0.001, td + 2);
+        oD.connect(gD).connect(ac2.destination);
+        oD.start(td); oD.stop(td + 2.1);
+      } catch (e) {}
+    }, buildDur * 1000);
+  } catch (e) {}
+}
+function revealEpicAlarm() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = 'sawtooth';
+    for (let i = 0; i < 8; i++) {
+      o.frequency.setValueAtTime(i % 2 === 0 ? 880 : 440, t + i * 0.5);
+    }
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.exponentialRampToValueAtTime(0.28, t + 0.2);
+    g.gain.linearRampToValueAtTime(0.28, t + 3.5);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 4);
+    o.connect(g).connect(ac.destination);
+    o.start(t); o.stop(t + 4.1);
+    [1, 2, 3].forEach(d => setTimeout(impactBoomNew, d * 1000));
+  } catch (e) {}
 }
 
-// Build-up del REVEAL = silencio porque el animal solo suena al final
-function reproducirSonidoRevealBuildup(durMs) {
-  // No hay buildup ya - el reveal usa solo animales al clímax
-}
-
-// Sonido de VICTORY
+/* Sonido VICTORY */
 function reproducirSonidoVictory() {
   if (!state.sonidoActivo) return;
-  const which = getActiveSonido('victory', 'manada-leones');
-  if (which === 'manada-lobos') {
-    aullidoLobo(false);
-    setTimeout(() => aullidoLobo(false), 600);
-    setTimeout(() => aullidoLobo(false), 1200);
-    return;
-  }
-  if (which === 'jungla') {
-    rugidoLeon(false);
-    setTimeout(() => chirridoAguila(false), 800);
-    setTimeout(() => rugidoTigre(false), 1600);
-    return;
-  }
-  if (which === 'safari') {
-    bramidoToro(false);
-    setTimeout(() => rugidoLeon(false), 700);
-    setTimeout(() => golpeGorila(false), 1500);
-    return;
-  }
-  // manada-leones default
-  rugidoLeon(false);
-  setTimeout(() => rugidoLeon(false), 700);
-  setTimeout(() => rugidoLeon(false), 1400);
+  const which = getActiveSonido('victory', 'fanfare');
+  if (which === 'classical')   return victoryClassical();
+  if (which === 'celebration') return victoryCelebration();
+  if (which === 'mega')        return victoryMega2();
+  if (which === 'champion')    return victoryChampion2();
+  return victoryFanfare();
+}
+function victoryFanfare() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t0 = ac.currentTime;
+    [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = 'sawtooth';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.001, t0 + i * 0.18);
+      g.gain.exponentialRampToValueAtTime(0.22, t0 + i * 0.18 + 0.04);
+      g.gain.linearRampToValueAtTime(0.18, t0 + i * 0.18 + 0.5);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + i * 0.18 + 0.7);
+      o.connect(g); g.connect(ac.destination);
+      o.start(t0 + i * 0.18); o.stop(t0 + i * 0.18 + 0.75);
+    });
+  } catch (e) {}
+}
+function victoryClassical() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t0 = ac.currentTime;
+    [261.63, 329.63, 392.00, 523.25].forEach((freq, i) => {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = 'sine';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.001, t0 + i * 0.4);
+      g.gain.linearRampToValueAtTime(0.18, t0 + i * 0.4 + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + i * 0.4 + 0.7);
+      o.connect(g); g.connect(ac.destination);
+      o.start(t0 + i * 0.4); o.stop(t0 + i * 0.4 + 0.75);
+    });
+  } catch (e) {}
+}
+function aplausoNew() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const dur = 1.5;
+    const buf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+    const src = ac.createBufferSource();
+    const f = ac.createBiquadFilter();
+    const g = ac.createGain();
+    f.type = 'bandpass'; f.frequency.value = 2200; f.Q.value = 0.6;
+    g.gain.setValueAtTime(0.18, t);
+    g.gain.linearRampToValueAtTime(0.22, t + 0.3);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    src.buffer = buf;
+    src.connect(f); f.connect(g); g.connect(ac.destination);
+    src.start(t);
+  } catch (e) {}
+}
+function victoryCelebration() {
+  victoryFanfare();
+  setTimeout(aplausoNew, 400);
+  setTimeout(saleChaching, 800);
+  setTimeout(saleChaching, 1100);
+  setTimeout(saleChaching, 1400);
+}
+function victoryMega2() {
+  victoryFanfare();
+  setTimeout(impactBoomNew, 300);
+  setTimeout(aplausoNew, 800);
+  setTimeout(saleChaching, 1100);
+  setTimeout(saleChaching, 1300);
+  setTimeout(impactBoomNew, 1800);
+  setTimeout(victoryFanfare, 2200);
+}
+function victoryChampion2() {
+  if (!state.sonidoActivo) return;
+  try {
+    const ac = getAudio();
+    const t = ac.currentTime;
+    const acordes = [
+      { freqs: [261.63, 329.63, 392.00], delay: 0,    dur: 1.5 },
+      { freqs: [293.66, 369.99, 440.00], delay: 1.0,  dur: 1.5 },
+      { freqs: [349.23, 440.00, 523.25], delay: 2.0,  dur: 1.5 },
+      { freqs: [392.00, 493.88, 587.33], delay: 3.0,  dur: 2.0 },
+      { freqs: [523.25, 659.25, 783.99], delay: 4.0,  dur: 3.0 },
+    ];
+    acordes.forEach(({ freqs, delay, dur }) => {
+      freqs.forEach(freq => {
+        const o = ac.createOscillator();
+        const g = ac.createGain();
+        const f = ac.createBiquadFilter();
+        o.type = 'sawtooth';
+        o.frequency.value = freq;
+        const tt = t + delay;
+        g.gain.setValueAtTime(0.001, tt);
+        g.gain.linearRampToValueAtTime(0.10, tt + 0.15);
+        g.gain.linearRampToValueAtTime(0.08, tt + dur * 0.7);
+        g.gain.exponentialRampToValueAtTime(0.001, tt + dur);
+        f.type = 'lowpass'; f.frequency.value = 2000;
+        o.connect(f); f.connect(g); g.connect(ac.destination);
+        o.start(tt); o.stop(tt + dur + 0.05);
+      });
+    });
+    setTimeout(impactBoomNew, 500);
+    setTimeout(impactBoomNew, 2500);
+    setTimeout(impactBoomNew, 3500);
+    setTimeout(aplausoNew, 5500);
+    setTimeout(victoryFanfare, 6000);
+  } catch (e) {}
 }
 
 /* ============ FUNCIONES STUB para compatibilidad con código antiguo ============ */
